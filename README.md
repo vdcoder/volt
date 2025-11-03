@@ -48,37 +48,75 @@ That's it! You now have a running Volt application.
 
 ## 📖 Example
 
-Here's a simple counter app in Volt:
+Here's a complete counter app showing the full setup:
 
+**src/App.hpp** - Your C++ Component:
 ```cpp
-#include "dependencies/volt/include/Volt.hpp"
-
+#include "../dependencies/volt/include/Volt.hpp"
 using namespace volt;
 
-class CounterApp : public VoltApp {
+class CounterApp : public VoltRuntime::AppBase {
 private:
     int count = 0;
-
-    void increment() { count++; invalidate(); }
-    void decrement() { count--; invalidate(); }
-
+    
 public:
+    CounterApp(VoltRuntime* runtime) : AppBase(runtime) {}
+    
     VNode render() override {
-        return div({},
+        return div({style("font-family: sans-serif; padding: 20px;")}, {
             h1({}, "Counter: " + std::to_string(count)),
-            div({},
-                button({ onClick([this] { increment(); }) }, "Increment"),
-                button({ onClick([this] { decrement(); }) }, "Decrement")
-            )
-        );
+            button({onClick([this]() { 
+                count++; 
+                invalidate();  // Triggers re-render
+            })}, "Increment"),
+            button({onClick([this]() { 
+                count--; 
+                invalidate();
+            })}, "Decrement")
+        });
     }
 };
+```
 
-int main() {
-    VoltRuntime runtime("root");
-    runtime.mount<CounterApp>();
-    return 0;
+**src/main.cpp** - Wiring & Emscripten Bindings:
+```cpp
+#include <emscripten/bind.h>
+#include "../dependencies/volt/include/Volt.hpp"
+#include "../dependencies/volt/src/VoltRuntime.cpp"
+#include "App.hpp"
+
+std::unique_ptr<VoltRuntime> g_runtime;
+
+EMSCRIPTEN_BINDINGS(counter_module) {
+    function("createRuntime", +[]() {
+        g_runtime = std::make_unique<VoltRuntime>("root");
+        g_runtime->mount<CounterApp>();
+    });
+    // ... event callbacks ...
 }
+```
+
+**index.html** - Loading the WebAssembly:
+```html
+<!DOCTYPE html>
+<html>
+<body>
+    <div id="root"></div>
+    <script src="app.js"></script>
+    <script>
+        VoltApp().then(module => {
+            module.createRuntime();  // Mount app to #root
+        });
+    </script>
+</body>
+</html>
+```
+
+**Build & Run**:
+```bash
+./build.sh                    # Compiles to WebAssembly
+cd output && python3 -m http.server 8001
+# Open http://localhost:8001 - Click buttons to see live updates!
 ```
 
 ## 🏗️ How It Works
