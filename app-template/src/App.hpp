@@ -7,14 +7,14 @@ using namespace volt;
 class VOLT_APP_NAME_CAMEL : public VoltRuntime::AppBase {
 private:
     int counter = 0;
-    String message = "Hello from VOLT_APP_NAME!";
+    std::string message = "Hello from VOLT_APP_NAME!";
     
 public:
     VOLT_APP_NAME_CAMEL(VoltRuntime* runtime) : AppBase(runtime) {}
     
     VNode render() override {
         return div({style("font-family: sans-serif; padding: 20px;")}, {
-            h1({text(message.std_str())}),
+            h1({text(message)}),
             p({text("Counter: " + std::to_string(counter))}),
             button({onClick([this]() {
                 counter++;

@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Component-Based Architecture**
   - `VoltApp` base class for creating apps
   - `render()` method returns `VNode` tree
-  - `scheduleRender()` for batched updates with RAF
+  - `invalidate()` for batched updates with RAF
 
 - **Event System**
   - 8 event handlers: `onClick`, `onInput`, `onChange`, `onSubmit`, `onKeyDown`, `onKeyUp`, `onFocus`, `onBlur`

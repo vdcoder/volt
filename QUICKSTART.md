@@ -28,7 +28,7 @@ private:
     
     void updateState() {
         state++;
-        scheduleRender();  // Trigger re-render
+        invalidate();  // Trigger re-render
     }
 
 public:
@@ -145,12 +145,12 @@ private:
     // State updaters
     void setText(const std::string& newText) {
         text = newText;
-        scheduleRender();  // Always call after state change
+        invalidate();  // Always call after state change
     }
     
     void toggleActive() {
         isActive = !isActive;
-        scheduleRender();
+        invalidate();
     }
     
 public:
@@ -255,7 +255,7 @@ Edit `build.sh` and change `-O3` to:
 
 ### Event handler not firing
 
-**Cause**: Forgot to call `scheduleRender()`  
+**Cause**: Forgot to call `invalidate()`  
 **Solution**: Always call after state changes
 
 ### Build fails
@@ -274,8 +274,8 @@ public:
     VNode render() override {
         return div({},
             h1({}, std::to_string(count)),
-            button({ onClick([this] { count++; scheduleRender(); }) }, "+"),
-            button({ onClick([this] { count--; scheduleRender(); }) }, "-")
+            button({ onClick([this] { count++; invalidate(); }) }, "+"),
+            button({ onClick([this] { count--; invalidate(); }) }, "-")
         );
     }
 };
@@ -292,7 +292,7 @@ class TodoApp : public VoltApp {
         if (!input.empty()) {
             todos.push_back(input);
             input = "";
-            scheduleRender();
+            invalidate();
         }
     }
     
@@ -306,7 +306,7 @@ public:
         return div({},
             input({ 
                 value(input),
-                onInput([this](const std::string& v) { input = v; scheduleRender(); })
+                onInput([this](const std::string& v) { input = v; invalidate(); })
             }),
             button({ onClick([this] { addTodo(); }) }, "Add"),
             ul({}, items)

@@ -35,7 +35,7 @@ public:
         return div({ style("padding: 20px; border: 2px solid blue;") },
             h2({}, "App 1 (Blue)"),
             p({}, "Count: " + std::to_string(count)),
-            button({ onClick([this] { count++; scheduleRender(); }) }, "Increment")
+            button({ onClick([this] { count++; invalidate(); }) }, "Increment")
         );
     }
 };
@@ -53,7 +53,7 @@ public:
         return div({ style("padding: 20px; border: 2px solid red;") },
             h2({}, "App 2 (Red)"),
             p({}, "Count: " + std::to_string(count)),
-            button({ onClick([this] { count++; scheduleRender(); }) }, "Increment")
+            button({ onClick([this] { count++; invalidate(); }) }, "Increment")
         );
     }
 };

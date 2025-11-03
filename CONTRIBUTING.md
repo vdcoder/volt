@@ -147,7 +147,7 @@ Use conventional commits style:
 - **C++17 standard**: Use modern C++ features
 - **Naming conventions**:
   - Classes: `PascalCase` (e.g., `VoltRuntime`)
-  - Functions: `camelCase` (e.g., `scheduleRender`)
+  - Functions: `camelCase` (e.g., `invalidate`)
   - Variables: `camelCase` (e.g., `currentNode`)
   - Constants: `UPPER_SNAKE_CASE` (e.g., `MAX_DEPTH`)
   - Macros: `UPPER_SNAKE_CASE` (e.g., `VNODE_TAG_HELPER`)

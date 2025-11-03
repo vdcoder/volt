@@ -59,8 +59,8 @@ class CounterApp : public VoltApp {
 private:
     int count = 0;
 
-    void increment() { count++; scheduleRender(); }
-    void decrement() { count--; scheduleRender(); }
+    void increment() { count++; invalidate(); }
+    void decrement() { count--; invalidate(); }
 
 public:
     VNode render() override {
@@ -85,7 +85,7 @@ int main() {
 
 1. **Component Definition**: Create classes extending `VoltApp` with a `render()` method
 2. **Virtual DOM**: `render()` returns a `VNode` tree describing your UI
-3. **Efficient Updates**: When state changes, call `scheduleRender()` to trigger a diff
+3. **Efficient Updates**: When state changes, call `invalidate()` to trigger a diff
 4. **Smart Patching**: Only the changed parts of the DOM are updated
 
 ## 📦 Project Structure
@@ -127,7 +127,7 @@ volt/
 
 - **`VoltApp`**: Base class for your applications
   - `render()`: Returns `VNode` tree representing UI
-  - `scheduleRender()`: Triggers re-render on next frame
+  - `invalidate()`: Triggers re-render on next frame
 
 - **`VoltRuntime`**: Manages app lifecycle and rendering
   - `mount<TApp>()`: Mounts app to DOM element
