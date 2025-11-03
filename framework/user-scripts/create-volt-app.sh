@@ -147,71 +147,24 @@ cp -r "$SCRIPT_DIR/../../framework/include" "$OUTPUT_DIR/dependencies/volt"
 cp -r "$SCRIPT_DIR/../../framework/src" "$OUTPUT_DIR/dependencies/volt"
 print_success "Framework copied"
 
-# Update App.hpp with app name
+# Customize app files with app-specific names
 print_info "Customizing app files..."
 APP_CLASS_NAME="$(echo $APP_NAME | sed 's/-/_/g' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2))}1' FS='_' OFS='')"
+APP_NAME_UNDERSCORE="${APP_NAME//-/_}"
 
-cat > "$OUTPUT_DIR/src/App.hpp" << EOF
-#pragma once
-#include "../dependencies/volt/include/Volt.hpp"
+# Update App.hpp: Replace tokens
+sed -i "s/VOLT_APP_NAME_CAMEL/${APP_CLASS_NAME}/g" "$OUTPUT_DIR/src/App.hpp" 2>/dev/null || \
+    sed -i '' "s/VOLT_APP_NAME_CAMEL/${APP_CLASS_NAME}/g" "$OUTPUT_DIR/src/App.hpp"
 
-using namespace volt;
+sed -i "s/VOLT_APP_NAME/${APP_NAME}/g" "$OUTPUT_DIR/src/App.hpp" 2>/dev/null || \
+    sed -i '' "s/VOLT_APP_NAME/${APP_NAME}/g" "$OUTPUT_DIR/src/App.hpp"
 
-// $APP_NAME - Main Application
-class ${APP_CLASS_NAME} : public VoltRuntime::AppBase {
-private:
-    int counter = 0;
-    String message = "Hello from ${APP_NAME}!";
-    
-public:
-    ${APP_CLASS_NAME}(VoltRuntime* runtime) : AppBase(runtime) {}
-    
-    VNode render() override {
-        return div({style("font-family: sans-serif; padding: 20px;")}, {
-            h1({text(message.std_str())}),
-            p({text("Counter: " + std::to_string(counter))}),
-            button({onClick([this]() {
-                counter++;
-                invalidate();
-            })}, {text("Increment")}),
-            button({onClick([this]() {
-                counter = 0;
-                invalidate();
-            })}, {text("Reset")})
-        });
-    }
-};
-EOF
+# Update main.cpp: Replace tokens
+sed -i "s/VOLT_APP_NAME_CAMEL/${APP_CLASS_NAME}/g" "$OUTPUT_DIR/src/main.cpp" 2>/dev/null || \
+    sed -i '' "s/VOLT_APP_NAME_CAMEL/${APP_CLASS_NAME}/g" "$OUTPUT_DIR/src/main.cpp"
 
-# Update main.cpp with app name
-cat > "$OUTPUT_DIR/src/main.cpp" << EOF
-#include <emscripten/bind.h>
-#include "../dependencies/volt/include/Volt.hpp"
-#include "../dependencies/volt/src/VoltRuntime.cpp"  // Single TU
-#include "App.hpp"
-
-using namespace volt;
-using namespace emscripten;
-
-std::unique_ptr<VoltRuntime> g_runtime;
-
-EMSCRIPTEN_BINDINGS(${APP_NAME//-/_}_module) {
-    function("getVoltNamespace", &volt::getVoltNamespace);
-    
-    function("createRuntime", +[]() {
-        g_runtime = std::make_unique<VoltRuntime>("root");
-        g_runtime->mount<${APP_CLASS_NAME}>();
-    });
-    
-    function("invokeEventCallback", +[](int id) {
-        if (g_runtime) g_runtime->invokeEventCallback(id);
-    });
-    
-    function("invokeStringEventCallback", +[](int id, const std::string& value) {
-        if (g_runtime) g_runtime->invokeStringEventCallback(id, value);
-    });
-}
-EOF
+sed -i "s/VOLT_APP_NAME_UNDERSCORE/${APP_NAME_UNDERSCORE}/g" "$OUTPUT_DIR/src/main.cpp" 2>/dev/null || \
+    sed -i '' "s/VOLT_APP_NAME_UNDERSCORE/${APP_NAME_UNDERSCORE}/g" "$OUTPUT_DIR/src/main.cpp"
 
 # Update index.html with app name
 sed -i "s/Volt App/${APP_NAME}/g" "$OUTPUT_DIR/index.html" 2>/dev/null || \

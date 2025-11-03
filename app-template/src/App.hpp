@@ -3,14 +3,14 @@
 
 using namespace volt;
 
-// Volt App - Main Application
-class App : public VoltRuntime::AppBase {
+// VOLT_APP_NAME - Main Application
+class VOLT_APP_NAME_CAMEL : public VoltRuntime::AppBase {
 private:
     int counter = 0;
-    String message = "Hello from Volt!";
+    String message = "Hello from VOLT_APP_NAME!";
     
 public:
-    App(VoltRuntime* runtime) : AppBase(runtime) {}
+    VOLT_APP_NAME_CAMEL(VoltRuntime* runtime) : AppBase(runtime) {}
     
     VNode render() override {
         return div({style("font-family: sans-serif; padding: 20px;")}, {
