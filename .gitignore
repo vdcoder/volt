@@ -1,0 +1,63 @@
+# Build outputs
+output/
+*.wasm
+*.js
+*.js.mem
+!framework/user-scripts/*.sh
+!app-template/build.sh
+
+# Compiled object files
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+
+# Emscripten cache
+.emscripten_cache/
+.emscripten_ports/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+env/
+
+# Node.js (if using npm for tooling)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Editor and IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.orig
+
+# Test/demo apps (don't commit test apps to framework repo)
+test-app/
+demo-app/
+sample-app/
+my-app/
+*-test/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
