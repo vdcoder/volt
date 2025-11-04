@@ -22,28 +22,38 @@ public:
     MyApp(VoltRuntime* runtime) : AppBase(runtime) {}
     
     VNode render() override {
-        return div({style("...")}, {
-            h1({}, "Title"),
+        return div({style("...")},
+            h1("Title"),
             button({onClick([this]() { 
                 state++; 
                 invalidate();  // ALWAYS call after state change
             })}, "Click")
-        });
+        );
     }
 };
 ```
 
+### Component Pattern
+- **ComponentBase**: For reusable components with flexible `render()` signatures
+- **Stateless**: `Button(this).render("Label", callback)` - created inline, no state
+- **Stateful**: `Counter counter(this, 0);` as member - maintains state across renders
+- Components call `invalidate()` to trigger parent re-render
+- See `COMPONENTS.md` for comprehensive patterns
+
 ### Virtual DOM (VNode.hpp)
 - **Tag enum** for performance: `Tag::DIV`, `Tag::BUTTON`, etc.
+- **Fragment support**: `Tag::FRAGMENT` for grouping without extra DOM elements
 - **Props as `vector<pair<short, string>>`** sorted by attr ID for efficient diffing
-- **4 overload patterns** for every element: `div()`, `div({}, "text")`, `div(children...)`, `div(attrs, children...)`
-- **Text nodes**: Use `Tag::TEXT` with `ATTR_TEXT_CONTENT` prop
+- **4 overload patterns** for every element: `div()`, `div("text")`, `div(child1, child2, ...)`, `div({props}, children...)`
+- **Text nodes**: Strings automatically convert to text nodes via implicit constructors, or use `text()` helper for clarity
+- **Fragments & map()**: `map(container, mapper)` returns fragment, `fragment({nodes...})` groups without wrapper
 
 ### Build System
 - **GUID-based isolation**: Each app gets unique namespace `volt_<sanitized_guid>`
 - **Single TU compilation**: Include `VoltRuntime.cpp` in `main.cpp`
+- **Include paths**: Use `-I./dependencies/volt/include` flag, then `#include <Volt.hpp>`
 - **Emscripten binding pattern**: Export runtime functions for JS callbacks
-- **Command**: `emcc src/main.cpp -DVOLT_GUID="..." -lembind -std=c++17 -O3`
+- **Command**: `emcc src/main.cpp -DVOLT_GUID="..." -I./dependencies/volt/include -lembind -std=c++17 -O3`
 
 ## Critical Patterns
 

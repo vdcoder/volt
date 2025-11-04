@@ -50,8 +50,26 @@ public:
             }
         }
         
+        // Get runtime pointer for creating child components
+        VoltRuntime* getRuntime() { return runtime; }
+        
         // Render method to be implemented by user's app
         virtual VNode render() = 0;
+    };
+
+    class ComponentBase : public IInvalidator {
+    private:
+        IInvalidator* parent;
+        
+    public:
+        ComponentBase(IInvalidator* p) : parent(p) {}
+        virtual ~ComponentBase() = default;
+
+        void invalidate() override {
+            if (parent) {
+                parent->invalidate();  // Propagate to parent
+            }
+        }
     };
 
 private:

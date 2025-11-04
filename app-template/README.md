@@ -37,13 +37,13 @@ Your app code lives in `src/App.hpp`. The `App` class inherits from `VoltRuntime
 ### Example:
 ```cpp
 VNode render() override {
-    return div({style("padding: 20px;")}, {
-        h1({text("Hello World")}),
+    return div({style("padding: 20px;")},
+        h1("Hello World"),
         button({onClick([this]() {
             // Handle click
             invalidate(); // Trigger re-render
-        })}, {text("Click Me")})
-    });
+        })}, "Click Me")
+    );
 }
 ```
 

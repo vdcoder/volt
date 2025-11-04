@@ -1,5 +1,5 @@
 #include <emscripten/bind.h>
-#include "../dependencies/volt/include/Volt.hpp"
+#include <Volt.hpp>
 #include "../dependencies/volt/src/VoltRuntime.cpp"  // Single TU
 #include "App.hpp"
 

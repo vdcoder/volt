@@ -25,7 +25,7 @@ Create two separate apps with different GUIDs:
 
 **app1/src/App.hpp**:
 ```cpp
-#include "dependencies/volt/include/Volt.hpp"
+#include <Volt.hpp>
 using namespace volt;
 
 class App1 : public VoltApp {
@@ -33,8 +33,8 @@ class App1 : public VoltApp {
 public:
     VNode render() override {
         return div({ style("padding: 20px; border: 2px solid blue;") },
-            h2({}, "App 1 (Blue)"),
-            p({}, "Count: " + std::to_string(count)),
+            h2("App 1 (Blue)"),
+            p("Count: " + std::to_string(count)),
             button({ onClick([this] { count++; invalidate(); }) }, "Increment")
         );
     }
@@ -43,7 +43,7 @@ public:
 
 **app2/src/App.hpp**:
 ```cpp
-#include "dependencies/volt/include/Volt.hpp"
+#include <Volt.hpp>
 using namespace volt;
 
 class App2 : public VoltApp {
@@ -51,8 +51,8 @@ class App2 : public VoltApp {
 public:
     VNode render() override {
         return div({ style("padding: 20px; border: 2px solid red;") },
-            h2({}, "App 2 (Red)"),
-            p({}, "Count: " + std::to_string(count)),
+            h2("App 2 (Red)"),
+            p("Count: " + std::to_string(count)),
             button({ onClick([this] { count++; invalidate(); }) }, "Increment")
         );
     }

@@ -52,7 +52,7 @@ Here's a complete counter app showing the full setup:
 
 **src/App.hpp** - Your C++ Component:
 ```cpp
-#include "../dependencies/volt/include/Volt.hpp"
+#include <Volt.hpp>
 using namespace volt;
 
 class CounterApp : public VoltRuntime::AppBase {
@@ -63,8 +63,8 @@ public:
     CounterApp(VoltRuntime* runtime) : AppBase(runtime) {}
     
     VNode render() override {
-        return div({style("font-family: sans-serif; padding: 20px;")}, {
-            h1({}, "Counter: " + std::to_string(count)),
+        return div({style("font-family: sans-serif; padding: 20px;")},
+            h1("Counter: " + std::to_string(count)),
             button({onClick([this]() { 
                 count++; 
                 invalidate();  // Triggers re-render
@@ -73,7 +73,7 @@ public:
                 count--; 
                 invalidate();
             })}, "Decrement")
-        });
+        );
     }
 };
 ```
@@ -81,7 +81,7 @@ public:
 **src/main.cpp** - Wiring & Emscripten Bindings:
 ```cpp
 #include <emscripten/bind.h>
-#include "../dependencies/volt/include/Volt.hpp"
+#include <Volt.hpp>
 #include "../dependencies/volt/src/VoltRuntime.cpp"
 #include "App.hpp"
 
@@ -163,9 +163,14 @@ volt/
 
 ### Core Components
 
-- **`VoltApp`**: Base class for your applications
+- **`VoltRuntime::AppBase`**: Base class for applications
   - `render()`: Returns `VNode` tree representing UI
   - `invalidate()`: Triggers re-render on next frame
+
+- **`VoltRuntime::ComponentBase`**: Base class for reusable components
+  - Flexible `render(...)` with custom parameters
+  - `invalidate()`: Triggers parent re-render
+  - See [COMPONENTS.md](COMPONENTS.md) for detailed guide
 
 - **`VoltRuntime`**: Manages app lifecycle and rendering
   - `mount<TApp>()`: Mounts app to DOM element
@@ -177,15 +182,44 @@ volt/
 - **Attributes**: `id()`, `className()`, `style()`, `placeholder()`, `value()`
 - **Events**: `onClick()`, `onInput()`, `onChange()`, `onSubmit()`, `onKeyDown()`, etc.
 
-### Macro System
+### Component Composition
 
-Volt provides overloaded helpers for concise UI code:
+Create reusable components with flexible signatures:
+
+```cpp
+// Stateless component (inline)
+Button(this).render("Click Me", [this]() { count++; });
+
+// Stateful component (instance)
+Counter counter(this, 0);  // Maintains state
+counter.render("My Counter");
+```
+
+### List Rendering with map()
+
+```cpp
+std::vector<std::string> items = {"Apple", "Banana", "Orange"};
+
+return ul({},
+    map(items, [](const std::string& item) {
+        return li({}, item);  // String auto-converts to text node
+    })
+);
+```
+
+**📚 [Read the full Components Guide →](COMPONENTS.md)**
+
+### Macro System & Text Nodes
+
+Volt provides overloaded helpers for concise UI code. Strings and `const char*` automatically convert to text nodes:
 
 ```cpp
 // Four overload patterns for each tag
-div()                          // Empty element
-div({}, "Text")               // Text content
-div({}, child1, child2, ...)  // Children
+div()                              // Empty element
+div("Text")                        // Text content (no brackets needed!)
+div(child1, child2, child3)        // Multiple children (comma-separated)
+div({id("main")}, child1, child2)  // Props in {}, children comma-separated
+```
 div(attrs, children...)        // Attributes + children
 ```
 

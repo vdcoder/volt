@@ -86,9 +86,14 @@ EM_VAL renderVNode(const VNode& vnode);
 // Render children and append to parent
 void renderChildren(EM_VAL parentHandle, const std::vector<VNode>& children) {
     for (const auto& child : children) {
-        EM_VAL childHandle = renderVNode(child);
-        dom_appendChild(parentHandle, childHandle);
-        emscripten::internal::_emval_decref(childHandle);
+        // Flatten fragments - render their children directly
+        if (child.isFragment()) {
+            renderChildren(parentHandle, child.children);
+        } else {
+            EM_VAL childHandle = renderVNode(child);
+            dom_appendChild(parentHandle, childHandle);
+            emscripten::internal::_emval_decref(childHandle);
+        }
     }
 }
 
@@ -113,7 +118,7 @@ inline EM_VAL renderVNode(const VNode& vnode) {
             }
         }
         
-        // Render and append children
+        // Render and append children (fragments are flattened in renderChildren)
         renderChildren(elementHandle, vnode.children);
     }
     

@@ -19,7 +19,7 @@ python3 -m http.server 8001
 ## 🏗️ App Structure
 
 ```cpp
-#include "dependencies/volt/include/Volt.hpp"
+#include <Volt.hpp>
 using namespace volt;
 
 class MyApp : public VoltApp {
@@ -33,8 +33,8 @@ private:
 
 public:
     VNode render() override {
-        return div({},
-            h1({}, "Title"),
+        return div(
+            h1("Title"),
             button({ onClick([this] { updateState(); }) }, "Click")
         );
     }
@@ -59,23 +59,23 @@ footer({}, ...)
 nav({}, ...)
 
 // Text
-h1({}, "Heading")
-p({}, "Paragraph")
+h1("Heading")
+p("Paragraph")
 a({ href("#") }, "Link")
-strong({}, "Bold")
-em({}, "Italic")
+strong("Bold")
+em("Italic")
 
 // Forms
 form({}, ...)
 input({ placeholder("Text...") })
 textarea({}, ...)
-button({}, "Click")
-select({}, option({}, "Choice"))
+button("Click")
+select(option("Choice"))
 
 // Lists
-ul({},
-    li({}, "Item 1"),
-    li({}, "Item 2")
+ul(
+    li("Item 1"),
+    li("Item 2")
 )
 ```
 
@@ -175,9 +175,9 @@ public:
 ```cpp
 VNode render() override {
     if (isLoading) {
-        return div({}, "Loading...");
+        return div("Loading...");
     }
-    return div({}, content());
+    return div(content());
 }
 ```
 
@@ -188,10 +188,47 @@ VNode renderList() {
     std::vector<VNode> items;
     for (const auto& item : data) {
         items.push_back(
-            li({}, item.name)
+            li(item.name)
         );
     }
     return ul({}, items);
+}
+
+// Using map() helper (cleaner!)
+VNode renderList() {
+    return ul({},
+        map(data, [](const Item& item) {
+            return li({}, item.name);
+        })
+    );
+}
+```
+
+### Using Fragments
+
+Fragments let you group nodes without adding extra DOM elements:
+
+```cpp
+// Return multiple nodes from a component
+VNode renderHeader() {
+    return fragment(
+        h1("Title"),
+        h2("Subtitle"),
+        hr()
+    );
+}
+
+// Mix fragments with regular elements
+VNode render() override {
+    std::vector<int> numbers = {1, 2, 3, 4, 5};
+    
+    return div(
+        h1("My List"),
+        map(numbers, [](int n) {
+            return li(std::to_string(n));
+        }),  // map() returns a fragment
+        p("End of list")
+    );
 }
 ```
 
@@ -207,6 +244,82 @@ VNode render() override {
 }
 ```
 
+## 🧩 Component Patterns
+
+Volt supports two component patterns for code reusability:
+
+### Stateless Components (Inline)
+
+Create components without state:
+
+```cpp
+class Button : public VoltRuntime::ComponentBase {
+public:
+    Button(IInvalidator* parent) : ComponentBase(parent) {}
+    
+    VNode render(const std::string& label, std::function<void()> onClick) {
+        return button({
+            volt::onClick([onClick, this]() {
+                onClick();
+                invalidate();
+            }),
+            style("padding: 10px; background: #007bff; color: white;")
+        }, label);
+    }
+};
+
+// Usage in App
+VNode render() override {
+    return div({},
+        Button(this).render("Click Me", [this]() { count++; })
+    );
+}
+```
+
+### Stateful Components (Instance)
+
+Components with persistent state:
+
+```cpp
+class Counter : public VoltRuntime::ComponentBase {
+private:
+    int count = 0;
+    
+public:
+    Counter(IInvalidator* parent, int initial = 0)
+        : ComponentBase(parent), count(initial) {}
+    
+    VNode render(const std::string& label) {
+        return div({},
+            h3({}, label + ": " + std::to_string(count)),
+            button({onClick([this]() { count++; invalidate(); })}, "+")
+        );
+    }
+};
+
+// Usage in App
+class MyApp : public VoltRuntime::AppBase {
+private:
+    Counter counter1;  // State persists across renders
+    Counter counter2;
+    
+public:
+    MyApp(VoltRuntime* runtime)
+        : AppBase(runtime),
+          counter1(this, 0),
+          counter2(this, 10) {}
+    
+    VNode render() override {
+        return div({},
+            counter1.render("Counter A"),
+            counter2.render("Counter B")
+        );
+    }
+};
+```
+
+**📚 [Full Components Guide →](COMPONENTS.md)**
+
 ## 🎭 4 Overload Patterns
 
 Every HTML element supports 4 patterns:
@@ -216,15 +329,15 @@ Every HTML element supports 4 patterns:
 div()
 
 // 2. Text content only
-div({}, "Hello")
+div("Hello")
 
 // 3. Children only
-div({}, child1, child2, child3)
+div(child1, child2, child3)
 
 // 4. Attributes + children
 div({ id("main"), className("container") }, 
-    h1({}, "Title"),
-    p({}, "Content")
+    h1("Title"),
+    p("Content")
 )
 ```
 

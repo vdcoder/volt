@@ -12,6 +12,7 @@
 // ============================================================================
 enum class Tag {
     TEXT,       // Special tag for text nodes
+    FRAGMENT,   // Special tag for fragment containers (invisible wrapper)
     DIV,
     SPAN,
     H1,
@@ -48,6 +49,7 @@ enum class Tag {
 inline const char* tagToString(Tag tag) {
     switch (tag) {
         case Tag::TEXT: return "#text";
+        case Tag::FRAGMENT: return "#fragment";
         case Tag::DIV: return "div";
         case Tag::SPAN: return "span";
         case Tag::H1: return "h1";
@@ -97,10 +99,23 @@ public:
         std::sort(props.begin(), props.end(), 
             [](const auto& a, const auto& b) { return a.first < b.first; });
     }
+    
+    // Implicit conversion from std::string to text node
+    VNode(const std::string& textContent)
+        : tag(Tag::TEXT), props({{ATTR_TEXT_CONTENT, textContent}}), children({}) {}
+    
+    // Implicit conversion from const char* to text node
+    VNode(const char* textContent)
+        : tag(Tag::TEXT), props({{ATTR_TEXT_CONTENT, textContent}}), children({}) {}
 
     // Check if this is a text node
     bool isText() const {
         return tag == Tag::TEXT;
+    }
+    
+    // Check if this is a fragment node
+    bool isFragment() const {
+        return tag == Tag::FRAGMENT;
     }
 
     // Get text content (only valid for TEXT nodes)
@@ -129,22 +144,43 @@ inline VNode text(const char* content) {
 }
 
 // ============================================================================
+// Fragment Helper - Transparent container for grouping nodes
+// ============================================================================
+inline VNode fragment(std::vector<VNode> children) {
+    return VNode(Tag::FRAGMENT, {}, std::move(children));
+}
+
+// Map helper - Creates a fragment with mapped children
+template<typename Container, typename Func>
+inline VNode map(const Container& container, Func mapper) {
+    std::vector<VNode> children;
+    children.reserve(container.size());
+    for (const auto& item : container) {
+        children.push_back(mapper(item));
+    }
+    return fragment(std::move(children));
+}
+
+// ============================================================================
 // HTML Element Helper Functions (with elegant overloads)
 // ============================================================================
 
-// Macro to generate all 4 overloads for a tag: (props+children), (props), (children), ()
+// Macro to generate overloads for a tag using variadic templates
+// This allows natural syntax: div({props}, child1, child2, "text", ...)
 #define VNODE_TAG_HELPER(tagName, tagEnum) \
-    inline VNode tagName(std::vector<std::pair<short, std::string>> props, std::vector<VNode> children) { \
-        return VNode(Tag::tagEnum, std::move(props), std::move(children)); \
+    inline VNode tagName() { \
+        return VNode(Tag::tagEnum, {}, {}); \
     } \
     inline VNode tagName(std::vector<std::pair<short, std::string>> props) { \
         return VNode(Tag::tagEnum, std::move(props), {}); \
     } \
-    inline VNode tagName(std::vector<VNode> children) { \
-        return VNode(Tag::tagEnum, {}, std::move(children)); \
+    template<typename... Children> \
+    inline VNode tagName(Children&&... children) { \
+        return VNode(Tag::tagEnum, {}, {std::forward<Children>(children)...}); \
     } \
-    inline VNode tagName() { \
-        return VNode(Tag::tagEnum, {}, {}); \
+    template<typename... Children> \
+    inline VNode tagName(std::vector<std::pair<short, std::string>> props, Children&&... children) { \
+        return VNode(Tag::tagEnum, std::move(props), {std::forward<Children>(children)...}); \
     }
 
 // Macro for self-closing tags (no children): (props), ()
