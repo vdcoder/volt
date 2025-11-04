@@ -56,13 +56,21 @@ void VoltRuntime::scheduleRender() {
 
 int VoltRuntime::registerEventCallback(EventCallback callback) {
     int id = eventCallbacks.size();
-    eventCallbacks.push_back(std::move(callback));
+    // Wrap user callback with auto-invalidate
+    eventCallbacks.push_back([this, callback = std::move(callback)]() {
+        callback();
+        this->scheduleRender();
+    });
     return id;
 }
 
 int VoltRuntime::registerStringEventCallback(StringEventCallback callback) {
     int id = stringEventCallbacks.size();
-    stringEventCallbacks.push_back(std::move(callback));
+    // Wrap user callback with auto-invalidate
+    stringEventCallbacks.push_back([this, callback = std::move(callback)](const std::string& value) {
+        callback(value);
+        this->scheduleRender();
+    });
     return id;
 }
 

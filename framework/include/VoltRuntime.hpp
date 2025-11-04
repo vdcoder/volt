@@ -19,24 +19,30 @@ namespace volt {
 
 using namespace emscripten;
 
+// Forward declaration
+class VoltRuntime;
+
+// ============================================================================
+// IRuntime - Public interface for components
+// ============================================================================
+class IRuntime {
+public:
+    virtual void scheduleRender() = 0;
+    virtual ~IRuntime() = default;
+};
+
 // ============================================================================
 // VoltRuntime - Isolated runtime for a single app instance
 // ============================================================================
 
-class VoltRuntime {
+class VoltRuntime : public IRuntime {
 public:
     // Callback types
     using EventCallback = std::function<void()>;
     using StringEventCallback = std::function<void(const std::string&)>;
     
     // Base app interface
-    class IInvalidator {
-    public:
-        virtual void invalidate() = 0;
-        virtual ~IInvalidator() = default;
-    };
-    
-    class AppBase : public IInvalidator {
+    class AppBase {
     private:
         VoltRuntime* runtime;
         
@@ -44,7 +50,7 @@ public:
         AppBase(VoltRuntime* rt) : runtime(rt) {}
         virtual ~AppBase() = default;
         
-        void invalidate() override {
+        void invalidate() {
             if (runtime) {
                 runtime->scheduleRender();
             }
@@ -53,23 +59,29 @@ public:
         // Get runtime pointer for creating child components
         VoltRuntime* getRuntime() { return runtime; }
         
+        // Lifecycle: Called once after mount, before first render
+        virtual void start() {}
+        
         // Render method to be implemented by user's app
         virtual VNode render() = 0;
     };
 
-    class ComponentBase : public IInvalidator {
+    class ComponentBase {
     private:
-        IInvalidator* parent;
+        IRuntime* runtime;
         
     public:
-        ComponentBase(IInvalidator* p) : parent(p) {}
+        ComponentBase(IRuntime* rt) : runtime(rt) {}
         virtual ~ComponentBase() = default;
 
-        void invalidate() override {
-            if (parent) {
-                parent->invalidate();  // Propagate to parent
+        void invalidate() {
+            if (runtime) {
+                runtime->scheduleRender();
             }
         }
+        
+        // Get runtime interface for creating child components
+        IRuntime* getRuntime() { return runtime; }
     };
 
 private:
@@ -97,6 +109,9 @@ public:
     // Destructor: Clean up DOM and callbacks
     ~VoltRuntime();
     
+    // IRuntime interface implementation
+    void scheduleRender() override;
+    
     // Mount an app to this runtime
     template<typename TApp>
     void mount() {
@@ -104,6 +119,7 @@ public:
                       "App must inherit from VoltRuntime::AppBase");
         
         app = std::make_unique<TApp>(this);
+        app->start();  // Call lifecycle method
         scheduleRender();
     }
     

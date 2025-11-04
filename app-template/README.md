@@ -40,12 +40,13 @@ VNode render() override {
     return div({style("padding: 20px;")},
         h1("Hello World"),
         button({onClick([this]() {
-            // Handle click
-            invalidate(); // Trigger re-render
+            // Handle click - auto-invalidate!
         })}, "Click Me")
     );
 }
 ```
+
+**Note**: Event handlers automatically trigger re-renders. Manual `invalidate()` only needed for non-event updates (timers, async operations).
 
 ## 🔧 Build Options
 

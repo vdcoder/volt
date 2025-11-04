@@ -66,12 +66,10 @@ public:
         return div({style("font-family: sans-serif; padding: 20px;")},
             h1("Counter: " + std::to_string(count)),
             button({onClick([this]() { 
-                count++; 
-                invalidate();  // Triggers re-render
+                count++;  // Auto-invalidate - no manual call needed
             })}, "Increment"),
             button({onClick([this]() { 
-                count--; 
-                invalidate();
+                count--;  // Auto-invalidate
             })}, "Decrement")
         );
     }
@@ -123,7 +121,7 @@ cd output && python3 -m http.server 8001
 
 1. **Component Definition**: Create classes extending `VoltApp` with a `render()` method
 2. **Virtual DOM**: `render()` returns a `VNode` tree describing your UI
-3. **Efficient Updates**: When state changes, call `invalidate()` to trigger a diff
+3. **Efficient Updates**: When state changes in event handlers, auto-invalidate triggers a diff
 4. **Smart Patching**: Only the changed parts of the DOM are updated
 
 ## 📦 Project Structure
@@ -165,16 +163,19 @@ volt/
 
 - **`VoltRuntime::AppBase`**: Base class for applications
   - `render()`: Returns `VNode` tree representing UI
-  - `invalidate()`: Triggers re-render on next frame
+  - `start()`: Optional lifecycle method called once after mount
+  - `invalidate()`: Manually trigger re-render (auto-called for event handlers)
 
 - **`VoltRuntime::ComponentBase`**: Base class for reusable components
+  - Receives `IRuntime*` interface for safe runtime access
   - Flexible `render(...)` with custom parameters
-  - `invalidate()`: Triggers parent re-render
+  - Auto-invalidate in event handlers
   - See [COMPONENTS.md](COMPONENTS.md) for detailed guide
 
 - **`VoltRuntime`**: Manages app lifecycle and rendering
-  - `mount<TApp>()`: Mounts app to DOM element
+  - `mount<TApp>()`: Mounts app to DOM element, calls `start()`
   - Handles diffing, patching, and event callbacks
+  - Implements `IRuntime` interface for component safety
 
 ### Building UI
 

@@ -4,6 +4,12 @@
 
 Volt supports flexible component composition using `VoltRuntime::ComponentBase`. Unlike apps (which have a fixed `render()` signature), components can define custom render signatures, making them highly reusable and composable.
 
+**Key Concepts:**
+- Components receive `IRuntime*` interface (not full VoltRuntime access)
+- **Auto-invalidate**: Event handlers automatically trigger re-renders - no manual `invalidate()` needed
+- `IRuntime*` pointer is safe to capture in async callbacks (lives until unmount)
+- Use `getRuntime()` to pass runtime interface to child components
+
 ## Two Component Patterns
 
 ### Pattern 1: Stateless Components (Inline)
@@ -13,23 +19,19 @@ Stateless components are created inline and used immediately:
 ```cpp
 class Button : public VoltRuntime::ComponentBase {
 public:
-    Button(VoltRuntime::IInvalidator* parent) : ComponentBase(parent) {}
+    Button(VoltRuntime::IRuntime* runtime) : ComponentBase(runtime) {}
     
     VNode render(const std::string& label, std::function<void()> onClick) {
-        return button({
-            onClick([onClick, this]() {
-                onClick();
-                invalidate();  // Trigger parent re-render
-            })
-        }, label);
+        // Auto-invalidate: no need to call invalidate() in event handlers
+        return button({onClick(onClick)}, label);
     }
 };
 
 // Usage in App::render()
 VNode render() override {
     return div({},
-        Button(this).render("Click Me", [this]() { 
-            count++; 
+        Button(getRuntime()).render("Click Me", [this]() { 
+            count++;  // Auto-invalidate handles re-render
         })
     );
 }
@@ -50,19 +52,17 @@ private:
     int count = 0;
     
 public:
-    Counter(VoltRuntime::IInvalidator* parent, int initial = 0) 
-        : ComponentBase(parent), count(initial) {}
+    Counter(VoltRuntime::IRuntime* runtime, int initial = 0) 
+        : ComponentBase(runtime), count(initial) {}
     
     VNode render(const std::string& label) {
         return div({},
-            h3({}, label + ": " + std::to_string(count)),
+            h3(label + ": " + std::to_string(count)),
             button({onClick([this]() { 
-                count++; 
-                invalidate(); 
+                count++;  // Auto-invalidate
             })}, "+"),
             button({onClick([this]() { 
-                count--; 
-                invalidate(); 
+                count--;  // Auto-invalidate
             })}, "-")
         );
     }
@@ -79,8 +79,8 @@ private:
 public:
     MyApp(VoltRuntime* runtime) 
         : AppBase(runtime), 
-          counter1(this, 0), 
-          counter2(this, 10) {}
+          counter1(getRuntime(), 0), 
+          counter2(getRuntime(), 10) {}
     
     VNode render() override {
         return div({},

@@ -6,9 +6,10 @@ Volt is a C++ WebAssembly UI framework with Virtual DOM, focusing on performance
 
 **Core Architecture Pattern:**
 - Apps inherit `VoltRuntime::AppBase`, implement `render()` → `VNode` tree
-- Call `invalidate()` after state changes to trigger re-render
+- **Auto-invalidate**: Event callbacks automatically trigger re-render (no manual `invalidate()` needed)
 - Virtual DOM diffing/patching happens automatically via `VoltRuntime`
 - Event callbacks registered during render, cleared each frame
+- **Lifecycle**: Optional `start()` method called once after mount, before first render
 
 ## Essential File Patterns
 
@@ -21,12 +22,16 @@ private:
 public:
     MyApp(VoltRuntime* runtime) : AppBase(runtime) {}
     
+    // Optional: Called once after mount, before first render
+    void start() override {
+        // Initialize state, fetch data, etc.
+    }
+    
     VNode render() override {
         return div({style("...")},
             h1("Title"),
             button({onClick([this]() { 
-                state++; 
-                invalidate();  // ALWAYS call after state change
+                state++;  // No invalidate() needed - auto-invalidate!
             })}, "Click")
         );
     }
@@ -34,10 +39,11 @@ public:
 ```
 
 ### Component Pattern
-- **ComponentBase**: For reusable components with flexible `render()` signatures
-- **Stateless**: `Button(this).render("Label", callback)` - created inline, no state
-- **Stateful**: `Counter counter(this, 0);` as member - maintains state across renders
-- Components call `invalidate()` to trigger parent re-render
+- **IRuntime interface**: Components receive `IRuntime*` (not full VoltRuntime access)
+- **Stateless**: `Button(getRuntime()).render("Label", callback)` - created inline, no state
+- **Stateful**: `Counter counter(getRuntime(), 0);` as member - maintains state across renders
+- **Auto-invalidate**: Components don't call `invalidate()` - handled automatically
+- **Runtime safety**: `IRuntime*` pointer safe for async callbacks (lives until unmount)
 - See `COMPONENTS.md` for comprehensive patterns
 
 ### Virtual DOM (VNode.hpp)
@@ -60,17 +66,20 @@ public:
 ### Event Handling
 ```cpp
 // Event helpers register callbacks with currentRuntime during render
-onClick([this]() { /* handler */ })  // Returns pair<short, string>
+// Auto-invalidate: scheduleRender() called automatically after callback
+onClick([this]() { /* handler - no invalidate needed */ })
 onInput([this](const std::string& val) { /* handler with value */ })
 ```
 - Callbacks stored in `VoltRuntime` vectors, cleared each frame
 - Event IDs passed to JS, invoke via `invokeEventCallback(id)`
+- **Auto-invalidate wrapping**: User callbacks automatically trigger re-render
 
 ### State Management
 - **Local state** in app class members
-- **Always call `invalidate()`** after mutations
+- **No manual invalidate**: Auto-invalidate in event handlers
 - **Computed properties** as member functions called in `render()`
 - **No built-in state management** - use standard C++ patterns
+- **Manual invalidate available**: Call `invalidate()` for non-event updates (timers, async)
 
 ### Multiple Instances (`ADVANCED.md`)
 - Each app needs unique GUID: `VOLT_GUID='app1' ./build.sh`
@@ -108,6 +117,7 @@ cd output && python3 -m http.server 8001
 - **Frame-scoped callbacks** cleared after each render
 - **Callback registration** only during render phase
 - **Direct JS invocation** via callback IDs, no string lookups
+- **Auto-invalidate wrapping**: User callbacks wrapped to automatically trigger re-render
 
 ### WASM Optimization
 - **Single translation unit** compilation for better optimization
@@ -116,16 +126,19 @@ cd output && python3 -m http.server 8001
 
 ## Common Anti-patterns
 
-❌ **Wrong**: Forgetting `invalidate()` after state change
+❌ **Wrong**: Manually calling `invalidate()` in event handlers (auto-invalidate does this)
 ❌ **Wrong**: Storing callbacks outside render phase  
 ❌ **Wrong**: Manual DOM manipulation (bypasses Virtual DOM)
 ❌ **Wrong**: Using same GUID for multiple instances
 ❌ **Wrong**: Including implementation files instead of single TU pattern
+❌ **Wrong**: Passing `VoltRuntime*` to components (use `IRuntime*` from `getRuntime()`)
 
-✅ **Right**: Always call `invalidate()` immediately after state mutations
+✅ **Right**: Let auto-invalidate handle re-renders after event callbacks
+✅ **Right**: Use `invalidate()` only for non-event updates (timers, async fetch)
 ✅ **Right**: Let Virtual DOM handle all DOM operations
 ✅ **Right**: Use 4-overload pattern for clean element construction
 ✅ **Right**: Include `VoltRuntime.cpp` in main.cpp for optimal builds
+✅ **Right**: Pass `getRuntime()` to child components for proper encapsulation
 
 ## Key Dependencies & Integration
 

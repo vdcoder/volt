@@ -19,14 +19,13 @@ public:
             p("Counter: " + std::to_string(counter)),
 
             // Using reusable Button component
-            Button(this).render("Increment", [this]() {
+            // Note: No need to call invalidate() - auto-invalidate in event handlers
+            Button(getRuntime()).render("Increment", [this]() {
                 counter++;
-                invalidate();
             }, "primary"),
             
-            Button(this).render("Reset", [this]() {
+            Button(getRuntime()).render("Reset", [this]() {
                 counter = 0;
-                invalidate();
             }, "danger")
         );
     }

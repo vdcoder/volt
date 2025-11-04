@@ -8,7 +8,7 @@ using namespace volt;
 // ============================================================================
 class Button : public VoltRuntime::ComponentBase {
 public:
-    Button(VoltRuntime::IInvalidator* parent) : ComponentBase(parent) {}
+    Button(VoltRuntime::IRuntime* runtime) : ComponentBase(runtime) {}
     
     VNode render(
         const std::string& label, 
@@ -28,11 +28,10 @@ public:
             variantStyle = "background: #6c757d; color: white;";
         }
         
+        // No need to capture 'this' - auto-invalidate handles it
         return button({
             style(baseStyle + variantStyle),
-            onClick([this, onButtonClick]() {
-                onButtonClick();
-            })
+            onClick(onButtonClick)
         }, label);
     }
 };

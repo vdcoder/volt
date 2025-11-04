@@ -22,20 +22,19 @@ python3 -m http.server 8001
 #include <Volt.hpp>
 using namespace volt;
 
-class MyApp : public VoltApp {
+class MyApp : public VoltRuntime::AppBase {
 private:
     int state = 0;
-    
-    void updateState() {
-        state++;
-        invalidate();  // Trigger re-render
-    }
 
 public:
+    MyApp(VoltRuntime* runtime) : AppBase(runtime) {}
+    
     VNode render() override {
         return div(
             h1("Title"),
-            button({ onClick([this] { updateState(); }) }, "Click")
+            button({onClick([this]() { 
+                state++;  // Auto-invalidate - no manual call needed
+            })}, "Click")
         );
     }
 };
