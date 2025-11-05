@@ -123,9 +123,6 @@ public:
         scheduleRender();
     }
     
-    // Schedule a render on the next frame
-    void scheduleRender();
-    
     // Callback registry (called by Attrs.hpp helper functions)
     int registerEventCallback(EventCallback callback);
     int registerStringEventCallback(StringEventCallback callback);

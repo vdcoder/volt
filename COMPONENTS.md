@@ -19,7 +19,7 @@ Stateless components are created inline and used immediately:
 ```cpp
 class Button : public VoltRuntime::ComponentBase {
 public:
-    Button(VoltRuntime::IRuntime* runtime) : ComponentBase(runtime) {}
+    Button(IRuntime* runtime) : ComponentBase(runtime) {}
     
     VNode render(const std::string& label, std::function<void()> onClick) {
         // Auto-invalidate: no need to call invalidate() in event handlers
@@ -52,7 +52,7 @@ private:
     int count = 0;
     
 public:
-    Counter(VoltRuntime::IRuntime* runtime, int initial = 0) 
+    Counter(IRuntime* runtime, int initial = 0) 
         : ComponentBase(runtime), count(initial) {}
     
     VNode render(const std::string& label) {
