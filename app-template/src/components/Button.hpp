@@ -6,13 +6,14 @@ using namespace volt;
 // ============================================================================
 // Button Component - Stateless, reusable button with customizable appearance
 // ============================================================================
-class Button : public VoltRuntime::ComponentBase {
+class Button : public ComponentBase {
 public:
-    Button(IRuntime* runtime) : ComponentBase(runtime) {}
+    Button(IVoltRuntime* a_pRuntime) : ComponentBase(a_pRuntime) {}
     
-    VNode render(
+    VNodeHandle render(
+        x::KeyGuard kg,
         const std::string& label, 
-        std::function<void()> onButtonClick,
+        std::function<void(emscripten::val)> onButtonClick,
         const std::string& variant = "primary"
     ) {
         // Define button styles based on variant
@@ -29,9 +30,9 @@ public:
         }
         
         // No need to capture 'this' - auto-invalidate handles it
-        return button({
-            style(baseStyle + variantStyle),
-            onClick(onButtonClick)
+        return tag::button(x::key_i(0), {
+            attr::style(baseStyle + variantStyle),
+            attr::onClick(onButtonClick)
         }, label);
     }
 };

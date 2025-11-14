@@ -4,223 +4,130 @@
 #include <string>
 #include <memory>
 #include <algorithm>
-#include "String.hpp"
+#include <functional>
 #include "Attrs.hpp"
+#include "Tags.hpp"
+#include "StableKeyManager.hpp"
+#include "VNodeHandle.hpp"
 
-// ============================================================================
-// HTML Tag Enum - For performance
-// ============================================================================
-enum class Tag {
-    TEXT,       // Special tag for text nodes
-    FRAGMENT,   // Special tag for fragment containers (invisible wrapper)
-    DIV,
-    SPAN,
-    H1,
-    H2,
-    H3,
-    H4,
-    H5,
-    H6,
-    P,
-    A,
-    BUTTON,
-    INPUT,
-    TEXTAREA,
-    SELECT,
-    OPTION,
-    UL,
-    OL,
-    LI,
-    TABLE,
-    THEAD,
-    TBODY,
-    TR,
-    TD,
-    TH,
-    FORM,
-    LABEL,
-    IMG,
-    BR,
-    HR,
-    // Add more as needed
-};
-
-// Helper to convert Tag enum to string
-inline const char* tagToString(Tag tag) {
-    switch (tag) {
-        case Tag::TEXT: return "#text";
-        case Tag::FRAGMENT: return "#fragment";
-        case Tag::DIV: return "div";
-        case Tag::SPAN: return "span";
-        case Tag::H1: return "h1";
-        case Tag::H2: return "h2";
-        case Tag::H3: return "h3";
-        case Tag::H4: return "h4";
-        case Tag::H5: return "h5";
-        case Tag::H6: return "h6";
-        case Tag::P: return "p";
-        case Tag::A: return "a";
-        case Tag::BUTTON: return "button";
-        case Tag::INPUT: return "input";
-        case Tag::TEXTAREA: return "textarea";
-        case Tag::SELECT: return "select";
-        case Tag::OPTION: return "option";
-        case Tag::UL: return "ul";
-        case Tag::OL: return "ol";
-        case Tag::LI: return "li";
-        case Tag::TABLE: return "table";
-        case Tag::THEAD: return "thead";
-        case Tag::TBODY: return "tbody";
-        case Tag::TR: return "tr";
-        case Tag::TD: return "td";
-        case Tag::TH: return "th";
-        case Tag::FORM: return "form";
-        case Tag::LABEL: return "label";
-        case Tag::IMG: return "img";
-        case Tag::BR: return "br";
-        case Tag::HR: return "hr";
-        default: return "div";
-    }
-}
+namespace volt {
 
 // ============================================================================
 // VNode - Virtual DOM Node
 // ============================================================================
+
 class VNode {
 public:
-    Tag tag;
-    std::vector<std::pair<short, std::string>> props;  // Changed from map to vector!
-    std::vector<VNode> children;
+    // Constructor
+    VNode(tag::ETag a_nTag);
 
-    // Constructor for element nodes
-    VNode(Tag t, std::vector<std::pair<short, std::string>> p = {}, std::vector<VNode> c = {})
-        : tag(t), props(std::move(p)), children(std::move(c)) {
-        // Sort props by attribute ID for efficient diffing
-        std::sort(props.begin(), props.end(), 
-            [](const auto& a, const auto& b) { return a.first < b.first; });
+    // Runtime functions
+    // -----
+
+    bool bubbleCallback(std::string a_eventName, emscripten::val a_event) {
+        auto it = m_bubbleEvents.find(a_eventName);
+        if (it != m_bubbleEvents.end()) {
+            it->second(a_event);
+            return true;
+        }
+        return false;
     }
-    
-    // Implicit conversion from std::string to text node
-    VNode(const std::string& textContent)
-        : tag(Tag::TEXT), props({{ATTR_TEXT_CONTENT, textContent}}), children({}) {}
-    
-    // Implicit conversion from const char* to text node
-    VNode(const char* textContent)
-        : tag(Tag::TEXT), props({{ATTR_TEXT_CONTENT, textContent}}), children({}) {}
+
+    // Render functions
+    // -----
+    tag::ETag getTag() { return m_nTag; }
+    std::vector<std::pair<short, std::string>>& getProps() { return m_props; }
+    std::unordered_map<std::string, std::function<void(emscripten::val)>>& getBubbleEvents() { return m_bubbleEvents; }
+    std::vector<std::pair<short, std::function<void(emscripten::val)>>>& getNonBubbleEvents() { return m_nonBubbleEvents; }
+    std::vector<VNode*>& getChildren() { return m_children; }
+
+    // Setup VNode data
+    void reuse(tag::ETag a_nTag);
+    void setStableKey(StableKeyManager::StableKey a_stableKey);
+    void setProps(std::vector<std::pair<short, std::string>> a_props);
+    void setBubbleEvents(std::unordered_map<std::string, std::function<void(emscripten::val)>> a_events);
+    void setNonBubbleEvents(std::vector<std::pair<short, std::function<void(emscripten::val)>>> a_events);
+    void setChildren(std::vector<VNode*> a_children);
+
+    // Set as text node
+    void setAsText(std::string a_sTextContent);
 
     // Check if this is a text node
-    bool isText() const {
-        return tag == Tag::TEXT;
-    }
+    bool isText() const { return m_nTag == tag::ETag::_TEXT; }
     
     // Check if this is a fragment node
-    bool isFragment() const {
-        return tag == Tag::FRAGMENT;
-    }
+    bool isFragment() const { return m_nTag == tag::ETag::_FRAGMENT; }
 
     // Get text content (only valid for TEXT nodes)
-    std::string getText() const {
-        if (isText() && !props.empty() && props[0].first == ATTR_TEXT_CONTENT) {
-            return props[0].second;
+    std::string getText() const;
+
+    // Intrusive
+    StableKeyManager::StableKey& getStableKey() { return m_stableKey; }
+    VNode* getMatchingOldNode() const { return m_pMatchingOldNode; }
+    void setMatchingOldNode(VNode* a_pNode) { m_pMatchingOldNode = a_pNode; }
+    emscripten::val getMatchingElement() const { return m_matchingElement; }
+    void setMatchingElement(emscripten::val a_element) { m_matchingElement = a_element; }
+    VNode* getNext() const { return m_pNext; }
+    void setNext(VNode* a_pNode) { m_pNext = a_pNode; }
+    void setParent(VNode* a_pParent) { m_pParent = a_pParent; }
+    VNode* getParent() const { return m_pParent; }
+    void unlink() {
+        if (m_pParent) {
+            bool found = m_pParent->m_children[0] == this;
+            for (size_t i = 1; i < m_pParent->m_children.size(); ++i) {
+                if (found)
+                    m_pParent->m_children[i - 1] = m_pParent->m_children[i];
+                found = found || (m_pParent->m_children[i] == this);
+            }
+            if (found)
+                m_pParent->m_children.pop_back();
+            m_pParent = nullptr;
         }
-        return "";
     }
+
+private:
+    std::unordered_map<std::string, std::function<void(emscripten::val)>> m_bubbleEvents;
+
+    tag::ETag m_nTag;
+    std::vector<std::pair<short, std::string>> m_props; // Kept sorted for efficient diffing
+    std::vector<std::pair<short, std::function<void(emscripten::val)>>> m_nonBubbleEvents; // Kept sorted for efficient diffing
+    std::vector<VNode*> m_children;
+
+    // Intrusive storage for efficient reconciliation
+    StableKeyManager::StableKey m_stableKey;  // Stable identifier for generational matching
+    VNode* m_pMatchingOldNode = nullptr; // Pointer to the matching old node if available for diff/patch
+    emscripten::val m_matchingElement = emscripten::val::undefined();  // Associated DOM element handle when available
+    VNode* m_pNext = nullptr; // For hash bucket chaining and free list
+    VNode* m_pParent = nullptr; // Needed to remove from parent during diff/patch
 };
 
 // ============================================================================
-// Helper Functions - Create text nodes
+// Text Helper - Transparent container for textual content
 // ============================================================================
-inline VNode text(const std::string& content) {
-    // Text nodes use a special prop to store content
-    return VNode(Tag::TEXT, {{ATTR_TEXT_CONTENT, content}});
-}
-
-inline VNode text(const String& content) {
-    return VNode(Tag::TEXT, {{ATTR_TEXT_CONTENT, content.std_str()}});
-}
-
-inline VNode text(const char* content) {
-    return VNode(Tag::TEXT, {{ATTR_TEXT_CONTENT, content}});
-}
+inline VNodeHandle text(std::string a_sTextContent);
 
 // ============================================================================
 // Fragment Helper - Transparent container for grouping nodes
 // ============================================================================
-inline VNode fragment(std::vector<VNode> children) {
-    return VNode(Tag::FRAGMENT, {}, std::move(children));
-}
+inline VNodeHandle fragment(std::vector<VNodeHandle> children);
 
-// Map helper - Creates a fragment with mapped children
-template<typename Container, typename Func>
-inline VNode map(const Container& container, Func mapper) {
-    std::vector<VNode> children;
-    children.reserve(container.size());
-    for (const auto& item : container) {
-        children.push_back(mapper(item));
-    }
-    return fragment(std::move(children));
-}
+template<typename... Children>
+inline VNodeHandle fragment(Children&&... children);
 
 // ============================================================================
-// HTML Element Helper Functions (with elegant overloads)
+// Map Helper - Creates a fragment with mapped children
+// ============================================================================
+// Usage:
+//   map(users, [](const User& u, auto key) {
+//       key(std::to_string(u.id));  // Optional: set stable key
+//       return <div>(<h1>(<text>(u.name)), <p>(u.email));
+//   })
+//
+// If you don't call key(), it uses positional index automatically.
+// Calling key() provides stable identity for efficient list reconciliation.
 // ============================================================================
 
-// Macro to generate overloads for a tag using variadic templates
-// This allows natural syntax: div({props}, child1, child2, "text", ...)
-#define VNODE_TAG_HELPER(tagName, tagEnum) \
-    inline VNode tagName() { \
-        return VNode(Tag::tagEnum, {}, {}); \
-    } \
-    inline VNode tagName(std::vector<std::pair<short, std::string>> props) { \
-        return VNode(Tag::tagEnum, std::move(props), {}); \
-    } \
-    template<typename... Children> \
-    inline VNode tagName(Children&&... children) { \
-        return VNode(Tag::tagEnum, {}, {std::forward<Children>(children)...}); \
-    } \
-    template<typename... Children> \
-    inline VNode tagName(std::vector<std::pair<short, std::string>> props, Children&&... children) { \
-        return VNode(Tag::tagEnum, std::move(props), {std::forward<Children>(children)...}); \
-    }
+template<typename Container, typename Renderer>
+inline VNodeHandle map(const Container& container, Renderer renderer);
 
-// Macro for self-closing tags (no children): (props), ()
-#define VNODE_SELFCLOSING_HELPER(tagName, tagEnum) \
-    inline VNode tagName(std::vector<std::pair<short, std::string>> props) { \
-        return VNode(Tag::tagEnum, std::move(props), {}); \
-    } \
-    inline VNode tagName() { \
-        return VNode(Tag::tagEnum, {}, {}); \
-    }
-
-// Common HTML elements
-VNODE_TAG_HELPER(div, DIV)
-VNODE_TAG_HELPER(span, SPAN)
-VNODE_TAG_HELPER(h1, H1)
-VNODE_TAG_HELPER(h2, H2)
-VNODE_TAG_HELPER(h3, H3)
-VNODE_TAG_HELPER(h4, H4)
-VNODE_TAG_HELPER(h5, H5)
-VNODE_TAG_HELPER(h6, H6)
-VNODE_TAG_HELPER(p, P)
-VNODE_TAG_HELPER(a, A)
-VNODE_TAG_HELPER(button, BUTTON)
-VNODE_TAG_HELPER(textarea, TEXTAREA)
-VNODE_TAG_HELPER(select, SELECT)
-VNODE_TAG_HELPER(option, OPTION)
-VNODE_TAG_HELPER(ul, UL)
-VNODE_TAG_HELPER(ol, OL)
-VNODE_TAG_HELPER(li, LI)
-VNODE_TAG_HELPER(table, TABLE)
-VNODE_TAG_HELPER(thead, THEAD)
-VNODE_TAG_HELPER(tbody, TBODY)
-VNODE_TAG_HELPER(tr, TR)
-VNODE_TAG_HELPER(td, TD)
-VNODE_TAG_HELPER(th, TH)
-VNODE_TAG_HELPER(form, FORM)
-VNODE_TAG_HELPER(label, LABEL)
-
-// Self-closing elements
-VNODE_SELFCLOSING_HELPER(input, INPUT)
-VNODE_SELFCLOSING_HELPER(img, IMG)
-VNODE_SELFCLOSING_HELPER(br, BR)
-VNODE_SELFCLOSING_HELPER(hr, HR)
+} // namespace volt

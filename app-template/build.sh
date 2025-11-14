@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Temporary for dev only: update app directly from repo
+cp -r /mnt/c/Users/vdcod/OneDrive/Desktop/OneDrive/vdcoder.com/volt/framework/include/* dependencies/volt/include/
+cp -r /mnt/c/Users/vdcod/OneDrive/Desktop/OneDrive/vdcoder.com/volt/app-template/src/* src/
+cp -r /mnt/c/Users/vdcod/OneDrive/Desktop/OneDrive/vdcoder.com/volt/app-template/src/components/* src/components/
+cp -r /mnt/c/Users/vdcod/OneDrive/Desktop/OneDrive/vdcoder.com/volt/app-template/build.sh* build.sh
+cp -r /mnt/c/Users/vdcod/OneDrive/Desktop/OneDrive/vdcoder.com/volt/app-template/index.html* index.html
+
 # ⚡ Volt App - Build Script
 
 set -e
@@ -33,13 +40,17 @@ emcc src/main.cpp \
     -o output/app.js \
     -lembind \
     -std=c++17 \
-    -O3 \
     -s WASM=1 \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s MODULARIZE=1 \
     -s EXPORT_NAME="VoltApp" \
     -s EXPORTED_RUNTIME_METHODS='["ccall","cwrap"]' \
-    --bind
+    --bind \
+    -O0 \
+    -g
+# -O0 is for debugging
+# -g is for debugging
+# > -O3 is for best optimization
 
 # Copy HTML
 cp index.html output/

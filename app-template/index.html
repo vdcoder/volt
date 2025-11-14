@@ -102,12 +102,37 @@
       // Get the namespace for this app
       const voltNamespace = Module.getVoltNamespace();
       console.log('🔧 Using namespace:', voltNamespace);
-      
-      // Expose volt API globally with app-specific namespace
-      window[voltNamespace] = {
-        invokeEventCallback: Module.invokeEventCallback,
-        invokeStringEventCallback: Module.invokeStringEventCallback
-      };
+
+      const appContainerElement = document.getElementById('app-container');
+
+      // Setup event bubbling from DOM to Volt
+      [
+        'click',
+        'input',
+        'change',
+        'submit',
+        'keydown',
+        'keyup',
+        'keypress',
+        'mousedown',
+        'mouseup',
+        'mousemove',
+        'focusin',
+        'focusout'
+      ].forEach(eventType => {
+        appContainerElement.addEventListener(eventType, function(event) {
+          // Bubble click events to Volt
+          let target = event.target;
+          while (target && target !== this) {
+              // Check for the existence of our custom pointer property
+              if (target.__cpp_ptr) {
+                  Module.invokeBubbleEvent(target.__cpp_ptr, event);
+                  return; 
+              }
+              target = target.parentNode;
+          }
+        });
+      });
       
       // Create the runtime and mount the app
       Module.createRuntime();

@@ -22,6 +22,8 @@
 
 namespace volt {
 
+namespace config {
+
 // Sanitize GUID for use as JavaScript identifier (replace invalid chars with _)
 inline std::string sanitizeForJs(const std::string& str) {
     std::string result = str;
@@ -49,5 +51,7 @@ inline std::string getVoltNamespace() {
 inline std::string getVoltJsGlobal() {
     return getVoltNamespace();
 }
+
+} // namespace config
 
 } // namespace volt

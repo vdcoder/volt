@@ -10,19 +10,32 @@
 //   using namespace volt;
 // ============================================================================
 
-// Core runtime
-#include "VoltRuntime.hpp"
-#include "VoltEvents.hpp"
-#include "VoltConfig.hpp"
+#include <string>
+void log(const std::string& a_sMessage);
 
-// Virtual DOM
-#include "VNode.hpp"
+#include "VoltConfig.hpp"
+#include "DOM.hpp"
+#include "StableKeyManager.hpp"
+#include "IVoltRuntime.hpp"
+#include "ComponentBase.hpp"
+#include "AppBase.hpp"
+#include "VoltRuntime.hpp"
+#include "RenderingRuntime.hpp"
 #include "Attrs.hpp"
-#include "Diff.hpp"
-#include "Patch.hpp"
+#include "VNode.hpp"
+#include "VoltDiffPatch.hpp"
 
 // Utilities
+#include "Shortcuts.hpp"
 #include "String.hpp"
+
+// Implementation files
+#include "VoltImpl.hpp"
+
+void log(const std::string& a_sMessage) {
+    emscripten::val console = emscripten::val::global("console");
+    console.call<void>("log", a_sMessage);
+}
 
 // For convenience, you can use:
 // using namespace volt;
