@@ -17,8 +17,6 @@ namespace volt {
 // ASSUMPTION! Constructor with stable key, assumed to be non-default
 VNodeHandle::VNodeHandle(tag::ETag a_nTag, StableKeyManager::StableKey a_stableKey, std::vector<std::pair<short, PropValueType>> a_props, std::vector<VNodeHandle> a_children) 
     : VNodeHandle(a_nTag, std::move(a_props), std::move(a_children)) {
-    log("VNodeHandle::VNodeHandle(1): in");
-
     // Set stable key: take id if available
     std::string sId;
     for (const auto& prop : a_props) {
@@ -36,13 +34,9 @@ VNodeHandle::VNodeHandle(tag::ETag a_nTag, StableKeyManager::StableKey a_stableK
     // Use key to match and link this VNode with old generations' data
     StableKeyManager & keyManager = g_pRenderingRuntime->getKeyManager();
     keyManager.matchVNode(m_pNode); // ASSUMPTION! Assumes to be non-default stable key
-
-    log("VNodeHandle::VNodeHandle(1): out");
 }
 
 VNodeHandle::VNodeHandle(tag::ETag a_nTag, std::vector<std::pair<short, PropValueType>> a_props, std::vector<VNodeHandle> a_children) {
-    log("VNodeHandle::VNodeHandle(2): in");
-
     m_pNode = g_pRenderingRuntime->recycleVNode();
     m_pNode->reuse(a_nTag);
 
@@ -85,22 +79,15 @@ VNodeHandle::VNodeHandle(tag::ETag a_nTag, std::vector<std::pair<short, PropValu
         }
     }
     m_pNode->setChildren(std::move(children));
-
-    log("VNodeHandle::VNodeHandle(2): out");
 }
 
 VNodeHandle::VNodeHandle(std::string a_sTextContent) {
-    log("VNodeHandle::VNodeHandle(std::string a_sTextContent): in " + a_sTextContent);
-
     m_pNode = g_pRenderingRuntime->recycleVNode();
     
     m_pNode->setAsText(a_sTextContent);
-    
-    log("VNodeHandle::VNodeHandle(std::string a_sTextContent): out");
 }
 
 VNodeHandle::VNodeHandle(VNode * a_pNode) : m_pNode(a_pNode) {
-    log("VNodeHandle::VNodeHandle(3): in out");
 }
 
 } // namespace volt

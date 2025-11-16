@@ -4,8 +4,8 @@
 cp -r /mnt/c/Users/vdcod/OneDrive/Desktop/OneDrive/vdcoder.com/volt/framework/include/* dependencies/volt/include/
 cp -r /mnt/c/Users/vdcod/OneDrive/Desktop/OneDrive/vdcoder.com/volt/app-template/src/* src/
 cp -r /mnt/c/Users/vdcod/OneDrive/Desktop/OneDrive/vdcoder.com/volt/app-template/src/components/* src/components/
-cp -r /mnt/c/Users/vdcod/OneDrive/Desktop/OneDrive/vdcoder.com/volt/app-template/build.sh* build.sh
-cp -r /mnt/c/Users/vdcod/OneDrive/Desktop/OneDrive/vdcoder.com/volt/app-template/index.html* index.html
+cp -r /mnt/c/Users/vdcod/OneDrive/Desktop/OneDrive/vdcoder.com/volt/app-template/build.sh build.sh
+cp -r /mnt/c/Users/vdcod/OneDrive/Desktop/OneDrive/vdcoder.com/volt/app-template/index.html index.html
 
 # ⚡ Volt App - Build Script
 

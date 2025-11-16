@@ -20,12 +20,12 @@ public:
 
             // Using reusable Button component
             // Note: No need to call invalidate() - auto-invalidate in event handlers
-            Button(getRuntime()).render(x::key_guard_i(3), "Increment", [this](emscripten::val e) {
+            Button(getRuntime()).render(3, "Increment", [this](emscripten::val e) {
                 log("Increment button clicked");
                 counter++;
             }, "primary"),
 
-            Button(getRuntime()).render(x::key_guard_i(4), "Reset", [this](emscripten::val e) {
+            Button(getRuntime()).render(4, "Reset", [this](emscripten::val e) {
                 log("Reset button clicked");
                 counter = 0;
             }, "danger"),

@@ -11,6 +11,8 @@ VNode::VNode(tag::ETag a_nTag) : m_nTag(a_nTag) {}
 void VNode::reuse(tag::ETag a_nTag) {
     m_nTag = a_nTag;
     m_props.clear();
+    m_bubbleEvents.clear();
+    m_nonBubbleEvents.clear();
     m_children.clear();
     m_stableKey.clear();
     m_pMatchingOldNode = nullptr;
@@ -45,12 +47,12 @@ void VNode::setChildren(std::vector<VNode*> a_children) {
 
 void VNode::setAsText(std::string a_sTextContent) {
     reuse(tag::ETag::_TEXT);
-    m_props.push_back({attr::ATTR_TEXTCONTENT, std::move(a_sTextContent)});
+    m_props.push_back({attr::ATTR_NODEVALUE, std::move(a_sTextContent)});
 }
 
 // Get text content (only valid for TEXT nodes)
 std::string VNode::getText() const {
-    if (isText() && !m_props.empty() && m_props[0].first == attr::ATTR_TEXTCONTENT) {
+    if (isText() && !m_props.empty() && m_props[0].first == attr::ATTR_NODEVALUE) {
         return m_props[0].second;
     }
     return "";

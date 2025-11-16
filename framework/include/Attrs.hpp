@@ -48,7 +48,7 @@ constexpr short ATTR_STYLE      = 200;
 constexpr short ATTR_CLASS      = 201;
 
 // Common attributes (210-299)
-constexpr short ATTR_TEXTCONTENT = 210;
+constexpr short ATTR_NODEVALUE  = 210;
 constexpr short ATTR_ID         = 211;
 constexpr short ATTR_TYPE       = 212;
 constexpr short ATTR_VALUE      = 213;
@@ -117,7 +117,7 @@ inline const char* attrIdToName(short id) {
         case ATTR_CLASS: return "class";
         
         // Common attributes
-        case ATTR_TEXTCONTENT: return "textContent";
+        case ATTR_NODEVALUE: return "nodeValue"; // Special case for keeping text nodes's string content
         case ATTR_ID: return "id";
         case ATTR_TYPE: return "type";
         case ATTR_VALUE: return "value";

@@ -15,9 +15,12 @@ private:
         std::vector<VNode*>& a_prevNodes,
         std::vector<VNode*>& a_newNodes,
         emscripten::val a_hContainer);
+    static void syncTextNodes(VNode* a_pNewNode, VNode* a_pPrevNode);
     static void syncNodes(VNode* a_pNewNode);
     static void bringAndSyncNodes(VNode* a_pNewNode, emscripten::val a_hContainer);
     static void addNode(VNode* a_pNewNode, emscripten::val a_hContainer);
+
+    static void transferNode(VNode* a_pNewNode, emscripten::val a_hElement);
 };
 
 }

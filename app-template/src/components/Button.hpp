@@ -11,11 +11,13 @@ public:
     Button(IVoltRuntime* a_pRuntime) : ComponentBase(a_pRuntime) {}
     
     VNodeHandle render(
-        x::KeyGuard kg,
+        int a_nStableKeyToken,
         const std::string& label, 
         std::function<void(emscripten::val)> onButtonClick,
         const std::string& variant = "primary"
     ) {
+        x::KeyGuard kg = x::key_guard_i(a_nStableKeyToken);
+
         // Define button styles based on variant
         std::string baseStyle = "padding: 10px 20px; margin: 5px; border: none; "
                                 "border-radius: 4px; cursor: pointer; font-size: 14px;";
