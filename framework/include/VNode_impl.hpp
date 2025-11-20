@@ -1,4 +1,5 @@
 #include "VNode.hpp"
+#include "Tags.hpp"
 
 namespace volt {
 
@@ -14,15 +15,10 @@ void VNode::reuse(tag::ETag a_nTag) {
     m_bubbleEvents.clear();
     m_nonBubbleEvents.clear();
     m_children.clear();
-    m_stableKey.clear();
-    m_pMatchingOldNode = nullptr;
+    m_sStableKeyPrefix.clear();
+    m_nStableKeyPosition = -1;
     m_matchingElement = emscripten::val::undefined();
-    m_pNext = nullptr;
     m_pParent = nullptr;
-}
-
-void VNode::setStableKey(StableKeyManager::StableKey a_stableKey) {
-    m_stableKey = std::move(a_stableKey);
 }
 
 void VNode::setProps(std::vector<std::pair<short, std::string>> a_props) {
@@ -39,6 +35,10 @@ void VNode::setBubbleEvents(std::unordered_map<std::string, std::function<void(e
 
 void VNode::setNonBubbleEvents(std::vector<std::pair<short, std::function<void(emscripten::val)>>> a_events) {
     m_nonBubbleEvents = std::move(a_events);
+
+    // Sort non-bubble events by attribute ID for efficient diffing
+    std::sort(m_nonBubbleEvents.begin(), m_nonBubbleEvents.end(), 
+        [](const auto& a_a, const auto& a_b) { return a_a.first < a_b.first; });
 }
 
 void VNode::setChildren(std::vector<VNode*> a_children) {
@@ -59,68 +59,37 @@ std::string VNode::getText() const {
 }
 
 // ============================================================================
-// Text Helper - Transparent container for textual content
+// Helpers
 // ============================================================================
-inline VNodeHandle text(std::string a_sTextContent) {
-    return VNodeHandle(a_sTextContent);
+
+template<typename Renderer>
+inline VNodeHandle code(Renderer a_fnRenderer) {
+    return a_fnRenderer();
 }
 
-// ============================================================================
-// Fragment Helper - Transparent container for grouping nodes
-// ============================================================================
-
-inline VNodeHandle fragment(std::vector<VNodeHandle> a_children) {
-    return VNodeHandle(tag::ETag::_FRAGMENT, StableKeyManager::StableKey(), {}, a_children);
+template<typename PropsGenerator>
+inline std::vector<std::pair<short, PropValueType>> code(PropsGenerator a_fnPropsGenerator) {
+    return a_fnPropsGenerator();
 }
 
-
-template<typename... Children>
-inline VNodeHandle fragment(Children&&... children) {
-    return VNodeHandle(tag::ETag::_FRAGMENT, StableKeyManager::StableKey(), {}, {std::forward<Children>(children)...});
+template<typename Renderer>
+inline VNodeHandle loop(int a_nRepeat, Renderer a_fnRenderer) {
+    std::vector<VNodeHandle> children;
+    children.reserve(a_nRepeat);
+    while (children.size() < a_nRepeat) {
+        children.push_back(a_fnRenderer(children.size()).track(children.size()));
+    }
+    return tag::_fragment(children);
 }
-
-// ============================================================================
-// Map Helper - Creates a fragment with mapped children
-// ============================================================================
-// Usage:
-//   map(users, [](const User& u, auto key) {
-//       key(std::to_string(u.id));  // Optional: set stable key
-//       return <div>(<h1>(u.name), <p>(u.email));
-//   })
-//
-// If you don't call key(), it uses positional index automatically.
-// Calling key() provides stable identity for proper list reconciliation.
-// ============================================================================
 
 template<typename Container, typename Renderer>
-inline VNodeHandle map(const Container& container, Renderer renderer) {
+inline VNodeHandle map(const Container& a_container, Renderer a_fnRenderer) {
     std::vector<VNodeHandle> children;
-    children.reserve(container.size());
-    int mapIndex = 0;
-    
-    for (const auto& item : container) {
-        // Push map index initially
-        g_pRenderingRuntime->getKeyManager().pushIntToken(mapIndex);
-        
-        // Callback for user to optionally set custom key
-        auto fnKey = [](const std::string& a_sKey) {
-            // Replace the index with a custom key
-            g_pRenderingRuntime->getKeyManager().popToken();  // Remove the index we just pushed
-            g_pRenderingRuntime->getKeyManager().pushStringToken(a_sKey);
-        };
-        
-        // Call renderer - it may call key() to set custom key
-        VNodeHandle child = renderer(item, fnKey);
-
-        children.push_back(child);
-
-        // Pop back to restore builder state
-        g_pRenderingRuntime->getKeyManager().popToken();
-        
-        mapIndex++;
+    children.reserve(a_container.size());
+    for (const auto& item : a_container) {
+        children.push_back(a_fnRenderer(item).track(children.size()));
     }
-    
-    return fragment(children);
+    return tag::_fragment(children);
 }
 
 } // namespace volt

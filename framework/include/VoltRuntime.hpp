@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include "IVoltRuntime.hpp"
 #include "AppBase.hpp"
-#include "StableKeyManager.hpp"
+#include "IdManager.hpp"
 
 namespace volt {
 
@@ -30,15 +30,15 @@ public:
                 ~VoltRuntime                ();
     
     // IVoltRuntime interface implementation
-    void        scheduleRender              () override;
+    void        requestRender               () override;
     
     // Mount app
     template<typename TApp> void 
                 mountApp                    ();
 
-    // Key manager for stable element mapping
-    StableKeyManager& 
-                getKeyManager               () { return m_keyManager; }
+    // Id manager for stable element mapping
+    IdManager& 
+                getIdManager                () { return m_idManager; }
 
     // VNode free list for recycling
     VNode*      recycleVNode                ();
@@ -67,9 +67,8 @@ private:
     // Render scheduling
     bool        m_bHasInvalidated = false;
 
-    // Key manager for stable element mapping
-    StableKeyManager 
-                m_keyManager;
+    // Id manager for stable element mapping
+    IdManager   m_idManager;
 
     // VNode memory manager
     std::vector<std::unique_ptr<VNode>> 

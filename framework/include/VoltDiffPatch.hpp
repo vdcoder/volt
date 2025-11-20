@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <emscripten/val.h>
+#include "IdManager.hpp"
 
 namespace volt {
 
@@ -8,19 +9,34 @@ class VNode;
 
 class VoltDiffPatch {
 public:
-    static void rebuild(VNode* a_pNewVTree, emscripten::val a_hRootContainer);
-    static void diffPatch(VNode* a_pPrevVTree, VNode* a_pNewVTree, emscripten::val a_hRootContainer);
+    static void rebuild(IdManager& a_idManager, VNode* a_pNewVTree, emscripten::val a_hRootContainer);
+    static void diffPatch(IdManager& a_idManager, VNode* a_pPrevVTree, VNode* a_pNewVTree, emscripten::val a_hRootContainer);
 private:
     static void walk(    
+        IdManager& a_idManager, 
         std::vector<VNode*>& a_prevNodes,
         std::vector<VNode*>& a_newNodes,
         emscripten::val a_hContainer);
-    static void syncTextNodes(VNode* a_pNewNode, VNode* a_pPrevNode);
-    static void syncNodes(VNode* a_pNewNode);
-    static void bringAndSyncNodes(VNode* a_pNewNode, emscripten::val a_hContainer);
-    static void addNode(VNode* a_pNewNode, emscripten::val a_hContainer);
+    static void syncTextNodes(
+        IdManager& a_idManager, 
+        VNode* a_pPrevNode, 
+        VNode* a_pNewNode);
+    static void syncNodes(
+        IdManager& a_idManager, 
+        VNode* a_pNewNode,
+        VNode* a_pOldNode);
+    static void bringAndSyncNodes(
+        IdManager& a_idManager, 
+        VNode* a_pNewNode, 
+        VNode* a_pOldNode,
+        emscripten::val a_hContainer);
+    static void addNode(
+        IdManager& a_idManager, 
+        VNode* a_pNewNode, 
+        emscripten::val a_hContainer);
 
-    static void transferNode(VNode* a_pNewNode, emscripten::val a_hElement);
+    static void transferNode(
+        VNode* a_pNewNode, emscripten::val a_hElement);
 };
 
 }

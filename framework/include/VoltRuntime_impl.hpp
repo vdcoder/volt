@@ -29,9 +29,9 @@ VoltRuntime::~VoltRuntime() {
     // TODO: Clear and free other things here
 }
 
-void VoltRuntime::scheduleRender() {
+void VoltRuntime::requestRender() {
     if (m_bHasInvalidated) {
-        return; // Already scheduled
+        return; // Already requested
     }
 
     m_bHasInvalidated = true;
@@ -45,7 +45,7 @@ void VoltRuntime::mountApp() {
     static_assert(std::is_base_of<AppBase, TApp>::value, "App must inherit from VoltRuntime::AppBase");
     m_pApp = std::make_unique<TApp>(this);
     m_pApp->start();  // Call lifecycle method
-    scheduleRender();
+    requestRender();
 }
 
 VNode* VoltRuntime::recycleVNode() {
@@ -56,8 +56,7 @@ VNode* VoltRuntime::recycleVNode() {
     } else {
         // Reuse from free list
         VNode* pNode = m_pVNodeFreeListHead;
-        m_pVNodeFreeListHead = m_pVNodeFreeListHead->getNext();
-        pNode->setNext(nullptr); // Clear next pointer
+        m_pVNodeFreeListHead = m_pVNodeFreeListHead->getParent();
         return pNode;
     }
 }
@@ -83,7 +82,7 @@ void VoltRuntime::doRender() {
     log("VoltRuntime::doRender here 1");
 
     // Prepare key manager for new render
-    m_keyManager.startNewGeneration(&m_pVNodeFreeListHead);
+    m_idManager.startGeneration(&m_pVNodeFreeListHead);
 
     log("VoltRuntime::doRender here 2");
 
@@ -92,8 +91,8 @@ void VoltRuntime::doRender() {
     // Set rendering runtime, this simplifies user's final API
     g_pRenderingRuntime = this;
     
-    // Render the new VTree
-    VNode* pNewVTree = m_pApp->render().getNodePtr();
+    // Render the new VTree, put inside a fragment to always work with a list of children
+    VNode* pNewVTree = tag::_fragment(m_pApp->render()).getNodePtr();
 
     // Clear rendering runtime
     g_pRenderingRuntime = nullptr;
@@ -102,10 +101,10 @@ void VoltRuntime::doRender() {
 
     if (m_pCurrentVTree == nullptr) {
         // Initial render: create DOM from scratch
-        VoltDiffPatch::rebuild(pNewVTree, m_hHostElement);
+        VoltDiffPatch::rebuild(m_idManager, pNewVTree, m_hHostElement);
     } else {
         // Reconcile the prev and new trees, then patch the DOM
-        VoltDiffPatch::diffPatch(m_pCurrentVTree, pNewVTree, m_hHostElement);
+        VoltDiffPatch::diffPatch(m_idManager, m_pCurrentVTree, pNewVTree, m_hHostElement);
     }
 
     log("VoltRuntime::doRender here 5 out");

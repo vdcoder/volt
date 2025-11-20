@@ -15,27 +15,6 @@ namespace volt {
 // ============================================================================
 
 // ASSUMPTION! Constructor with stable key, assumed to be non-default
-VNodeHandle::VNodeHandle(tag::ETag a_nTag, StableKeyManager::StableKey a_stableKey, std::vector<std::pair<short, PropValueType>> a_props, std::vector<VNodeHandle> a_children) 
-    : VNodeHandle(a_nTag, std::move(a_props), std::move(a_children)) {
-    // Set stable key: take id if available
-    std::string sId;
-    for (const auto& prop : a_props) {
-        if (prop.first == attr::ATTR_ID) {
-            sId = std::get<std::string>(prop.second);
-            break;
-        }
-    }
-    if (sId.empty()) {
-        m_pNode->setStableKey(std::move(a_stableKey));
-    } else {
-        m_pNode->setStableKey(StableKeyManager::StableKey(sId));
-    }
-
-    // Use key to match and link this VNode with old generations' data
-    StableKeyManager & keyManager = g_pRenderingRuntime->getKeyManager();
-    keyManager.matchVNode(m_pNode); // ASSUMPTION! Assumes to be non-default stable key
-}
-
 VNodeHandle::VNodeHandle(tag::ETag a_nTag, std::vector<std::pair<short, PropValueType>> a_props, std::vector<VNodeHandle> a_children) {
     m_pNode = g_pRenderingRuntime->recycleVNode();
     m_pNode->reuse(a_nTag);
@@ -68,14 +47,23 @@ VNodeHandle::VNodeHandle(tag::ETag a_nTag, std::vector<std::pair<short, PropValu
     std::vector<VNode*> children;
     children.reserve(a_children.size());
     for (size_t i = 0; i < a_children.size(); ++i) {
-        if (a_children[i].m_pNode->isFragment()) {
+        VNode* pChildNode = a_children[i].m_pNode;
+        if (pChildNode->isFragment()) {
             // Flatten away inner fragments
-            for (VNode* pGrandChild : a_children[i].m_pNode->getChildren()) {
+            for (VNode* pGrandChild : pChildNode->getChildren()) {
+                pGrandChild->setStableKeyPrefix(
+                    IdManager::concatIds(
+                        IdManager::concatIds(
+                            pChildNode->getStableKeyPrefix(), 
+                            pChildNode->getId()), 
+                        pGrandChild->getStableKeyPrefix()));
+                pGrandChild->setParent(m_pNode);
                 children.push_back(pGrandChild);
             }
         }
         else {
-            children.push_back(a_children[i].m_pNode);
+            pChildNode->setParent(m_pNode);
+            children.push_back(pChildNode);
         }
     }
     m_pNode->setChildren(std::move(children));
@@ -87,7 +75,15 @@ VNodeHandle::VNodeHandle(std::string a_sTextContent) {
     m_pNode->setAsText(a_sTextContent);
 }
 
-VNodeHandle::VNodeHandle(VNode * a_pNode) : m_pNode(a_pNode) {
+VNodeHandle VNodeHandle::track(int a_nStableKeyPosition) const { 
+    m_pNode->setStableKeyPosition(a_nStableKeyPosition); 
+    return *this;
 }
+
+VNodeHandle VNodeHandle::wrap(VNode * a_pNode) {
+    return VNodeHandle(a_pNode);
+}
+
+VNodeHandle::VNodeHandle(VNode * a_pNode) : m_pNode(a_pNode) {}
 
 } // namespace volt

@@ -2,6 +2,6 @@
 #include "VoltRuntime.hpp"
 
 // Base app interface
-void volt::AppBase::scheduleRender() {
-    m_pRuntime->scheduleRender();
+void volt::AppBase::requestRender() {
+    m_pRuntime->requestRender();
 }

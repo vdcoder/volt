@@ -6,8 +6,7 @@
 #include <algorithm>
 #include <functional>
 #include "Attrs.hpp"
-#include "StableKeyManager.hpp"
-#include "Tags.hpp"
+#include "ETags.hpp"
 
 namespace volt {
 
@@ -23,11 +22,15 @@ typedef std::variant<std::string, std::function<void(emscripten::val)>> PropValu
 class VNodeHandle {
 public:
     VNodeHandle(tag::ETag a_nTag, std::vector<std::pair<short, PropValueType>> a_props = {}, std::vector<VNodeHandle> a_children = {});
-    VNodeHandle(tag::ETag a_nTag, StableKeyManager::StableKey a_stableKey, std::vector<std::pair<short, PropValueType>> a_props = {}, std::vector<VNodeHandle> a_children = {});
     VNodeHandle(std::string a_sTextContent);
-    VNodeHandle(VNode * a_pNode);
-    VNode * getNodePtr() const { return m_pNode; }
+
+    inline VNodeHandle track(int a_nStableKeyPosition) const;
+    inline VNode * getNodePtr() const { return m_pNode; }
+
+    static VNodeHandle wrap(VNode * a_pNode);
+    
 private:
+    VNodeHandle(VNode * a_pNode);
     VNode * m_pNode;
 };
 

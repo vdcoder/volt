@@ -11,7 +11,7 @@ public:
     ComponentBase(IVoltRuntime* a_pRuntime) : m_pRuntime(a_pRuntime) {}
     virtual ~ComponentBase() = default;
 
-    void scheduleRender();
+    void requestRender();
     
     // Get runtime pointer to pass child components
     IVoltRuntime* getRuntime() { return m_pRuntime; }

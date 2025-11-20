@@ -8,7 +8,7 @@ namespace volt {
 
 class IVoltRuntime {
 public:
-    virtual void scheduleRender() = 0;
+    virtual void requestRender() = 0;
     virtual ~IVoltRuntime() = default;
 };
 

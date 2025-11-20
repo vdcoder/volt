@@ -7,97 +7,100 @@
 
 namespace volt {
 
-void VoltDiffPatch::rebuild(VNode* a_pNewVTree, emscripten::val a_hRootContainer) {
+void VoltDiffPatch::rebuild(IdManager& a_idManager, VNode* a_pNewVTree, emscripten::val a_hRootContainer) {
     // Clear existing content
     a_hRootContainer.set("innerHTML", emscripten::val(""));
 
     // Add all new nodes
-    if (a_pNewVTree->isFragment()) {
-        for (VNode* pNewNode : a_pNewVTree->getChildren()) {
-            addNode(pNewNode, a_hRootContainer);
-        }
-    }
-    else {
-        addNode(a_pNewVTree, a_hRootContainer);
+    for (VNode* pNewNode : a_pNewVTree->getChildren()) {
+        addNode(a_idManager, pNewNode, a_hRootContainer);
     }
 }
 
-void VoltDiffPatch::diffPatch(VNode* a_pPrevVTree, VNode* a_pNewVTree, emscripten::val a_hRootContainer) {
-    std::vector<VNode*> prevRootNodes = std::vector<VNode*>{a_pPrevVTree};
-    std::vector<VNode*> newRootAsNodes = std::vector<VNode*>{a_pNewVTree};
+void VoltDiffPatch::diffPatch(IdManager& a_idManager, VNode* a_pPrevVTree, VNode* a_pNewVTree, emscripten::val a_hRootContainer) {
     walk(
-        a_pPrevVTree->isFragment() ? a_pPrevVTree->getChildren() : prevRootNodes,
-        a_pNewVTree->isFragment() ? a_pNewVTree->getChildren() : newRootAsNodes,
+        a_idManager,
+        a_pPrevVTree->getChildren(),
+        a_pNewVTree->getChildren(),
         a_hRootContainer
     );
 }
 
 void VoltDiffPatch::walk(
+    IdManager& a_idManager, 
     std::vector<VNode*>& a_prevNodes, 
     std::vector<VNode*>& a_newNodes, 
     emscripten::val a_hContainer) {
 
     log("VoltDiffPatch::walk called");
-    for (auto pPrevNode : a_prevNodes) {
-        log("  Prev Node StableKey: " + pPrevNode->getStableKey().toString());
-    }
-    log("----.");
-    for (auto pNewNode : a_newNodes) {
-        log("  New Node StableKey: " + pNewNode->getStableKey().toString());
-    }
-    log("..");
-
+    
     // Walk both lists in parallel
-    auto newIt = a_newNodes.begin();
-    auto prevIt = a_prevNodes.begin();
-    while (newIt != a_newNodes.end() && prevIt != a_prevNodes.end()) {
-        VNode* pNewNode = *newIt;
-        VNode* pPrevNode = *prevIt;
+    size_t newIdx = 0;
+    size_t prevIdx = 0;
+    while (newIdx < a_newNodes.size() && prevIdx < a_prevNodes.size()) {
+        VNode* pNewNode = a_newNodes[newIdx];
+        VNode* pPrevNode = a_prevNodes[prevIdx];
 
-        log("VoltDiffPatch::walk: new is text: " + std::to_string(pNewNode->isText()) + " and key: " + pNewNode->getStableKey().toString() + " and text content: " + pNewNode->getText() + ", prev is text: " + std::to_string(pPrevNode->isText()) + " and key: " + pPrevNode->getStableKey().toString() + " and text content: " + pPrevNode->getText());
+        log("VoltDiffPatch::walk: new tag: " + pNewNode->getTagName() + " is text: " + std::to_string(pNewNode->isText()) + " and text content: " + pNewNode->getText() + ", prev tag: " + pPrevNode->getTagName() + " is text: " + std::to_string(pPrevNode->isText()) + " and text content: " + pPrevNode->getText());
 
         if (pNewNode->isText() && pPrevNode->isText()) { // Both are text nodes, reuse regardless of stable identity
             log("VoltDiffPatch::walk: syncTextNodes called");
-            syncTextNodes(pNewNode, pPrevNode);
-            ++newIt;
-            ++prevIt;
-        } else if (pNewNode->getMatchingOldNode() == pPrevNode) { // Matches at the same position, ready to diff
-            log("VoltDiffPatch::walk: syncNodes called");
-            syncNodes(pNewNode);
-            ++newIt;
-            ++prevIt;
-        }  else if (pNewNode->getMatchingOldNode() != nullptr) { // Matches node somewhere else, bring it in
-            log("VoltDiffPatch::walk: bringAndSyncNodes called");
-            bringAndSyncNodes(pNewNode, a_hContainer);
-            ++newIt;
-        } else { // New node, no match, add it
-            log("VoltDiffPatch::walk: addNode called");
-            addNode(pNewNode, a_hContainer);
-            ++newIt;
+            syncTextNodes(a_idManager, pPrevNode, pNewNode);
+            ++newIdx;
+            ++prevIdx;
+        } else {
+            a_idManager.pushVNodeToken(pNewNode);
+            std::string sId = a_idManager.build();
+            log("VoltDiffPatch::walk: looking for VNode with id: " + sId);
+
+            VNode* pOldNode = a_idManager.findVNode(sId);
+            if (pOldNode == pPrevNode) { // Matches at the same position, ready to diff
+                log("VoltDiffPatch::walk: syncNodes called");
+                syncNodes(a_idManager, pNewNode, pOldNode);
+                a_idManager.addVNode(sId, pNewNode);
+                ++newIdx;
+                ++prevIdx;
+            }  else if (pOldNode != nullptr) { // Matches node somewhere else, bring it in
+                log("VoltDiffPatch::walk: bringAndSyncNodes called");
+                bringAndSyncNodes(a_idManager, pNewNode, pOldNode, a_hContainer);
+                a_idManager.addVNode(sId, pNewNode);
+                ++newIdx;
+            } else { // New node, no match, add it
+                log("VoltDiffPatch::walk: addNode called");
+                a_idManager.popToken(); // TEMPORARY: Balance stack before
+                addNode(a_idManager, pNewNode, a_hContainer);
+                a_idManager.pushIntToken(0); // TEMPORARY: Dummy token to balance stack
+                ++newIdx;
+            }
+
+            a_idManager.popToken();
         }
     }
 
     // Add any remaining new nodes, this set the new element handle
-    while (newIt != a_newNodes.end()) {
+    while (newIdx < a_newNodes.size()) {
         log("VoltDiffPatch::walk: addNode called for remaining new nodes");
-        VNode* pNewNode = *newIt;
-        addNode(pNewNode, a_hContainer);
-        ++newIt;
+        VNode* pNewNode = a_newNodes[newIdx];
+        addNode(a_idManager, pNewNode, a_hContainer);
+        ++newIdx;
     }
 
     // Remove any remaining prev nodes, this unlinks the VNode and removes the DOM child
     // but the element's val and VNode can still be brought-in by a later match
-    while (prevIt != a_prevNodes.end()) {
+    while (prevIdx < a_prevNodes.size()) {
         log("VoltDiffPatch::walk: removing remaining prev nodes");
-        VNode* pPrevNode = *prevIt;
+        VNode* pPrevNode = a_prevNodes[prevIdx];
         dom::removeChild(a_hContainer, pPrevNode->getMatchingElement());
         pPrevNode->unlink();
-        ++prevIt;
+        ++prevIdx;
     }
     log("VoltDiffPatch::walk out");
 }
 
-void VoltDiffPatch::syncTextNodes(VNode* a_pNewNode, VNode* a_pPrevNode) {
+void VoltDiffPatch::syncTextNodes(
+    IdManager& a_idManager, 
+    VNode* a_pPrevNode, 
+    VNode* a_pNewNode) {
     emscripten::val hElement = a_pPrevNode->getMatchingElement();
 
     if (a_pNewNode->getText() != a_pPrevNode->getText()) {
@@ -112,17 +115,19 @@ void VoltDiffPatch::syncTextNodes(VNode* a_pNewNode, VNode* a_pPrevNode) {
     transferNode(a_pNewNode, hElement);
 }
 
-void VoltDiffPatch::syncNodes(VNode* a_pNewNode) {
+void VoltDiffPatch::syncNodes(
+    IdManager& a_idManager, 
+    VNode* a_pNewNode,
+    VNode* a_pOldNode) {
 
-    VNode* pOldNode = a_pNewNode->getMatchingOldNode();
-    emscripten::val hElement = pOldNode->getMatchingElement();
+    emscripten::val hElement = a_pOldNode->getMatchingElement();
 
     transferNode(a_pNewNode, hElement);
 
     // Sync non-bubble props
     // ---------------------------
     auto& newEvents = a_pNewNode->getNonBubbleEvents();
-    auto& oldEvents = pOldNode->getNonBubbleEvents();
+    auto& oldEvents = a_pOldNode->getNonBubbleEvents();
     size_t nNewEventIdx = 0;
     size_t nOldEventIdx = 0;
 
@@ -163,7 +168,7 @@ void VoltDiffPatch::syncNodes(VNode* a_pNewNode) {
     // Sync props
     // ---------------------------
     auto& newProps = a_pNewNode->getProps();
-    auto& oldProps = pOldNode->getProps();
+    auto& oldProps = a_pOldNode->getProps();
     size_t nNewPropIdx = 0;
     size_t nOldPropIdx = 0;
 
@@ -218,33 +223,42 @@ void VoltDiffPatch::syncNodes(VNode* a_pNewNode) {
     // Sync children
     // ---------------------------
 
-    log("old children: " + std::to_string(pOldNode->getChildren().size()));
+    log("old children: " + std::to_string(a_pOldNode->getChildren().size()));
     log("new children: " + std::to_string(a_pNewNode->getChildren().size()));
     VoltDiffPatch::walk(
-        pOldNode->getChildren(), // The old node = prev node
+        a_idManager,
+        a_pOldNode->getChildren(), // The old node = prev node
         a_pNewNode->getChildren(),
         hElement
     );
 
     // for testing
-    if (a_pNewNode->isText()) return;
-    dom::setAttribute(hElement, std::string("voltid"), a_pNewNode->getStableKey().toString());
+    //if (a_pNewNode->isText()) return;
+    //dom::setAttribute(hElement, std::string("voltid"), a_pNewNode->getStableKey().toString());
 }
 
-void VoltDiffPatch::bringAndSyncNodes(VNode* a_pNewNode, emscripten::val a_hContainer) {
+void VoltDiffPatch::bringAndSyncNodes(
+    IdManager& a_idManager, 
+    VNode* a_pNewNode, 
+    VNode* a_pOldNode,
+    emscripten::val a_hContainer) {
+
     // Bring existing old node from elsewhere in the old Vtree (and DOM)
-    VNode* pMatchingOldNode = a_pNewNode->getMatchingOldNode();
     dom::removeChild(
-        pMatchingOldNode->getParent()->getMatchingElement(),
-        pMatchingOldNode->getMatchingElement());
-    pMatchingOldNode->unlink();
+        a_pOldNode->getParent()->getMatchingElement(),
+        a_pOldNode->getMatchingElement());
+    a_pOldNode->unlink();
     dom::appendChild(a_hContainer, a_pNewNode->getMatchingElement());
 
     // Sync props and children
-    syncNodes(a_pNewNode);
+    syncNodes(a_idManager, a_pNewNode, a_pOldNode);
 }
 
-void VoltDiffPatch::addNode(VNode* a_pNewNode, emscripten::val a_hContainer) {
+void VoltDiffPatch::addNode(
+    IdManager& a_idManager, 
+    VNode* a_pNewNode, 
+    emscripten::val a_hContainer) {
+
     emscripten::val hNewElement = emscripten::val::undefined();
 
     if (a_pNewNode->isText()) {
@@ -256,12 +270,25 @@ void VoltDiffPatch::addNode(VNode* a_pNewNode, emscripten::val a_hContainer) {
         for (auto & [attrId, value] : a_pNewNode->getProps()) {
             dom::setAttribute(hNewElement, attr::attrIdToName(attrId), value);
         }
+
+        // for (auto & [eventName, callback] : a_pNewNode->getNonBubbleEvents()) {
+        //     hNewElement.set(eventName, emscripten::val(callback));
+        // }
+
+        log("VoltDiffPatch::addNode: processing children of new VNode, tag: " + std::string(tag::tagToString(a_pNewNode->getTag())));
+        a_idManager.pushVNodeToken(a_pNewNode);
+        std::string sId = a_idManager.build();
+        log("VoltDiffPatch::addNode: adding VNode with id: " + sId);
+        
         for (VNode* pChild : a_pNewNode->getChildren()) {
-            addNode(pChild, hNewElement);
+            addNode(a_idManager, pChild, hNewElement);
         }
+        
+        a_idManager.popToken();
+
+        a_idManager.addVNode(sId, a_pNewNode);
 
         // for testing
-        dom::setAttribute(hNewElement, std::string("voltid"), a_pNewNode->getStableKey().toString());
         //dom::setAttribute(hNewElement, std::string("voltid"), a_pNewNode->getStableKey().toString());
     }
 
@@ -269,7 +296,10 @@ void VoltDiffPatch::addNode(VNode* a_pNewNode, emscripten::val a_hContainer) {
     dom::appendChild(a_hContainer, hNewElement);
 }
 
-void VoltDiffPatch::transferNode(VNode* a_pNewNode, emscripten::val a_hElement) {
+void VoltDiffPatch::transferNode(
+    VNode* a_pNewNode, 
+    emscripten::val a_hElement) {
+
     // Update VNode <-> Element mapping
     a_pNewNode->setMatchingElement(a_hElement);
 

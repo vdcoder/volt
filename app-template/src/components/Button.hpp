@@ -11,13 +11,10 @@ public:
     Button(IVoltRuntime* a_pRuntime) : ComponentBase(a_pRuntime) {}
     
     VNodeHandle render(
-        int a_nStableKeyToken,
         const std::string& label, 
         std::function<void(emscripten::val)> onButtonClick,
         const std::string& variant = "primary"
     ) {
-        x::KeyGuard kg = x::key_guard_i(a_nStableKeyToken);
-
         // Define button styles based on variant
         std::string baseStyle = "padding: 10px 20px; margin: 5px; border: none; "
                                 "border-radius: 4px; cursor: pointer; font-size: 14px;";
@@ -32,9 +29,9 @@ public:
         }
         
         // No need to capture 'this' - auto-invalidate handles it
-        return tag::button(x::key_i(0), {
+        return tag::button({
             attr::style(baseStyle + variantStyle),
             attr::onClick(onButtonClick)
-        }, label);
+        }, label).track(__COUNTER__);
     }
 };

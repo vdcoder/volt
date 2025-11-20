@@ -6,8 +6,8 @@
 #include <algorithm>
 #include <functional>
 #include "Attrs.hpp"
+#include "ETags.hpp"
 #include "Tags.hpp"
-#include "StableKeyManager.hpp"
 #include "VNodeHandle.hpp"
 
 namespace volt {
@@ -36,14 +36,48 @@ public:
     // Render functions
     // -----
     tag::ETag getTag() { return m_nTag; }
+    std::string getTagName() { return tag::tagToString(m_nTag); }
     std::vector<std::pair<short, std::string>>& getProps() { return m_props; }
+    std::string getKeyProp() {
+        for (const auto& prop : m_props) {
+            if (prop.first == attr::ATTR_KEY) {
+                return prop.second;
+            }
+        }
+        return "";
+    }
+    std::string getIdProp() {
+        for (const auto& prop : m_props) {
+            if (prop.first == attr::ATTR_ID) {
+                return prop.second;
+            }
+        }
+        return "";
+    }
+    std::string getStableKeyPrefix() const { return m_sStableKeyPrefix; }
+    std::string getId() { 
+        std::string str = getIdProp();
+        if (!str.empty()) {
+            return "D" + str + "_";
+        }
+        str = getKeyProp();
+        if (!str.empty()) {
+            return "S" + str + "_";
+        }
+        if (m_nStableKeyPosition >= 0) {
+            return "I" + std::to_string(m_nStableKeyPosition) + "_";
+        }
+        return "UNKNOWN_";
+     }
+    int getStableKeyPosition() { return m_nStableKeyPosition; }
     std::unordered_map<std::string, std::function<void(emscripten::val)>>& getBubbleEvents() { return m_bubbleEvents; }
     std::vector<std::pair<short, std::function<void(emscripten::val)>>>& getNonBubbleEvents() { return m_nonBubbleEvents; }
     std::vector<VNode*>& getChildren() { return m_children; }
 
     // Setup VNode data
     void reuse(tag::ETag a_nTag);
-    void setStableKey(StableKeyManager::StableKey a_stableKey);
+    void setStableKeyPrefix(const std::string& a_sStableKeyPrefix) { m_sStableKeyPrefix = a_sStableKeyPrefix; }
+    void setStableKeyPosition(int a_stableKeyPosition) { m_nStableKeyPosition = a_stableKeyPosition; }
     void setProps(std::vector<std::pair<short, std::string>> a_props);
     void setBubbleEvents(std::unordered_map<std::string, std::function<void(emscripten::val)>> a_events);
     void setNonBubbleEvents(std::vector<std::pair<short, std::function<void(emscripten::val)>>> a_events);
@@ -62,13 +96,8 @@ public:
     std::string getText() const;
 
     // Intrusive
-    StableKeyManager::StableKey& getStableKey() { return m_stableKey; }
-    VNode* getMatchingOldNode() const { return m_pMatchingOldNode; }
-    void setMatchingOldNode(VNode* a_pNode) { m_pMatchingOldNode = a_pNode; }
     emscripten::val getMatchingElement() const { return m_matchingElement; }
     void setMatchingElement(emscripten::val a_element) { m_matchingElement = a_element; }
-    VNode* getNext() const { return m_pNext; }
-    void setNext(VNode* a_pNode) { m_pNext = a_pNode; }
     void setParent(VNode* a_pParent) { m_pParent = a_pParent; }
     VNode* getParent() const { return m_pParent; }
     void unlink() {
@@ -92,42 +121,28 @@ private:
     std::vector<std::pair<short, std::string>> m_props; // Kept sorted for efficient diffing
     std::vector<std::pair<short, std::function<void(emscripten::val)>>> m_nonBubbleEvents; // Kept sorted for efficient diffing
     std::vector<VNode*> m_children;
+    std::string m_sStableKeyPrefix; // This is transferred from fragment parents to children when flattening, sometimes multiple levels deep
+    int m_nStableKeyPosition; // Positional key token
 
     // Intrusive storage for efficient reconciliation
-    StableKeyManager::StableKey m_stableKey;  // Stable identifier for generational matching
-    VNode* m_pMatchingOldNode = nullptr; // Pointer to the matching old node if available for diff/patch
     emscripten::val m_matchingElement = emscripten::val::undefined();  // Associated DOM element handle when available
-    VNode* m_pNext = nullptr; // For hash bucket chaining and free list
     VNode* m_pParent = nullptr; // Needed to remove from parent during diff/patch
 };
 
 // ============================================================================
-// Text Helper - Transparent container for textual content
+// Helpers
 // ============================================================================
-inline VNodeHandle text(std::string a_sTextContent);
 
-// ============================================================================
-// Fragment Helper - Transparent container for grouping nodes
-// ============================================================================
-inline VNodeHandle fragment(std::vector<VNodeHandle> children);
+template<typename Renderer>
+inline VNodeHandle code(Renderer a_fnRenderer);
 
-template<typename... Children>
-inline VNodeHandle fragment(Children&&... children);
+template<typename PropsGenerator>
+inline std::vector<std::pair<short, PropValueType>> code(PropsGenerator a_fnPropsGenerator);
 
-// ============================================================================
-// Map Helper - Creates a fragment with mapped children
-// ============================================================================
-// Usage:
-//   map(users, [](const User& u, auto key) {
-//       key(std::to_string(u.id));  // Optional: set stable key
-//       return <div>(<h1>(<text>(u.name)), <p>(u.email));
-//   })
-//
-// If you don't call key(), it uses positional index automatically.
-// Calling key() provides stable identity for efficient list reconciliation.
-// ============================================================================
+template<typename Renderer>
+inline VNodeHandle loop(int a_nRepeat, Renderer a_fnRenderer);
 
 template<typename Container, typename Renderer>
-inline VNodeHandle map(const Container& container, Renderer renderer);
+inline VNodeHandle map(const Container& a_container, Renderer a_fnRenderer);
 
 } // namespace volt

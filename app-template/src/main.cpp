@@ -19,7 +19,7 @@ EMSCRIPTEN_BINDINGS(VOLT_APP_NAME_UNDERSCORE_module) {
         VNode* pVNode = reinterpret_cast<volt::VNode*>(__cpp_ptr_as_int);
         if (pVNode->bubbleCallback(event["type"].as<std::string>(), event)) {
             // Event was handled
-            if (g_runtime) g_runtime->scheduleRender();
+            if (g_runtime) g_runtime->requestRender();
         }
     }, emscripten::allow_raw_pointers());
 }

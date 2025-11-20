@@ -2,6 +2,6 @@
 #include "IVoltRuntime.hpp"
 
 // Base component interface
-void volt::ComponentBase::scheduleRender() {
-    m_pRuntime->scheduleRender();
+void volt::ComponentBase::requestRender() {
+    m_pRuntime->requestRender();
 }

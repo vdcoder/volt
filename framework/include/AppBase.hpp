@@ -13,7 +13,7 @@ public:
     AppBase(VoltRuntime* a_pRuntime) : m_pRuntime(a_pRuntime) {}
     virtual ~AppBase() = default;
     
-    void scheduleRender();
+    void requestRender();
     
     // Get runtime pointer to pass child components
     VoltRuntime* getRuntime() { return m_pRuntime; }

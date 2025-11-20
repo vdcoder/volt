@@ -50,32 +50,33 @@ constexpr short ATTR_CLASS      = 201;
 // Common attributes (210-299)
 constexpr short ATTR_NODEVALUE  = 210;
 constexpr short ATTR_ID         = 211;
-constexpr short ATTR_TYPE       = 212;
-constexpr short ATTR_VALUE      = 213;
-constexpr short ATTR_PLACEHOLDER = 214;
-constexpr short ATTR_HREF       = 215;
-constexpr short ATTR_SRC        = 216;
-constexpr short ATTR_ALT        = 217;
-constexpr short ATTR_TITLE      = 218;
-constexpr short ATTR_NAME       = 219;
-constexpr short ATTR_DISABLED   = 220;
-constexpr short ATTR_CHECKED    = 221;
-constexpr short ATTR_SELECTED   = 222;
-constexpr short ATTR_READONLY   = 223;
-constexpr short ATTR_REQUIRED   = 224;
-constexpr short ATTR_AUTOCOMPLETE = 225;
-constexpr short ATTR_AUTOFOCUS  = 226;
-constexpr short ATTR_TABINDEX   = 227;
-constexpr short ATTR_FOR        = 228;
-constexpr short ATTR_WIDTH      = 229;
-constexpr short ATTR_HEIGHT     = 230;
-constexpr short ATTR_MIN        = 231;
-constexpr short ATTR_MAX        = 232;
-constexpr short ATTR_STEP       = 233;
-constexpr short ATTR_PATTERN    = 234;
-constexpr short ATTR_MAXLENGTH  = 235;
-constexpr short ATTR_ROWS       = 236;
-constexpr short ATTR_COLS       = 237;
+constexpr short ATTR_KEY        = 212;
+constexpr short ATTR_TYPE       = 213;
+constexpr short ATTR_VALUE      = 214;
+constexpr short ATTR_PLACEHOLDER = 215;
+constexpr short ATTR_HREF       = 216;
+constexpr short ATTR_SRC        = 217;
+constexpr short ATTR_ALT        = 218;
+constexpr short ATTR_TITLE      = 219;
+constexpr short ATTR_NAME       = 220;
+constexpr short ATTR_DISABLED   = 221;
+constexpr short ATTR_CHECKED    = 222;
+constexpr short ATTR_SELECTED   = 223;
+constexpr short ATTR_READONLY   = 224;
+constexpr short ATTR_REQUIRED   = 225;
+constexpr short ATTR_AUTOCOMPLETE = 226;
+constexpr short ATTR_AUTOFOCUS  = 227;
+constexpr short ATTR_TABINDEX   = 228;
+constexpr short ATTR_FOR        = 229;
+constexpr short ATTR_WIDTH      = 230;
+constexpr short ATTR_HEIGHT     = 231;
+constexpr short ATTR_MIN        = 232;
+constexpr short ATTR_MAX        = 233;
+constexpr short ATTR_STEP       = 234;
+constexpr short ATTR_PATTERN    = 235;
+constexpr short ATTR_MAXLENGTH  = 236;
+constexpr short ATTR_ROWS       = 237;
+constexpr short ATTR_COLS       = 238;
 
 // Custom attributes start at 10000
 constexpr short ATTR_CUSTOM_START = 10000;
@@ -119,6 +120,7 @@ inline const char* attrIdToName(short id) {
         // Common attributes
         case ATTR_NODEVALUE: return "nodeValue"; // Special case for keeping text nodes's string content
         case ATTR_ID: return "id";
+        case ATTR_KEY: return "key"; // Special stable key attribute
         case ATTR_TYPE: return "type";
         case ATTR_VALUE: return "value";
         case ATTR_PLACEHOLDER: return "placeholder";
@@ -162,6 +164,7 @@ inline const char* attrIdToName(short id) {
 DEFINE_ATTR_HELPER(style, ATTR_STYLE)
 DEFINE_ATTR_HELPER(className, ATTR_CLASS)
 DEFINE_ATTR_HELPER(id, ATTR_ID)
+DEFINE_ATTR_HELPER(key, ATTR_KEY)
 DEFINE_ATTR_HELPER(type, ATTR_TYPE)
 DEFINE_ATTR_HELPER(value, ATTR_VALUE)
 DEFINE_ATTR_HELPER(placeholder, ATTR_PLACEHOLDER)

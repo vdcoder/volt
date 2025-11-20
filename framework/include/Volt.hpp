@@ -24,6 +24,7 @@ void log(const std::string& a_sMessage);
 #include "Attrs.hpp"
 #include "VNode.hpp"
 #include "VoltDiffPatch.hpp"
+#include "IdManager.hpp"
 
 // Utilities
 #include "Shortcuts.hpp"
