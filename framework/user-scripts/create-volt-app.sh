@@ -177,7 +177,7 @@ print_success "Template copied"
 
 # Copy framework
 print_info "Copying framework files..."
-cp -r "$SCRIPT_DIR/../../framework/include" "$OUTPUT_DIR/dependencies/volt/include"
+cp -r "$SCRIPT_DIR/../../framework/include" "$OUTPUT_DIR/dependencies/volt"
 print_success "Framework copied"
 
 # Customize app files with app-specific names
