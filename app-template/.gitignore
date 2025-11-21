@@ -1,8 +1,5 @@
 # Build output
 output/
-*.js
-*.wasm
-!output/volt.js
 
 # IDE
 .vscode/
