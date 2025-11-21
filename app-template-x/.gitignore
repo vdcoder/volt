@@ -1,0 +1,18 @@
+# Build output
+output/
+*.js
+*.wasm
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Emscripten cache
+.emscripten_cache/
