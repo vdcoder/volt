@@ -73,20 +73,20 @@ EM_BOOL VoltRuntime::onAnimationFrame(double a_nTimestamp, void* a_pThisAsVoidSt
 }
 
 void VoltRuntime::doRender() {
-    log("VoltRuntime::doRender called");
+    //log("VoltRuntime::doRender called");
 
     if (!m_pApp) {
         return;
     }
 
-    log("VoltRuntime::doRender here 1");
+    //log("VoltRuntime::doRender here 1");
 
     // Prepare key manager for new render
     m_idManager.startGeneration(&m_pVNodeFreeListHead);
 
-    log("VoltRuntime::doRender here 2");
+    //log("VoltRuntime::doRender here 2");
 
-    log("VoltRuntime::doRender here 3");
+    //log("VoltRuntime::doRender here 3");
 
     // Set rendering runtime, this simplifies user's final API
     g_pRenderingRuntime = this;
@@ -97,7 +97,7 @@ void VoltRuntime::doRender() {
     // Clear rendering runtime
     g_pRenderingRuntime = nullptr;
 
-    log("VoltRuntime::doRender here 4");
+    //log("VoltRuntime::doRender here 4");
 
     if (m_pCurrentVTree == nullptr) {
         // Initial render: create DOM from scratch
@@ -107,7 +107,7 @@ void VoltRuntime::doRender() {
         VoltDiffPatch::diffPatch(m_idManager, m_pCurrentVTree, pNewVTree, m_hHostElement);
     }
 
-    log("VoltRuntime::doRender here 5 out");
+    //log("VoltRuntime::doRender here 5 out");
 
     m_pCurrentVTree = pNewVTree;
 }

@@ -25,14 +25,54 @@ public:
                 counter++;
             }, "primary").track(__COUNTER__),
 
-            Button(getRuntime()).render("Reset", [this](emscripten::val e) {
-                log("Reset button clicked");
-                counter = 0;
-            }, "danger").track(__COUNTER__),
+            tag::div(
+                x::iff(counter % 2 == 0, [this](){
+                    return std::vector<VNodeHandle>{
+                        // Button(getRuntime()).render("Reset", [this](emscripten::val e) {
+                        //     log("Reset button clicked");
+                        //     counter = 0;
+                        // }, "danger").track(__COUNTER__) 
+                        tag::button({
+                            attr::onAddElement([this](emscripten::val e) {
+                                log("onAddElement button clicked");
+                            }),
+                            attr::onBeforeMoveElement([this](emscripten::val e) {
+                                log("onBeforeMoveElement button clicked");
+                            }),
+                            attr::onMoveElement([this](emscripten::val e) {
+                                log("onMoveElement button clicked");
+                            }),
+                            attr::onRemoveElement([this](emscripten::val e) {
+                                log("onRemoveElement button clicked");
+                            }),
+                            attr::onClick([this](emscripten::val e) {
+                                log("Reset button clicked");
+                                counter = 0;
+                            })
+                        }, "Reset").track(__COUNTER__)
+                    };
+                }, []() {
+                    return std::vector<VNodeHandle>{"No button for you!"};
+                })
+            ).track(__COUNTER__),
 
-            map(std::vector<std::string>{"Apple", "Banana", "Cherry"}, [this](const std::string& fruit) {
+            (counter > 5 ? tag::p({attr::style("color: red;")}, "Counter exceeded 5!").track(__COUNTER__) : tag::br().track(__COUNTER__)),
+
+            map(std::vector<std::string>{"Apple"}, [this](const std::string& fruit) {
                 return tag::_fragment({ attr::key(fruit) },
-                    tag::div({attr::style("border: 1px solid #ccc; padding: 10px; margin: 10px 0;")},
+                    tag::article({attr::style("border: 1px solid #ccc; padding: 10px; margin: 10px 0; height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;"),
+                    attr::onAddElement([this](emscripten::val e) {
+                                log("onAddElement article");
+                            }),
+                            attr::onBeforeMoveElement([this](emscripten::val e) {
+                                log("onBeforeMoveElement article");
+                            }),
+                            attr::onMoveElement([this](emscripten::val e) {
+                                log("onMoveElement article");
+                            }),
+                            attr::onRemoveElement([this](emscripten::val e) {
+                                log("onRemoveElement article");
+                            })},
                         tag::h1(fruit).track(__COUNTER__),
                         tag::br().track(__COUNTER__),
                         tag::a({attr::href("https://example.com/" + fruit)}, fruit).track(__COUNTER__),

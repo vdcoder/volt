@@ -12,7 +12,13 @@ VNode::VNode(tag::ETag a_nTag) : m_nTag(a_nTag) {}
 void VNode::reuse(tag::ETag a_nTag) {
     m_nTag = a_nTag;
     m_props.clear();
+    m_sIdProp.clear();
+    m_sKeyProp.clear();
     m_bubbleEvents.clear();
+    m_onAddElementEvent = [](emscripten::val){};
+    m_onBeforeMoveElementEvent = [](emscripten::val){};
+    m_onMoveElementEvent = [](emscripten::val){};
+    m_onRemoveElementEvent = [](emscripten::val){};
     m_nonBubbleEvents.clear();
     m_children.clear();
     m_sStableKeyPrefix.clear();

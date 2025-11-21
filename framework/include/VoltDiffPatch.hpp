@@ -29,11 +29,13 @@ private:
         IdManager& a_idManager, 
         VNode* a_pNewNode, 
         VNode* a_pOldNode,
-        emscripten::val a_hContainer);
+        emscripten::val a_hContainer,
+        emscripten::val a_hReferenceNode);
     static void addNode(
         IdManager& a_idManager, 
         VNode* a_pNewNode, 
-        emscripten::val a_hContainer);
+        emscripten::val a_hContainer,
+        emscripten::val a_hReferenceNode);
 
     static void transferNode(
         VNode* a_pNewNode, emscripten::val a_hElement);

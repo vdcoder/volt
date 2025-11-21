@@ -27,14 +27,42 @@ VNodeHandle::VNodeHandle(tag::ETag a_nTag, std::vector<std::pair<short, PropValu
         std::visit([&](auto&& arg) {
             using T = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<T, std::string>) {
-                attrProps.push_back({prop.first, std::move(arg)});
+                switch (prop.first)
+                {
+                case attr::ATTR_ID:
+                    m_pNode->setIdProp(arg);
+                    attrProps.push_back({prop.first, std::move(arg)});
+                    break;
+                case attr::ATTR_KEY:
+                    m_pNode->setKeyProp(arg);
+                    break;
+                default:
+                    attrProps.push_back({prop.first, std::move(arg)});
+                }
             } else if constexpr (std::is_same_v<T, std::function<void(emscripten::val)>>) {
-                if (prop.first >= attr::ATTR_EVT_NON_BUBBLE_START && prop.first < attr::ATTR_EVT_NON_BUBBLE_END) {
-                    // Non-bubble event
-                    nonBubbleEventProps.push_back({prop.first, std::move(arg)});
-                } else {
-                    // Bubble event
-                    bubbleEventProps[attr::attrIdToName(prop.first)] = std::move(arg);
+                switch (prop.first)
+                {
+                case attr::ATTR_CUSTOM_EVT_ADDELEMENT:
+                    m_pNode->setOnAddElementEvent(std::move(arg));
+                    break;
+                case attr::ATTR_CUSTOM_EVT_BEFOREMOVEELEMENT:
+                    m_pNode->setOnBeforeMoveElementEvent(std::move(arg));
+                    break;
+                case attr::ATTR_CUSTOM_EVT_MOVEELEMENT:
+                    m_pNode->setOnMoveElementEvent(std::move(arg));
+                    break;
+                case attr::ATTR_CUSTOM_EVT_REMOVEELEMENT:
+                    m_pNode->setOnRemoveElementEvent(std::move(arg));
+                    break;
+                default:
+                    if (prop.first >= attr::ATTR_EVT_NON_BUBBLE_START && prop.first < attr::ATTR_EVT_NON_BUBBLE_END) {
+                        // Non-bubble event
+                        nonBubbleEventProps.push_back({prop.first, std::move(arg)});
+                    } else {
+                        // Bubble event
+                        bubbleEventProps[attr::attrIdToName(prop.first)] = std::move(arg);
+                    }
+                    break;
                 }
             }
         }, prop.second);
@@ -73,6 +101,12 @@ VNodeHandle::VNodeHandle(std::string a_sTextContent) {
     m_pNode = g_pRenderingRuntime->recycleVNode();
     
     m_pNode->setAsText(a_sTextContent);
+}
+
+VNodeHandle::VNodeHandle(const char * a_sTextContent) {
+    m_pNode = g_pRenderingRuntime->recycleVNode();
+
+    m_pNode->setAsText(std::string(a_sTextContent));
 }
 
 VNodeHandle VNodeHandle::track(int a_nStableKeyPosition) const { 

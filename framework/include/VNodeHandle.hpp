@@ -23,6 +23,7 @@ class VNodeHandle {
 public:
     VNodeHandle(tag::ETag a_nTag, std::vector<std::pair<short, PropValueType>> a_props = {}, std::vector<VNodeHandle> a_children = {});
     VNodeHandle(std::string a_sTextContent);
+    VNodeHandle(const char * a_sTextContent);
 
     inline VNodeHandle track(int a_nStableKeyPosition) const;
     inline VNode * getNodePtr() const { return m_pNode; }

@@ -10,3 +10,7 @@
 #include "VNodeHandle_impl.hpp"
 #include "VoltDiffPatch_impl.hpp"
 #include "VNode_impl.hpp"
+
+#if defined(DEBUG) || defined(_DEBUG)
+#include "Debug_impl.hpp"
+#endif

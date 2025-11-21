@@ -78,8 +78,15 @@ constexpr short ATTR_MAXLENGTH  = 236;
 constexpr short ATTR_ROWS       = 237;
 constexpr short ATTR_COLS       = 238;
 
-// Custom attributes start at 10000
-constexpr short ATTR_CUSTOM_START = 10000;
+// Internal custom
+constexpr short ATTR_INTERNAL_CUSTOM_START = 10000;
+constexpr short ATTR_CUSTOM_EVT_ADDELEMENT = 10000;
+constexpr short ATTR_CUSTOM_EVT_BEFOREMOVEELEMENT = 10001;
+constexpr short ATTR_CUSTOM_EVT_MOVEELEMENT = 10002;
+constexpr short ATTR_CUSTOM_EVT_REMOVEELEMENT = 10003;
+
+// Custom attributes start at 20000
+constexpr short ATTR_CUSTOM_START = 20000;
 
 // ============================================================================
 // Attribute Name Lookup Table
@@ -147,6 +154,12 @@ inline const char* attrIdToName(short id) {
         case ATTR_MAXLENGTH: return "maxlength";
         case ATTR_ROWS: return "rows";
         case ATTR_COLS: return "cols";
+
+        // Internal custom
+        case ATTR_CUSTOM_EVT_ADDELEMENT: return "onAddElement";
+        case ATTR_CUSTOM_EVT_BEFOREMOVEELEMENT: return "onBeforeMoveElement";
+        case ATTR_CUSTOM_EVT_MOVEELEMENT: return "onMoveElement";
+        case ATTR_CUSTOM_EVT_REMOVEELEMENT: return "onRemoveElement";
         
         default: return "unknown";
     }
@@ -227,6 +240,12 @@ DECLARE_EVENT_HELPER(onUnload, ATTR_EVT_UNLOAD);
 DECLARE_EVENT_HELPER(onBeforeUnload, ATTR_EVT_BEFOREUNLOAD);
 DECLARE_EVENT_HELPER(onError, ATTR_EVT_ERROR);
 DECLARE_EVENT_HELPER(onAbort, ATTR_EVT_ABORT);
+
+// Custom Internal Events
+DECLARE_EVENT_HELPER(onAddElement, ATTR_CUSTOM_EVT_ADDELEMENT);
+DECLARE_EVENT_HELPER(onBeforeMoveElement, ATTR_CUSTOM_EVT_BEFOREMOVEELEMENT);
+DECLARE_EVENT_HELPER(onMoveElement, ATTR_CUSTOM_EVT_MOVEELEMENT);
+DECLARE_EVENT_HELPER(onRemoveElement, ATTR_CUSTOM_EVT_REMOVEELEMENT);
 
 } // namespace attrs
 

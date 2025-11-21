@@ -42,6 +42,11 @@ inline const char* tagToString(ETag tag);
         return VNodeHandle(tag::ETag::tagEnum, {}, {}); \
     }
 
+// Text Node
+inline VNodeHandle _text(std::string a_sTextContent) {
+    return VNodeHandle(a_sTextContent);
+}
+
 // Fragment
 VNODE_TAG_HELPER(_fragment, _FRAGMENT)
 
@@ -71,6 +76,7 @@ VNODE_TAG_HELPER(td, TD)
 VNODE_TAG_HELPER(th, TH)
 VNODE_TAG_HELPER(form, FORM)
 VNODE_TAG_HELPER(label, LABEL)
+VNODE_TAG_HELPER(article, ARTICLE)
 
 // Self-closing elements
 VNODE_SELFCLOSING_HELPER(input, INPUT)

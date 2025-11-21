@@ -43,6 +43,7 @@ inline const char* tagToString(ETag a_nTag) {
         case ETag::IMG: return "img";
         case ETag::BR: return "br";
         case ETag::HR: return "hr";
+        case ETag::ARTICLE: return "article";
         default: return "div";
     }
 }

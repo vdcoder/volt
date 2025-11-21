@@ -39,6 +39,7 @@ enum class ETag {
     IMG,
     BR,
     HR,
+    ARTICLE,
     // Add more as needed
 };
 

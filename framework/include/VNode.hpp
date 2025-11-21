@@ -32,28 +32,26 @@ public:
         }
         return false;
     }
+    void onAddElement(emscripten::val a_element) {
+        m_onAddElementEvent(a_element);
+    }
+    void onBeforeMoveElement(emscripten::val a_element) {
+        m_onBeforeMoveElementEvent(a_element);
+    }
+    void onMoveElement(emscripten::val a_element) {
+        m_onMoveElementEvent(a_element);
+    }
+    void onRemoveElement(emscripten::val a_element) {
+        m_onRemoveElementEvent(a_element);
+    }
 
     // Render functions
     // -----
     tag::ETag getTag() { return m_nTag; }
     std::string getTagName() { return tag::tagToString(m_nTag); }
     std::vector<std::pair<short, std::string>>& getProps() { return m_props; }
-    std::string getKeyProp() {
-        for (const auto& prop : m_props) {
-            if (prop.first == attr::ATTR_KEY) {
-                return prop.second;
-            }
-        }
-        return "";
-    }
-    std::string getIdProp() {
-        for (const auto& prop : m_props) {
-            if (prop.first == attr::ATTR_ID) {
-                return prop.second;
-            }
-        }
-        return "";
-    }
+    std::string getKeyProp() { return m_sKeyProp; }
+    std::string getIdProp() { return m_sIdProp; }
     std::string getStableKeyPrefix() const { return m_sStableKeyPrefix; }
     std::string getId() { 
         std::string str = getIdProp();
@@ -78,8 +76,14 @@ public:
     void reuse(tag::ETag a_nTag);
     void setStableKeyPrefix(const std::string& a_sStableKeyPrefix) { m_sStableKeyPrefix = a_sStableKeyPrefix; }
     void setStableKeyPosition(int a_stableKeyPosition) { m_nStableKeyPosition = a_stableKeyPosition; }
+    void setIdProp(const std::string& a_sIdProp) { m_sIdProp = a_sIdProp; }
+    void setKeyProp(const std::string& a_sKeyProp) { m_sKeyProp = a_sKeyProp; }
     void setProps(std::vector<std::pair<short, std::string>> a_props);
     void setBubbleEvents(std::unordered_map<std::string, std::function<void(emscripten::val)>> a_events);
+    void setOnAddElementEvent(std::function<void(emscripten::val)> a_fn) { m_onAddElementEvent = a_fn; }
+    void setOnBeforeMoveElementEvent(std::function<void(emscripten::val)> a_fn) { m_onBeforeMoveElementEvent = a_fn; }
+    void setOnMoveElementEvent(std::function<void(emscripten::val)> a_fn) { m_onMoveElementEvent = a_fn; }
+    void setOnRemoveElementEvent(std::function<void(emscripten::val)> a_fn) { m_onRemoveElementEvent = a_fn; }
     void setNonBubbleEvents(std::vector<std::pair<short, std::function<void(emscripten::val)>>> a_events);
     void setChildren(std::vector<VNode*> a_children);
 
@@ -116,6 +120,10 @@ public:
 
 private:
     std::unordered_map<std::string, std::function<void(emscripten::val)>> m_bubbleEvents;
+    std::function<void(emscripten::val)> m_onAddElementEvent;
+    std::function<void(emscripten::val)> m_onBeforeMoveElementEvent;
+    std::function<void(emscripten::val)> m_onMoveElementEvent;
+    std::function<void(emscripten::val)> m_onRemoveElementEvent;
 
     tag::ETag m_nTag;
     std::vector<std::pair<short, std::string>> m_props; // Kept sorted for efficient diffing
@@ -123,6 +131,8 @@ private:
     std::vector<VNode*> m_children;
     std::string m_sStableKeyPrefix; // This is transferred from fragment parents to children when flattening, sometimes multiple levels deep
     int m_nStableKeyPosition; // Positional key token
+    std::string m_sIdProp; // Cached id prop for quick access
+    std::string m_sKeyProp; // Cached key prop for quick access
 
     // Intrusive storage for efficient reconciliation
     emscripten::val m_matchingElement = emscripten::val::undefined();  // Associated DOM element handle when available

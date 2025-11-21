@@ -10,8 +10,9 @@
 //   using namespace volt;
 // ============================================================================
 
-#include <string>
-void log(const std::string& a_sMessage);
+#if defined(DEBUG) || defined(_DEBUG)
+    #include "Debug.hpp"
+#endif
 
 #include "VoltConfig.hpp"
 #include "DOM.hpp"
@@ -32,11 +33,6 @@ void log(const std::string& a_sMessage);
 
 // Implementation files
 #include "VoltImpl.hpp"
-
-void log(const std::string& a_sMessage) {
-    emscripten::val console = emscripten::val::global("console");
-    console.call<void>("log", a_sMessage);
-}
 
 // For convenience, you can use:
 // using namespace volt;

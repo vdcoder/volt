@@ -26,6 +26,10 @@ emscripten::val getElementById(std::string a_sId) {
     return emscripten::val::global("document").call<emscripten::val>("getElementById", a_sId);
 }
 
+void insertBefore(emscripten::val a_parent, emscripten::val a_newChild, emscripten::val a_referenceNode) {
+    a_parent.call<void>("insertBefore", a_newChild, a_referenceNode);
+}
+
 void appendChild(emscripten::val a_parent, emscripten::val a_child) {
     a_parent.call<void>("appendChild", a_child);
 }

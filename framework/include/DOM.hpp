@@ -20,6 +20,8 @@ emscripten::val createTextNode(std::string a_sText);
 
 emscripten::val getElementById(std::string a_sId);
 
+void insertBefore(emscripten::val a_parent, emscripten::val a_newChild, emscripten::val a_referenceNode);
+
 void appendChild(emscripten::val a_parent, emscripten::val a_child);
 
 void removeChild(emscripten::val a_parent, emscripten::val a_child);

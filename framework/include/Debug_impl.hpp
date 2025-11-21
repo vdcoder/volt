@@ -1,6 +1,4 @@
-#pragma once
-
-#include <string>
+#include "Debug.hpp"
 #include <emscripten/val.h>
 
 namespace volt {
