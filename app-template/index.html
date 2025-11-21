@@ -1,81 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>⚡ Volt App</title>
   <style>
-    * {
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
     }
 
     #app-container {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-      min-width: 400px;
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      background: #f5f5f5;
     }
 
     #root {
-      min-height: 200px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    #loading {
-      color: #999;
-      font-style: italic;
-    }
-
-    button {
-      background: #667eea;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 600;
-      transition: all 0.2s;
-      margin: 5px;
-    }
-
-    button:hover {
-      background: #5568d3;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(102,126,234,0.4);
-    }
-
-    button:active {
-      transform: translateY(0);
-    }
-
-    input {
-      padding: 10px 15px;
-      border: 2px solid #e0e0e0;
-      border-radius: 6px;
-      font-size: 14px;
-      margin: 5px;
-      transition: border-color 0.2s;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: #667eea;
+      flex: 1;
+      max-width: 960px;
+      margin: 40px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      padding: 20px;
     }
   </style>
 </head>
@@ -87,60 +39,13 @@
   </div>
 
   <script src="app.js"></script>
+  <script src="volt.js"></script>
   <script>
-    // Load and initialize Volt module
-    VoltApp({
-      print: function(text) {
-        console.log('📝 Volt:', text);
-      },
-      printErr: function(text) {
-        console.error('❌ Volt Error:', text);
-      }
-    }).then(function(Module) {
-      console.log('🚀 Volt Runtime Initialized!');
-      
-      // Get the namespace for this app
-      const voltNamespace = Module.getVoltNamespace();
-      console.log('🔧 Using namespace:', voltNamespace);
-
-      const appContainerElement = document.getElementById('app-container');
-
-      // Setup event bubbling from DOM to Volt
-      [
-        'click',
-        'input',
-        'change',
-        'submit',
-        'keydown',
-        'keyup',
-        'keypress',
-        'mousedown',
-        'mouseup',
-        'mousemove',
-        'focusin',
-        'focusout'
-      ].forEach(eventType => {
-        appContainerElement.addEventListener(eventType, function(event) {
-          // Bubble click events to Volt
-          let target = event.target;
-          while (target && target !== this) {
-              // Check for the existence of our custom pointer property
-              if (target.__cpp_ptr) {
-                  Module.invokeBubbleEvent(target.__cpp_ptr, event);
-                  return; 
-              }
-              target = target.parentNode;
-          }
-        });
-      });
-      
-      // Create the runtime and mount the app
-      Module.createRuntime();
-      
-      console.log('✨ App mounted!');
-    }).catch(function(err) {
-      console.error('❌ Failed to initialize Volt:', err);
-      document.getElementById('root').innerHTML = '<div style="color: red; padding: 20px;">Failed to load app: ' + err.message + '</div>';
+    VoltBootstrap.start({
+      containerId: "app-container",
+      rootId: "root",
+      debug: true,
+      // moduleOverrides: { print: ..., printErr: ... } // optional
     });
   </script>
 </body>

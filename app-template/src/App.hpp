@@ -1,5 +1,7 @@
 #pragma once
 #include <Volt.hpp>
+#define TRACK track(__COUNTER__)
+
 #include "components/Button.hpp"
 
 using namespace volt;
@@ -15,15 +17,15 @@ public:
     
     VNodeHandle render() override {
         return tag::div({attr::style("font-family: sans-serif; padding: 20px;")},
-            tag::h1(message).track(__COUNTER__),
-            tag::p("Counter: " + std::to_string(counter)).track(__COUNTER__),
+            tag::h1(message).TRACK,
+            tag::p("Counter: " + std::to_string(counter)).TRACK,
 
             // Using reusable Button component
             // Note: No need to call invalidate() - auto-invalidate in event handlers
             Button(getRuntime()).render("Increment", [this](emscripten::val e) {
                 log("Increment button clicked");
                 counter++;
-            }, "primary").track(__COUNTER__),
+            }, "primary").TRACK,
 
             tag::div(
                 x::iff(counter % 2 == 0, [this](){
@@ -31,7 +33,7 @@ public:
                         // Button(getRuntime()).render("Reset", [this](emscripten::val e) {
                         //     log("Reset button clicked");
                         //     counter = 0;
-                        // }, "danger").track(__COUNTER__) 
+                        // }, "danger").TRACK 
                         tag::button({
                             attr::onAddElement([this](emscripten::val e) {
                                 log("onAddElement button clicked");
@@ -49,14 +51,14 @@ public:
                                 log("Reset button clicked");
                                 counter = 0;
                             })
-                        }, "Reset").track(__COUNTER__)
+                        }, "Reset").TRACK
                     };
                 }, []() {
                     return std::vector<VNodeHandle>{"No button for you!"};
                 })
-            ).track(__COUNTER__),
+            ).TRACK,
 
-            (counter > 5 ? tag::p({attr::style("color: red;")}, "Counter exceeded 5!").track(__COUNTER__) : tag::br().track(__COUNTER__)),
+            (counter > 5 ? tag::p({attr::style("color: red;")}, "Counter exceeded 5!").TRACK : tag::br().TRACK),
 
             map(std::vector<std::string>{"Apple"}, [this](const std::string& fruit) {
                 return tag::_fragment({ attr::key(fruit) },
@@ -73,28 +75,28 @@ public:
                             attr::onRemoveElement([this](emscripten::val e) {
                                 log("onRemoveElement article");
                             })},
-                        tag::h1(fruit).track(__COUNTER__),
-                        tag::br().track(__COUNTER__),
-                        tag::a({attr::href("https://example.com/" + fruit)}, fruit).track(__COUNTER__),
+                        tag::h1(fruit).TRACK,
+                        tag::br().TRACK,
+                        tag::a({attr::href("https://example.com/" + fruit)}, fruit).TRACK,
                         map(std::vector<int>{0}, [fruit](int num) {
                             std::vector<VNodeHandle> lines;
                             for (int i = 0; i < 20; i++) {
-                                lines.push_back(tag::span({attr::id("fruit-" + fruit + "-line-span-" + std::to_string(i))}, " - " + fruit + " #" + std::to_string(i) + " ").track(__COUNTER__));
-                                lines.push_back(tag::br({attr::id("fruit-" + fruit + "-line-br-" + std::to_string(i))}).track(__COUNTER__));
+                                lines.push_back(tag::span({attr::id("fruit-" + fruit + "-line-span-" + std::to_string(i))}, " - " + fruit + " #" + std::to_string(i) + " ").TRACK);
+                                lines.push_back(tag::br({attr::id("fruit-" + fruit + "-line-br-" + std::to_string(i))}).TRACK);
                             }
                             for (int i = 0; i < 20; i++) {
                                 lines.push_back(
                                     tag::_fragment({attr::key("fruit-" + fruit + "-fragment-" + std::to_string(i))},
-                                        tag::span("in fragment - " + fruit + " #" + std::to_string(i) + " ").track(__COUNTER__),
-                                        tag::br().track(__COUNTER__)
-                                    ).track(__COUNTER__)
+                                        tag::span("in fragment - " + fruit + " #" + std::to_string(i) + " ").TRACK,
+                                        tag::br().TRACK
+                                    ).TRACK
                                 );
                             }
-                            return tag::_fragment(lines).track(__COUNTER__);
-                        }).track(__COUNTER__)
-                    ).track(__COUNTER__)
-                ).track(__COUNTER__);
-            }).track(__COUNTER__)
-        ).track(__COUNTER__);
+                            return tag::_fragment(lines).TRACK;
+                        }).TRACK
+                    ).TRACK
+                ).TRACK;
+            }).TRACK
+        ).TRACK;
     }
 };

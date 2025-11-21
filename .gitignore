@@ -1,10 +1,12 @@
 # Build outputs
 output/
+!output/volt.js
 *.wasm
 *.js
 *.js.mem
 !framework/user-scripts/*.sh
 !app-template/build.sh
+!app-template-x/build.sh
 
 # Compiled object files
 *.o

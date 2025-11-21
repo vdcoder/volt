@@ -1,322 +1,346 @@
-# Contributing to Volt ⚡
+# ⚡ Contributing to Volt
 
-Thank you for your interest in contributing to Volt! We welcome contributions from everyone.
+Welcome! Volt is a modern C++/WebAssembly UI engine with a powerful X-DSL, a structural-reuse surgical algorithm, and a tiny runtime.  
+This document serves two contributor audiences:
 
-## 📋 Table of Contents
+1. **Volt Internal Contributors** – People improving the framework itself  
+2. **Volt App Developers** – People building apps using the X-DSL
 
-- [Code of Conduct](#code-of-conduct)
-- [Getting Started](#getting-started)
-- [Development Setup](#development-setup)
-- [How to Contribute](#how-to-contribute)
-- [Pull Request Process](#pull-request-process)
-- [Coding Standards](#coding-standards)
-- [Project Structure](#project-structure)
-- [Testing](#testing)
-
-## 📜 Code of Conduct
-
-This project adheres to a code of conduct that promotes a welcoming and inclusive environment. By participating, you are expected to uphold this code:
-
-- Be respectful and inclusive
-- Welcome newcomers and help them get started
-- Focus on what is best for the community
-- Show empathy towards other community members
-
-## 🚀 Getting Started
-
-1. **Fork the repository** on GitHub
-2. **Clone your fork** locally:
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/volt.git
-   cd volt
-   ```
-3. **Add upstream remote**:
-   ```bash
-   git remote add upstream https://github.com/vdcoder/volt.git
-   ```
-
-## 🛠️ Development Setup
-
-### Prerequisites
-
-- Emscripten SDK (emsdk)
-- C++17 compatible compiler (GCC 7+, Clang 5+, MSVC 2017+)
-- Python 3.6+ (for development server)
-- Git
-
-### Install Emscripten
-
-```bash
-# Clone emsdk
-git clone https://github.com/emscripten-core/emsdk.git
-cd emsdk
-
-# Install and activate latest
-./emsdk install latest
-./emsdk activate latest
-
-# Set environment variables
-source ./emsdk_env.sh
-```
-
-### Test the Setup
-
-```bash
-# Create a test app
-./framework/user-scripts/create-volt-app.sh test-app
-
-# Build it
-cd test-app
-./build.sh
-
-# Run it
-cd output
-python3 -m http.server 8001
-# Open http://localhost:8001
-```
-
-## 🤝 How to Contribute
-
-### Reporting Bugs
-
-Before creating a bug report, please check existing issues. When creating a bug report, include:
-
-- **Clear title and description**
-- **Steps to reproduce** the behavior
-- **Expected behavior**
-- **Actual behavior**
-- **Screenshots** (if applicable)
-- **Environment details**: OS, browser, Emscripten version
-- **Code samples** demonstrating the issue
-
-### Suggesting Enhancements
-
-Enhancement suggestions are tracked as GitHub issues. When creating an enhancement suggestion, include:
-
-- **Clear title and description**
-- **Use case**: Why would this enhancement be useful?
-- **Possible implementation** (if you have ideas)
-- **Examples** from other frameworks (if applicable)
-
-### Contributing Code
-
-1. **Find or create an issue** describing what you want to work on
-2. **Comment on the issue** to let others know you're working on it
-3. **Create a branch** from `main`:
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-4. **Make your changes** following our coding standards
-5. **Test your changes** thoroughly
-6. **Commit your changes**:
-   ```bash
-   git commit -m "Add feature: brief description"
-   ```
-7. **Push to your fork**:
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-8. **Open a Pull Request**
-
-## 🔄 Pull Request Process
-
-1. **Update documentation** for any changed functionality
-2. **Add tests** for new features
-3. **Ensure all tests pass**
-4. **Update CHANGELOG.md** with your changes
-5. **Request review** from maintainers
-6. **Address review feedback** promptly
-7. **Squash commits** if requested before merge
-
-### PR Title Format
-
-Use conventional commits style:
-
-- `feat: add new feature`
-- `fix: resolve bug in diffing algorithm`
-- `docs: update API documentation`
-- `refactor: simplify event handling`
-- `perf: optimize DOM patching`
-- `test: add tests for VNode`
-- `chore: update build scripts`
-
-## 📐 Coding Standards
-
-### C++ Style
-
-- **C++17 standard**: Use modern C++ features
-- **Naming conventions**:
-  - Classes: `PascalCase` (e.g., `VoltRuntime`)
-  - Functions: `camelCase` (e.g., `invalidate`)
-  - Variables: `camelCase` (e.g., `currentNode`)
-  - Constants: `UPPER_SNAKE_CASE` (e.g., `MAX_DEPTH`)
-  - Macros: `UPPER_SNAKE_CASE` (e.g., `VNODE_TAG_HELPER`)
-
-- **Formatting**:
-  - Indentation: 4 spaces (no tabs)
-  - Line length: 100 characters maximum
-  - Braces: Opening brace on same line
-  - Pointers: `Type* ptr` (asterisk with type)
-
-- **Best practices**:
-  - Use `const` and `constexpr` where applicable
-  - Prefer references over pointers when ownership is not transferred
-  - Use RAII for resource management
-  - Avoid raw `new`/`delete`, use smart pointers if needed
-  - Keep functions focused and small
-
-### Example
-
-```cpp
-class VoltRuntime {
-private:
-    std::string elementId;
-    VNode* currentTree = nullptr;
-    
-public:
-    explicit VoltRuntime(const std::string& id) 
-        : elementId(id) {}
-    
-    template<typename TApp>
-    void mount() {
-        // Implementation
-    }
-};
-```
-
-### Comments
-
-- Use `//` for single-line comments
-- Use `/* */` for multi-line explanatory comments
-- Document public APIs with clear descriptions
-- Explain "why", not "what" (code should be self-documenting)
-
-```cpp
-// Good: Explains why
-// Sanitize GUID to ensure valid JavaScript identifier
-std::string sanitizeForJs(const std::string& guid) { ... }
-
-// Bad: Explains what (obvious from code)
-// Loop through all characters
-for (char c : guid) { ... }
-```
-
-## 🏗️ Project Structure
-
-```
-volt/
-├── LICENSE                        # MIT License
-├── README.md                      # Main documentation
-├── CONTRIBUTING.md                # This file
-├── CHANGELOG.md                   # Version history
-├── QUICKSTART.md                  # Quick reference
-├── framework/                     # Core framework
-│   ├── include/                   # Public headers
-│   │   ├── Volt.hpp              # Single include
-│   │   ├── VoltRuntime.hpp       # Runtime engine
-│   │   ├── VoltConfig.hpp        # Configuration
-│   │   ├── VNode.hpp             # Virtual DOM
-│   │   ├── Attrs.hpp             # HTML attributes
-│   │   ├── VoltEvents.hpp        # Event handlers
-│   │   ├── Diff.hpp              # Diffing algorithm
-│   │   ├── Patch.hpp             # DOM patching
-│   │   └── String.hpp            # String utilities
-│   ├── src/
-│   │   └── VoltRuntime.cpp       # Runtime implementation
-│   └── user-scripts/
-│       ├── create-volt-app.sh    # App generator
-│       └── update-framework.sh   # Framework updater
-└── app-template/                  # Template for new apps
-    ├── src/
-    │   ├── App.hpp               # Template app
-    │   └── main.cpp              # Boilerplate
-    ├── build.sh                  # Build script
-    ├── index.html                # HTML entry point
-    ├── README.md                 # App documentation
-    └── dependencies/             # Populated by create-volt-app
-        └── volt/
-```
-
-### Key Components
-
-- **VoltRuntime**: Core engine managing lifecycle and rendering
-- **VNode**: Virtual DOM node representation
-- **Diff**: Virtual DOM diffing algorithm
-- **Patch**: DOM patching operations
-- **VoltEvents**: Event handler helpers
-- **Attrs**: HTML attribute definitions
-
-## 🧪 Testing
-
-### Manual Testing
-
-1. Test the framework:
-   ```bash
-   ./framework/user-scripts/create-volt-app.sh test-app
-   cd test-app
-   ./build.sh
-   cd output
-   python3 -m http.server 8001
-   ```
-
-2. Test in browser:
-   - Open http://localhost:8001
-   - Check console for errors
-   - Test event handlers
-   - Verify rendering
-
-### Testing Checklist
-
-Before submitting a PR, verify:
-
-- [ ] Code compiles without warnings
-- [ ] `create-volt-app.sh` creates working apps
-- [ ] Generated apps compile successfully
-- [ ] Apps run correctly in browser
-- [ ] Event handlers work (click, input, etc.)
-- [ ] No console errors in browser
-- [ ] Code follows style guidelines
-- [ ] Documentation is updated
-
-## 🔍 Areas to Contribute
-
-### High Priority
-
-- **Testing framework**: Automated tests for core functionality
-- **Performance benchmarks**: Measure and optimize rendering speed
-- **Documentation**: More examples and tutorials
-- **Error handling**: Better error messages and validation
-
-### Medium Priority
-
-- **Component library**: Common UI components
-- **DevTools**: Browser extension for debugging
-- **Router**: Client-side routing solution
-- **State management**: Built-in state management patterns
-
-### Low Priority
-
-- **TypeScript definitions**: For better IDE support
-- **Package manager**: npm/CDN distribution
-- **Build tools**: Webpack/Vite plugins
-- **SSR support**: Server-side rendering
-
-## 📞 Getting Help
-
-- **GitHub Discussions**: Ask questions, share ideas
-- **GitHub Issues**: Report bugs, request features
-- **Discord**: (Coming soon) Real-time chat with community
-
-## 🙏 Recognition
-
-Contributors will be recognized in:
-
-- README.md acknowledgments section
-- CHANGELOG.md for each release
-- GitHub contributors page
-
-Thank you for making Volt better! ⚡
+Both roles are important. This guide helps you succeed in either track.
 
 ---
 
-**Questions?** Open an issue or discussion on GitHub.
+# 📘 Table of Contents
+
+- [Code of Conduct](#code-of-conduct)
+- [Contributor Roles](#contributor-roles)
+- [Development Setup](#development-setup)
+- [Contributing to the Framework (Volt Internals)](#contributing-to-the-framework-volt-internals)
+  - [Framework Coding Standards](#framework-coding-standards)
+  - [Project Structure](#project-structure)
+  - [Testing the Framework](#testing-the-framework)
+  - [Pull Request Process](#pull-request-process)
+- [Contributing as a Volt App Developer](#contributing-as-a-volt-app-developer)
+  - [X-DSL Best Practices](#x-dsl-best-practices)
+  - [Structural Reuse Identity Model](#structural-reuse-identity-model)
+  - [Component Authoring](#component-authoring)
+  - [Lifecycle Hooks](#lifecycle-hooks)
+  - [Performance Guidelines](#performance-guidelines)
+- [Areas to Contribute](#areas-to-contribute)
+- [Getting Help](#getting-help)
+
+---
+
+# 🧭 Code of Conduct
+
+Volt aims to be:
+
+- respectful  
+- helpful  
+- inclusive  
+- collaborative  
+
+We welcome all contributors. Treat each other with kindness and curiosity.
+
+---
+
+# 👥 Contributor Roles
+
+Volt has **two contributor types**, each equally valued.
+
+## **1. Framework Contributors**  
+People modifying:
+- VoltRuntime internals  
+- Structural Reuse Surgical diff algorithm  
+- DOM patching logic  
+- Binding layer (JavaScript glue)  
+- Compiler/preprocessor for X-DSL  
+- Build scripts and templates  
+
+These changes affect *everyone*, so higher rigor applies.
+
+## **2. Volt App Developers**  
+People building applications *using* Volt.  
+Your contributions often include:
+- demos  
+- templates  
+- reusable components  
+- docs  
+- bug reports  
+- DSL usage improvements  
+
+This category is more flexible and friendly to newcomers.
+
+---
+
+# 🛠️ Development Setup
+
+Required:
+
+- Emscripten (emsdk)  
+- C++17 toolchain  
+- Python 3  
+- Git  
+- A browser (Chrome, Firefox, Safari)  
+
+Install Emscripten:
+
+```bash
+git clone https://github.com/emscripten-core/emsdk
+cd emsdk
+./emsdk install latest
+./emsdk activate latest
+source ./emsdk_env.sh
+```
+
+Test:
+
+```bash
+./volt/framework/user-scripts/create-volt-app.sh demo
+cd demo
+./build.sh
+cd output
+python3 -m http.server 8001
+```
+
+---
+
+# 🔧 Contributing to the Framework (Volt Internals)
+
+The Volt internals are compact but powerful. Changes here influence rendering, performance, identity, X-DSL rules, and diff behavior.
+
+---
+
+## Framework Coding Standards
+
+### **Language**
+- C++17  
+- Minimize macros  
+- Prefer templates and inline functions  
+
+### **Naming**
+- **Classes**: `PascalCase`  
+- **Functions**: `camelCase`  
+- **Members**: `camelCase`  
+- **Constants/Macros**: `UPPER_SNAKE_CASE`  
+- **DSL tags/attrs** follow `volt::tag::div`, `volt::attr::onClick`
+
+### **Style**
+- 4-space indentation  
+- No tabs  
+- 100-char line limit  
+- RAII for allocations  
+- No raw `new`/`delete`  
+- Use `std::vector`, `std::string`, and move semantics aggressively  
+
+### **Comments**
+Explain *why* something is done, not *what*.
+
+Good:
+
+```cpp
+// Structural-reuse heuristic: move node instead of delete+create
+```
+
+Bad:
+
+```cpp
+// Loop through children
+```
+
+---
+
+## Project Structure
+
+```
+volt/
+├── framework/
+│   ├── include/
+│   │   ├── Volt.hpp
+│   │   ├── VoltRuntime.hpp
+│   │   ├── VNode.hpp
+│   │   ├── Diff.hpp
+│   │   ├── Patch.hpp
+│   │   ├── Attrs.hpp
+│   │   ├── VoltEvents.hpp
+│   │   ├── VoltConfig.hpp
+│   │   └── String.hpp
+│   ├── src/
+│   │   └── VoltRuntime.cpp
+│   └── user-scripts/
+│       └── create-volt-app.sh
+├── app-template/
+├── app-template-x/
+└── docs/
+```
+
+Framework contributors should familiarize themselves especially with:
+
+- `VNode` – identity, children, props  
+- `Diff.hpp` – structural reuse surgical algorithm  
+- `Patch.hpp` – applies DOM operations  
+- `VoltRuntime` – render pipeline, `.requestRender()`  
+- Preprocessor (in Python) for X-DSL  
+
+---
+
+## Testing the Framework
+
+Before submitting a PR, ensure:
+
+- A new app created with both templates builds successfully  
+- The X-DSL correctly expands via the Python preprocessor  
+- Identity model works (`.track(__COUNTER__)`)  
+- map / loop / code / props behave correctly  
+- No regressions in event bubbling  
+- DOM patching still works in real browsers  
+- No JS console errors  
+- No memory leaks in val<->C++ interactions  
+
+---
+
+## Pull Request Process
+
+1. Keep PRs focused on a single responsibility  
+2. Update docs if behavior changes  
+3. Update CHANGELOG.md  
+4. Provide benchmarks if performance-sensitive  
+5. Avoid introducing unnecessary abstractions  
+6. Squash commits if requested  
+
+Commit message style:
+
+- `feat:` new feature  
+- `fix:` bug  
+- `perf:` performance improvement  
+- `refactor:` implementation change  
+- `docs:` documentation update  
+- `chore:` housekeeping  
+
+---
+
+# 🎨 Contributing as a Volt App Developer
+
+Most contributors belong here. These guidelines help you build clean, stable, fast Volt apps using the X-DSL.
+
+---
+
+## X-DSL Best Practices
+
+Volt X reduces boilerplate and improves readability:
+
+```cpp
+return <div({style:=("padding:20px;")}, 
+    <h1("Hello")/>,
+    <button({onClick:=([this]{ clicked++; })}, "Click")/>
+)/>;
+```
+
+### Tips
+
+✔ indentation matters—keep tags aligned  
+✔ group props using `{ ... }`  
+✔ use meaningful variable names inside `<code(...)>`  
+✔ prefer `<map(...)>` for lists  
+✔ prefer `<loop(n)>` instead of manual for-loops  
+✔ avoid large C++ blocks inside DSL nodes—factor them out  
+
+---
+
+## Structural Reuse Identity Model
+
+Volt uses a surgical diff algorithm. Stability comes from:
+
+- **Structural identity** (position within siblings)  
+- **Explicit identity** via `.track(...)` prefix  
+- **Stable keys** supplied by the DSL (array index in `map`, loop counter)  
+
+Preprocessor automatically injects:
+
+```
+.track(__COUNTER__)
+```
+
+You do not add this manually.
+
+### Rules for developers
+
+✔ keep list order stable  
+✔ prefer `<map>` over manual loops  
+✔ use stable data keys for dynamic lists  
+✔ fragments `<()>` are cheap and encouraged  
+
+---
+
+## Component Authoring
+
+Component patterns:
+
+- **Stateless (inline)**  
+- **Stateful (class member)**  
+
+Both can use X-DSL inside `.render(...)`.
+
+Example:
+
+```cpp
+VNodeHandle render(const std::string& label) {
+    return <button({onClick:=([this]{ count++; })}, label)/>;
+}
+```
+
+---
+
+## Lifecycle Hooks
+
+Volt X supports attribute-style lifecycle callbacks:
+
+- `onAddElement(elem, parent)`  
+- `onRemoveElement(elem)`  
+- `onBeforeMoveElement(elem, newParent)`  
+- `onMoveElement(elem, newParent)`  
+
+These are powerful for animations, Portal patterns, custom transitions, etc.
+
+---
+
+## Performance Guidelines
+
+✔ prefer fragments (`<()>`) to avoid wrapper elements  
+✔ prefer `<map>` (C++ loop → fragment)  
+✔ prefer component instances only when state must persist  
+✔ avoid large objects in VNode props  
+✔ limit JS↔WASM event chatter  
+✔ don’t allocate strings in tight loops—reuse where possible  
+
+---
+
+# 🧭 Areas to Contribute
+
+### High Priority
+- Stable JS bootstrap file  
+- Improved DOM lifecycle integration  
+- More DSL primitives  
+- Performance metrics  
+- Animation support  
+
+### Medium
+- Component library  
+- DevTools panel  
+- Advanced examples  
+
+### Low
+- SSR experiments  
+- CDN packaging  
+- Vite/Webpack templates  
+
+---
+
+# 📞 Getting Help
+
+- GitHub Issues  
+- GitHub Discussions  
+- Future Discord community  
+
+Volt welcomes you — whether you're hacking the runtime or building your first X-DSL app.  
+**Thank you for helping shape the future of Volt! ⚡**

@@ -1,78 +1,167 @@
-# ⚡ Volt App
+# ⚡ Volt App (X Template)
 
-A web application built with the Volt Framework.
+A web application built with the Volt Framework — using the **Volt X DSL**, an HTML-inspired syntax compiled to pure Volt C++ through a Python preprocessor.
+
+This template is ideal for fast UI development with clean, declarative syntax.
+
+---
 
 ## 🚀 Quick Start
 
 ### Build
+
 ```bash
 ./build.sh
 ```
 
 ### Run
+
 ```bash
 cd output
 python3 -m http.server 8001
 # Open http://localhost:8001
 ```
 
+---
+
 ## 📁 Project Structure
 
 ```
 .
 ├── src/
-│   ├── App.hpp          # Your app code (start here!)
-│   └── main.cpp         # Boilerplate
+│   ├── components/
+│   │   └── Button.x.hpp      # Example X-DSL component
+│   ├── App.x.hpp             # Your main application (start here!)
+│   └── main.x.cpp            # Boilerplate entry point
 ├── dependencies/
-│   └── volt/            # Volt Framework
-├── index.html           # Entry point
-├── build.sh            # Build script
-└── output/             # Build output
+│   └── volt/                 # Volt Framework headers
+├── index.html                # Main HTML container
+├── build.sh                  # Preprocessing + WASM build
+└── output/                   # Build output
 ```
+
+### DSL Source File Rule
+
+Any file whose name contains:
+
+```
+.x.
+```
+
+(e.g. `App.x.hpp`, `main.x.cpp`, `Button.x.hpp`)
+
+will be **preprocessed** and written into:
+
+```
+_generated/src/
+```
+
+The build script compiles the generated files, not the originals.
+
+---
 
 ## 🎯 Development
 
-Your app code lives in `src/App.hpp`. The `App` class inherits from `VoltRuntime::AppBase` and implements a `render()` method that returns a Virtual DOM tree.
+Your primary app code lives in:
 
-### Example:
+```
+src/App.x.hpp
+```
+
+The `App` class inherits from `VoltRuntime::AppBase` and implements:
+
 ```cpp
-VNode render() override {
-    return div({style("padding: 20px;")},
-        h1("Hello World"),
-        button({onClick([this]() {
-            // Handle click - auto-invalidate!
-        })}, "Click Me")
-    );
+VNodeHandle render() override;
+```
+
+The Volt X DSL lets you write clean UI declarations similar to HTML.
+
+---
+
+### 🧱 Example (X DSL)
+
+```cpp
+VNodeHandle render() override {
+    return <div({ style:=("padding: 20px;") },
+        <h1("Hello World")/>,
+
+        <button({
+            onClick:=([this](emscripten::val e) {
+                // Handle click
+            })
+        }, "Click Me")/>
+
+    )/>;
 }
 ```
 
-**Note**: Event handlers automatically trigger re-renders. Manual `invalidate()` only needed for non-event updates (timers, async operations).
+### 📝 Notes
+
+- The **Volt preprocessor** converts all `<tag(...) />` into standard Volt C++.
+- Props use the syntax:
+
+  ```cpp
+  prop:=("value")
+  ```
+
+  which becomes:
+
+  ```cpp
+  volt::attr::prop("value")
+  ```
+
+- Event handlers automatically request a re-render.
+- Manually call `requestRender()` only for:
+  - timers  
+  - async operations  
+  - external data changes  
+
+---
 
 ## 🔧 Build Options
 
-### Custom GUID (for multiple instances)
+### Custom GUID (run multiple Volt apps on one page)
+
 ```bash
 VOLT_GUID='myapp_v1' ./build.sh
 ```
 
+The GUID becomes part of the JavaScript module name.
+
+---
+
 ### Optimization Levels
-Edit `build.sh` and change `-O3` to:
-- `-O0` - No optimization (faster builds, debugging)
-- `-O2` - Moderate optimization
-- `-O3` - Full optimization (default)
+
+Inside `build.sh`, adjust:
+
+| Level | Meaning |
+|-------|---------|
+| `-O0` | Fastest builds, easiest debugging |
+| `-O2` | Recommended dev mode |
+| `-O3` | Maximum optimization for production |
+
+---
 
 ## 📚 Learn More
 
-- **Volt Documentation**: See `/dependencies/volt/` for framework details
-- **Examples**: Check the Volt repository for more examples
+- Volt framework details live under:  
+  **`dependencies/volt/`**
+- More examples are available in the Volt repository.
 
-## 🚀 Deploy
+---
 
-Deploy the `output/` directory to any static host:
-- Railway
-- Vercel
-- Netlify
-- GitHub Pages
-- Or any web server
+## 🚀 Deployment
 
-Enjoy building with Volt! ⚡
+You can deploy the `output/` folder to **any** static host:
+
+- Railway  
+- Vercel  
+- Netlify  
+- GitHub Pages  
+- Nginx / Apache / static servers
+
+Volt runs entirely in the browser via WebAssembly — no backend required.
+
+---
+
+Enjoy building with Volt X! ⚡

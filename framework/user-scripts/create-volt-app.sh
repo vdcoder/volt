@@ -51,7 +51,7 @@ Options:
     --output <dir>         Output directory (default: ../app-name)
     --template <name>      Template to use (default: x)
                            Available:
-                             default  -> app-template
+                             raw      -> app-template
                              x        -> app-template-x
     --no-git               Don't initialize git repository
     --help, -h             Show this help message
@@ -126,9 +126,9 @@ fi
 
 # Resolve template directory and template-specific filenames
 case "$TEMPLATE_VARIANT" in
-    default)
+    raw)
         TEMPLATE_DIR="${TEMPLATE_BASE_DIR}app-template"
-        TEMPLATE_LABEL="default (app-template)"
+        TEMPLATE_LABEL="raw (app-template)"
         APP_HEADER="App.hpp"
         MAIN_CPP="main.cpp"
         ;;
@@ -140,7 +140,7 @@ case "$TEMPLATE_VARIANT" in
         ;;
     *)
         print_error "Unknown template: $TEMPLATE_VARIANT"
-        print_info "Valid templates: default, x"
+        print_info "Valid templates: raw, x"
         exit 1
         ;;
 esac

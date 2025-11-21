@@ -1,5 +1,6 @@
 #pragma once
 #include <Volt.hpp>
+#define TRACK track(__COUNTER__)
 
 using namespace volt;
 
@@ -32,6 +33,6 @@ public:
         return tag::button({
             attr::style(baseStyle + variantStyle),
             attr::onClick(onButtonClick)
-        }, label).track(__COUNTER__);
+        }, label).TRACK;
     }
 };

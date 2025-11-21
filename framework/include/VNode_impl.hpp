@@ -74,7 +74,7 @@ inline VNodeHandle code(Renderer a_fnRenderer) {
 }
 
 template<typename PropsGenerator>
-inline std::vector<std::pair<short, PropValueType>> code(PropsGenerator a_fnPropsGenerator) {
+inline std::vector<std::pair<short, PropValueType>> props(PropsGenerator a_fnPropsGenerator) {
     return a_fnPropsGenerator();
 }
 
