@@ -1,9 +1,9 @@
 # Build outputs
 output/
-!output/volt.js
 *.wasm
 *.js
 *.js.mem
+!output/volt.js
 !framework/user-scripts/*.sh
 !app-template/build.sh
 !app-template-x/build.sh
