@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 
 # Get script directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-TEMPLATE_DIR="$SCRIPT_DIR/../../app-template"
+TEMPLATE_BASE_DIR="$SCRIPT_DIR/../../"
 
 # Function to print colored output
 print_header() {
@@ -44,17 +44,22 @@ show_usage() {
     cat << EOF
 Usage: ./create-volt-app.sh <app-name> [options]
 
-Creates a new Volt application from the template.
+Creates a new Volt application from a template.
 
 Options:
-    --guid <guid>       Set VOLT_GUID for this app (default: app-name)
-    --output <dir>      Output directory (default: ../app-name)
-    --no-git            Don't initialize git repository
-    --help, -h          Show this help message
+    --guid <guid>          Set VOLT_GUID for this app (default: app-name)
+    --output <dir>         Output directory (default: ../app-name)
+    --template <name>      Template to use (default: default)
+                           Available:
+                             default  -> app-template
+                             x        -> app-template-x
+    --no-git               Don't initialize git repository
+    --help, -h             Show this help message
 
 Examples:
     ./create-volt-app.sh my-awesome-app
     ./create-volt-app.sh my-app --guid "myapp_v1"
+    ./create-volt-app.sh my-app --template x
     ./create-volt-app.sh my-app --output ~/projects/my-app
 
 EOF
@@ -65,6 +70,7 @@ APP_NAME=""
 APP_GUID=""
 OUTPUT_DIR=""
 INIT_GIT=true
+TEMPLATE_VARIANT="default"   # <--- new: default template
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -74,6 +80,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --output)
             OUTPUT_DIR="$2"
+            shift 2
+            ;;
+        --template)
+            TEMPLATE_VARIANT="$2"
             shift 2
             ;;
         --no-git)
@@ -87,12 +97,12 @@ while [[ $# -gt 0 ]]; do
         *)
             if [ -z "$APP_NAME" ]; then
                 APP_NAME="$1"
+                shift
             else
                 print_error "Unknown argument: $1"
                 show_usage
                 exit 1
             fi
-            shift
             ;;
     esac
 done
@@ -112,6 +122,23 @@ fi
 if [ -z "$OUTPUT_DIR" ]; then
     OUTPUT_DIR="$SCRIPT_DIR/../../../$APP_NAME"
 fi
+
+# Resolve template directory based on variant
+case "$TEMPLATE_VARIANT" in
+    default)
+        TEMPLATE_DIR="${TEMPLATE_BASE_DIR}app-template"
+        TEMPLATE_LABEL="default (app-template)"
+        ;;
+    x)
+        TEMPLATE_DIR="${TEMPLATE_BASE_DIR}app-template-x"
+        TEMPLATE_LABEL="x (app-template-x)"
+        ;;
+    *)
+        print_error "Unknown template: $TEMPLATE_VARIANT"
+        print_info "Valid templates: default, x"
+        exit 1
+        ;;
+esac
 
 # Check if template exists
 if [ ! -d "$TEMPLATE_DIR" ]; then
@@ -133,6 +160,7 @@ echo ""
 
 print_info "App Name: $APP_NAME"
 print_info "GUID: $APP_GUID"
+print_info "Template: $TEMPLATE_LABEL"
 print_info "Output Directory: $OUTPUT_DIR"
 echo ""
 
