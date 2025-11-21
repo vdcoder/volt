@@ -172,7 +172,7 @@ echo ""
 # Copy template
 print_info "Copying template files..."
 cp -r "$TEMPLATE_DIR" "$OUTPUT_DIR"
-cp -r "$SCRIPT_DIR/../../framework/src" "$OUTPUT_DIR/output"
+cp -r "$SCRIPT_DIR/../../framework/src/"*.js "$OUTPUT_DIR/output"
 print_success "Template copied"
 
 # Copy framework
