@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# ⚡ Volt App (X template) - Build Script
+# ⚡ Volt App (X template) - Build Script 
 
 set -e
 

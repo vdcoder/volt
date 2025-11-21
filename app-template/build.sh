@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Temporary for dev only: update app directly from repo
+# Temporary for dev only: update app directly from repo 
 #cp -r /mnt/c/Users/vdcod/OneDrive/Desktop/OneDrive/vdcoder.com/volt/framework/include/* dependencies/volt/include/
 #cp -r /mnt/c/Users/vdcod/OneDrive/Desktop/OneDrive/vdcoder.com/volt/app-template/src/* src/
 #cp -r /mnt/c/Users/vdcod/OneDrive/Desktop/OneDrive/vdcoder.com/volt/app-template/src/components/* src/components/
