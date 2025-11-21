@@ -38,7 +38,7 @@ echo "   Namespace: volt_$GUID_DISPLAY"
 emcc src/main.cpp \
     -DVOLT_GUID=\"$GUID\" \
     -DDEBUG \
-    -I./dependencies/volt/include \
+    -I./dependencies/volt \
     -o output/app.js \
     -lembind \
     -std=c++17 \

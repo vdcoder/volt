@@ -73,7 +73,7 @@ echo "   Using sources from: $GENERATED_DIR/src"
 emcc "$MAIN_SRC" \
     -DVOLT_GUID=\"$GUID\" \
     -DDEBUG \
-    -I./dependencies/volt/include \
+    -I./dependencies/volt \
     -o output/app.js \
     -lembind \
     -std=c++17 \
