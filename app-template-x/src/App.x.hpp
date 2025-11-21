@@ -1,6 +1,6 @@
 #pragma once
 #include <Volt.hpp>
-#include "components/Button.hpp"
+#include "components/Button.x.hpp"
 
 using namespace volt;
 

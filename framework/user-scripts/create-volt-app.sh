@@ -49,7 +49,7 @@ Creates a new Volt application from a template.
 Options:
     --guid <guid>          Set VOLT_GUID for this app (default: app-name)
     --output <dir>         Output directory (default: ../app-name)
-    --template <name>      Template to use (default: default)
+    --template <name>      Template to use (default: x)
                            Available:
                              default  -> app-template
                              x        -> app-template-x
@@ -59,7 +59,7 @@ Options:
 Examples:
     ./create-volt-app.sh my-awesome-app
     ./create-volt-app.sh my-app --guid "myapp_v1"
-    ./create-volt-app.sh my-app --template x
+    ./create-volt-app.sh my-app --template default
     ./create-volt-app.sh my-app --output ~/projects/my-app
 
 EOF
@@ -70,7 +70,8 @@ APP_NAME=""
 APP_GUID=""
 OUTPUT_DIR=""
 INIT_GIT=true
-TEMPLATE_VARIANT="default"   # <--- new: default template
+# default to X template now
+TEMPLATE_VARIANT="x"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -123,15 +124,19 @@ if [ -z "$OUTPUT_DIR" ]; then
     OUTPUT_DIR="$SCRIPT_DIR/../../../$APP_NAME"
 fi
 
-# Resolve template directory based on variant
+# Resolve template directory and template-specific filenames
 case "$TEMPLATE_VARIANT" in
     default)
         TEMPLATE_DIR="${TEMPLATE_BASE_DIR}app-template"
         TEMPLATE_LABEL="default (app-template)"
+        APP_HEADER="App.hpp"
+        MAIN_CPP="main.cpp"
         ;;
     x)
         TEMPLATE_DIR="${TEMPLATE_BASE_DIR}app-template-x"
         TEMPLATE_LABEL="x (app-template-x)"
+        APP_HEADER="App.x.hpp"
+        MAIN_CPP="main.x.cpp"
         ;;
     *)
         print_error "Unknown template: $TEMPLATE_VARIANT"
@@ -179,32 +184,49 @@ print_info "Customizing app files..."
 APP_CLASS_NAME="$(echo $APP_NAME | sed 's/-/_/g' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2))}1' FS='_' OFS='')"
 APP_NAME_UNDERSCORE="${APP_NAME//-/_}"
 
-# Update App.hpp: Replace tokens
-sed -i "s/VOLT_APP_NAME_CAMEL/${APP_CLASS_NAME}/g" "$OUTPUT_DIR/src/App.hpp" 2>/dev/null || \
-    sed -i '' "s/VOLT_APP_NAME_CAMEL/${APP_CLASS_NAME}/g" "$OUTPUT_DIR/src/App.hpp"
+APP_HEADER_PATH="$OUTPUT_DIR/src/$APP_HEADER"
+MAIN_CPP_PATH="$OUTPUT_DIR/src/$MAIN_CPP"
 
-sed -i "s/VOLT_APP_NAME/${APP_NAME}/g" "$OUTPUT_DIR/src/App.hpp" 2>/dev/null || \
-    sed -i '' "s/VOLT_APP_NAME/${APP_NAME}/g" "$OUTPUT_DIR/src/App.hpp"
+# Update App header: Replace tokens
+if [ -f "$APP_HEADER_PATH" ]; then
+    sed -i "s/VOLT_APP_NAME_CAMEL/${APP_CLASS_NAME}/g" "$APP_HEADER_PATH" 2>/dev/null || \
+        sed -i '' "s/VOLT_APP_NAME_CAMEL/${APP_CLASS_NAME}/g" "$APP_HEADER_PATH"
+
+    sed -i "s/VOLT_APP_NAME/${APP_NAME}/g" "$APP_HEADER_PATH" 2>/dev/null || \
+        sed -i '' "s/VOLT_APP_NAME/${APP_NAME}/g" "$APP_HEADER_PATH"
+else
+    print_warning "App header file not found: $APP_HEADER_PATH"
+fi
 
 # Update main.cpp: Replace tokens
-sed -i "s/VOLT_APP_NAME_CAMEL/${APP_CLASS_NAME}/g" "$OUTPUT_DIR/src/main.cpp" 2>/dev/null || \
-    sed -i '' "s/VOLT_APP_NAME_CAMEL/${APP_CLASS_NAME}/g" "$OUTPUT_DIR/src/main.cpp"
+if [ -f "$MAIN_CPP_PATH" ]; then
+    sed -i "s/VOLT_APP_NAME_CAMEL/${APP_CLASS_NAME}/g" "$MAIN_CPP_PATH" 2>/dev/null || \
+        sed -i '' "s/VOLT_APP_NAME_CAMEL/${APP_CLASS_NAME}/g" "$MAIN_CPP_PATH"
 
-sed -i "s/VOLT_APP_NAME_UNDERSCORE/${APP_NAME_UNDERSCORE}/g" "$OUTPUT_DIR/src/main.cpp" 2>/dev/null || \
-    sed -i '' "s/VOLT_APP_NAME_UNDERSCORE/${APP_NAME_UNDERSCORE}/g" "$OUTPUT_DIR/src/main.cpp"
+    sed -i "s/VOLT_APP_NAME_UNDERSCORE/${APP_NAME_UNDERSCORE}/g" "$MAIN_CPP_PATH" 2>/dev/null || \
+        sed -i '' "s/VOLT_APP_NAME_UNDERSCORE/${APP_NAME_UNDERSCORE}/g" "$MAIN_CPP_PATH"
+else
+    print_warning "Main file not found: $MAIN_CPP_PATH"
+fi
 
 # Update index.html with app name
-sed -i "s/Volt App/${APP_NAME}/g" "$OUTPUT_DIR/index.html" 2>/dev/null || \
-    sed -i '' "s/Volt App/${APP_NAME}/g" "$OUTPUT_DIR/index.html"
+if [ -f "$OUTPUT_DIR/index.html" ]; then
+    sed -i "s/Volt App/${APP_NAME}/g" "$OUTPUT_DIR/index.html" 2>/dev/null || \
+        sed -i '' "s/Volt App/${APP_NAME}/g" "$OUTPUT_DIR/index.html"
+fi
 
 # Update build.sh with GUID
-sed -i "s/GUID=\"\${VOLT_GUID:-demo}\"/GUID=\"\${VOLT_GUID:-${APP_GUID}}\"/g" "$OUTPUT_DIR/build.sh" 2>/dev/null || \
-    sed -i '' "s/GUID=\"\${VOLT_GUID:-demo}\"/GUID=\"\${VOLT_GUID:-${APP_GUID}}\"/g" "$OUTPUT_DIR/build.sh"
+if [ -f "$OUTPUT_DIR/build.sh" ]; then
+    sed -i "s/GUID=\"\${VOLT_GUID:-demo}\"/GUID=\"\${VOLT_GUID:-${APP_GUID}}\"/g" "$OUTPUT_DIR/build.sh" 2>/dev/null || \
+        sed -i '' "s/GUID=\"\${VOLT_GUID:-demo}\"/GUID=\"\${VOLT_GUID:-${APP_GUID}}\"/g" "$OUTPUT_DIR/build.sh"
+fi
 
 print_success "Files customized"
 
 # Make scripts executable
-chmod +x "$OUTPUT_DIR/build.sh"
+if [ -f "$OUTPUT_DIR/build.sh" ]; then
+    chmod +x "$OUTPUT_DIR/build.sh"
+fi
 if [ -f "$OUTPUT_DIR/setup.sh" ]; then
     chmod +x "$OUTPUT_DIR/setup.sh"
 fi

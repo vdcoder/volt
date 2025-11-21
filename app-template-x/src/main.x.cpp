@@ -1,6 +1,6 @@
 #include <emscripten/bind.h>
 #include <Volt.hpp>
-#include "App.hpp"
+#include "App.x.hpp"
 
 using namespace volt;
 using namespace emscripten;

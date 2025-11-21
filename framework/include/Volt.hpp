@@ -16,7 +16,6 @@
 
 #include "VoltConfig.hpp"
 #include "DOM.hpp"
-#include "StableKeyManager.hpp"
 #include "IVoltRuntime.hpp"
 #include "ComponentBase.hpp"
 #include "AppBase.hpp"

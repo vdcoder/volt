@@ -1,24 +1,23 @@
 #!/bin/bash
 
-# Temporary for dev only: update app directly from repo
-cp -r /mnt/c/Users/vdcod/OneDrive/Desktop/OneDrive/vdcoder.com/volt/framework/include/* dependencies/volt/include/
-cp -r /mnt/c/Users/vdcod/OneDrive/Desktop/OneDrive/vdcoder.com/volt/app-template/src/* src/
-cp -r /mnt/c/Users/vdcod/OneDrive/Desktop/OneDrive/vdcoder.com/volt/app-template/src/components/* src/components/
-cp -r /mnt/c/Users/vdcod/OneDrive/Desktop/OneDrive/vdcoder.com/volt/app-template/build.sh build.sh
-cp -r /mnt/c/Users/vdcod/OneDrive/Desktop/OneDrive/vdcoder.com/volt/app-template/preprocesor.py preprocesor.py
-cp -r /mnt/c/Users/vdcod/OneDrive/Desktop/OneDrive/vdcoder.com/volt/app-template/index.html index.html
-
-# ⚡ Volt App - Build Script
+# ⚡ Volt App (X template) - Build Script
 
 set -e
 
-echo "⚡ Building Volt App..."
+echo "⚡ Building Volt App (X template)..."
 
 # Check if emcc is available
 if ! command -v emcc &> /dev/null; then
     echo "❌ Error: Emscripten not found!"
     echo "   Please source the Emscripten environment:"
     echo "   source ~/emsdk/emsdk_env.sh"
+    exit 1
+fi
+
+# Check if preprocessor exists
+if [ ! -f preprocesor.py ]; then
+    echo "❌ Error: preprocesor.py not found in project root!"
+    echo "   Make sure the Volt preprocessor is available."
     exit 1
 fi
 
@@ -31,11 +30,47 @@ GUID="${VOLT_GUID:-demo}"
 # Sanitize GUID for display (replace hyphens with underscores for JS namespace)
 GUID_DISPLAY=$(echo "$GUID" | sed 's/[^a-zA-Z0-9_]/_/g')
 
+echo "📦 Preparing generated sources..."
+GENERATED_DIR="_generated"
+
+# Clean and recreate generated directory
+rm -rf "$GENERATED_DIR"
+mkdir -p "$GENERATED_DIR/src"
+
+# Copy and preprocess all files from src/ → _generated/src/
+# - If filename contains ".x." → run preprocesor.py
+# - Otherwise copy as-is
+echo "   - Scanning src/ for source files..."
+find src -type f -print0 | while IFS= read -r -d '' SRC_FILE; do
+    # Compute relative path and destination path
+    REL_PATH="${SRC_FILE#src/}"
+    DEST_PATH="$GENERATED_DIR/src/$REL_PATH"
+
+    mkdir -p "$(dirname "$DEST_PATH")"
+
+    if [[ "$SRC_FILE" == *".x."* ]]; then
+        echo "   • Preprocessing: $SRC_FILE -> $DEST_PATH"
+        python3 preprocesor.py "$SRC_FILE" > "$DEST_PATH"
+    else
+        # Normal copy
+        cp "$SRC_FILE" "$DEST_PATH"
+    fi
+done
+
+# Make sure our main file exists in generated tree
+MAIN_SRC="$GENERATED_DIR/src/main.x.cpp"
+if [ ! -f "$MAIN_SRC" ]; then
+    echo "❌ Error: $MAIN_SRC not found!"
+    echo "   Make sure your X template has src/main.x.cpp"
+    exit 1
+fi
+
 echo "📦 Compiling to WebAssembly..."
 echo "   GUID: $GUID"
 echo "   Namespace: volt_$GUID_DISPLAY"
+echo "   Using sources from: $GENERATED_DIR/src"
 
-emcc src/main.cpp \
+emcc "$MAIN_SRC" \
     -DVOLT_GUID=\"$GUID\" \
     -DDEBUG \
     -I./dependencies/volt/include \
