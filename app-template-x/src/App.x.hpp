@@ -89,7 +89,7 @@ public:
                                     <({attr::key("fruit-" + fruit + "-fragment-" + std::to_string(i))},
                                         <span("in fragment - " + fruit + " #" + std::to_string(i) + " ")/>,
                                         <br()/>
-                                    )
+                                    )/>
                                 );
                             }
                             return <(lines)/>;
