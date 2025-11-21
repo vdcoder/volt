@@ -172,14 +172,12 @@ echo ""
 # Copy template
 print_info "Copying template files..."
 cp -r "$TEMPLATE_DIR" "$OUTPUT_DIR"
-mkdir "$OUTPUT_DIR/output"
 cp -r "$SCRIPT_DIR/../../framework/src" "$OUTPUT_DIR/output"
 print_success "Template copied"
 
 # Copy framework
 print_info "Copying framework files..."
-mkdir "$OUTPUT_DIR/dependencies"
-cp -r "$SCRIPT_DIR/../../framework/include" "$OUTPUT_DIR/dependencies/volt"
+cp -r "$SCRIPT_DIR/../../framework/include" "$OUTPUT_DIR/dependencies/volt/include"
 print_success "Framework copied"
 
 # Customize app files with app-specific names
