@@ -176,6 +176,7 @@ print_success "Template copied"
 
 # Copy framework
 print_info "Copying framework files..."
+mkdir "$OUTPUT_DIR/dependencies"
 cp -r "$SCRIPT_DIR/../../framework/include" "$OUTPUT_DIR/dependencies/volt"
 print_success "Framework copied"
 
