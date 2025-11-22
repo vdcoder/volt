@@ -1,5 +1,6 @@
 # Build outputs
 output/
+!.gitkeep
 !framework/user-scripts/*.sh
 !app-template/build.sh
 !app-template-x/build.sh
