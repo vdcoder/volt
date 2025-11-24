@@ -51,13 +51,13 @@ void VoltRuntime::mountApp() {
 VNode* VoltRuntime::recycleVNode() {
     if (m_pVNodeFreeListHead == nullptr) {
         // Allocate a new VNode
-        m_poolVNode.push_back(std::make_unique<VNode>(tag::ETag::DIV));
+        m_poolVNode.push_back(std::make_unique<VNode>(tag::ETag::div));
         return m_poolVNode.back().get();
     } else {
         // Reuse from free list
-        VNode* pNode = m_pVNodeFreeListHead;
+        VNode* pFreeNode = m_pVNodeFreeListHead;
         m_pVNodeFreeListHead = m_pVNodeFreeListHead->getParent();
-        return pNode;
+        return pFreeNode;
     }
 }
 
@@ -107,9 +107,15 @@ void VoltRuntime::doRender() {
         VoltDiffPatch::diffPatch(m_idManager, m_pCurrentVTree, pNewVTree, m_hHostElement);
     }
 
+    std::string duplicateKeyDescription = m_idManager.getDuplicateKeyDescription();
+    if (!duplicateKeyDescription.empty()) {
+        emscripten_log(EM_LOG_WARN, "Volt: Duplicate keys detected:\n%s", duplicateKeyDescription.c_str());
+    }
+
     //log("VoltRuntime::doRender here 5 out");
 
     m_pCurrentVTree = pNewVTree;
+    m_idManager.toString();
 }
 
 } // namespace volt

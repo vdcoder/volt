@@ -21,7 +21,6 @@ public:
             tag::p("Counter: " + std::to_string(counter)).TRACK,
 
             // Using reusable Button component
-            // Note: No need to call invalidate() - auto-invalidate in event handlers
             Button(getRuntime()).render("Increment", [this](emscripten::val e) {
                 log("Increment button clicked");
                 counter++;
@@ -30,10 +29,6 @@ public:
             tag::div(
                 x::iff(counter % 2 == 0, [this](){
                     return std::vector<VNodeHandle>{
-                        // Button(getRuntime()).render("Reset", [this](emscripten::val e) {
-                        //     log("Reset button clicked");
-                        //     counter = 0;
-                        // }, "danger").TRACK 
                         tag::button({
                             attr::onAddElement([this](emscripten::val e) {
                                 log("onAddElement button clicked");

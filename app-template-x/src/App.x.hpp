@@ -19,7 +19,6 @@ public:
             <p("Counter: " + std::to_string(counter))/>, 
 
             // Using reusable Button component
-            // Note: No need to call invalidate() - auto-invalidate in event handlers
             Button(getRuntime()).<render("Increment", [this](emscripten::val e) {
                 log("Increment button clicked");
                 counter++;
@@ -28,10 +27,6 @@ public:
             <div(
                 x::iff(counter % 2 == 0, [this](){
                     return std::vector<VNodeHandle>{
-                        // Button(getRuntime()).render("Reset", [this](emscripten::val e) {
-                        //     log("Reset button clicked");
-                        //     counter = 0;
-                        // }, "danger").track(__COUNTER__) 
                         <button({
                             onAddElement:=([this](emscripten::val e) {
                                 log("onAddElement button clicked");
@@ -56,9 +51,13 @@ public:
                 })
             )/>,
 
+            <button({onClick:=([this](emscripten::val e) {
+                                counter++;
+                            })}, "Increment")/>,
+
             (counter > 5 ? <p({style:=("color: red;")}, "Counter exceeded 5!")/> : <br()/>),
 
-            <:=(counter > 5 ? <p({style:=("color: red;")}, "Counter exceeded 5!")/> : <br()/>)/>,
+            <(counter > 5 ? <p({style:=("color: red;")}, "Counter exceeded 5!")/> : <br()/>)/>,
 
             <map(std::vector<std::string>{"Apple"}, [this](const std::string& fruit) {
                 return <({ attr::key(fruit) },

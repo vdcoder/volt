@@ -100,6 +100,7 @@ public:
     void addVNode(std::string a_sId, VNode* a_pNode) {
         auto it = m_newStore.find(a_sId);
         if (it != m_newStore.end()) {
+            //log("Duplicate key detected: " + a_sId);
             m_sDuplicateKeyDescription += a_sId + ", "; // Duplicate key detected
         }
         else {
@@ -116,6 +117,20 @@ public:
     std::string build() { return m_keyBuilder.build(); }
 
     std::string getDuplicateKeyDescription() const { return m_sDuplicateKeyDescription; }
+
+    void toString() {
+        std::string sOldStore = "Old Store:\n";
+        for (auto& [key, val] : m_oldStore) {
+            sOldStore += "  " + key + "\n";
+        }
+        log(sOldStore);
+
+        std::string sNewStore = "New Store:\n";
+        for (auto& [key, val] : m_newStore) {
+            sNewStore += "  " + key + "\n";
+        }
+        log(sNewStore);
+    }
 
 private:
     // MEMBERS

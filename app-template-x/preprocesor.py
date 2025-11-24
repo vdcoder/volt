@@ -77,41 +77,350 @@ from typing import Callable, Optional, Tuple, List
 #  Config: tag names & prop names
 # ---------------------------------------------------------------------------
 
-TAGNAMES = {
-    # basic
-    "div", "span", "p", "a", "img", "br", "hr",
-    # headings
-    "h1", "h2", "h3", "h4", "h5", "h6",
-    # structural / semantic
-    "header", "footer", "main", "nav", "section", "article", "aside",
-    # lists
-    "ul", "ol", "li", "dl", "dt", "dd",
-    # forms
-    "form", "input", "textarea", "button", "label", "select", "option",
-    # tables
-    "table", "thead", "tbody", "tfoot", "tr", "td", "th",
-    # media
-    "video", "audio", "source", "canvas",
-    # text semantics
-    "pre", "code", "strong", "em", "small", "blockquote", "cite",
-    # misc
-    "figure", "figcaption",
+TAGNAMES_ORIGINAL = {
+    "!DOCTYPE",
+    "abbr",
+    "acronym",
+    "address",
+    "a",
+    "applet",
+    "area",
+    "article",
+    "aside",
+    "audio",
+    "base",
+    "basefont",
+    "bdi",
+    "bdo",
+    "bgsound",
+    "big",
+    "blockquote",
+    "body",
+    "b",
+    "br",
+    "button",
+    "caption",
+    "canvas",
+    "center",
+    "cite",
+    "code",
+    "colgroup",
+    "col",
+    "!--",
+    "data",
+    "datalist",
+    "dd",
+    "dfn",
+    "del",
+    "details",
+    "dialog",
+    "dir",
+    "div",
+    "dl",
+    "dt",
+    "embed",
+    "em",
+    "fieldset",
+    "figcaption",
+    "figure",
+    "font",
+    "footer",
+    "form",
+    "frame",
+    "frameset",
+    "head",
+    "header",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "hgroup",
+    "hr",
+    "html",
+    "iframe",
+    "img",
+    "input",
+    "ins",
+    "isindex",
+    "i",
+    "kbd",
+    "keygen",
+    "label",
+    "legend",
+    "link",
+    "li",
+    "main",
+    "mark",
+    "marquee",
+    "menuitem",
+    "meta",
+    "meter",
+    "nav",
+    "nobr",
+    "noembed",
+    "noscript",
+    "object",
+    "optgroup",
+    "option",
+    "output",
+    "p",
+    "param",
+    "em",
+    "pre",
+    "progress",
+    "q",
+    "rp",
+    "rt",
+    "ruby",
+    "s",
+    "samp",
+    "script",
+    "section",
+    "select",
+    "small",
+    "source",
+    "spacer",
+    "span",
+    "strike",
+    "strong",
+    "sub",
+    "sup",
+    "summary",
+    "svg",
+    "table",
+    "tbody",
+    "td",
+    "template",
+    "textarea",
+    "tfoot",
+    "th",
+    "thead",
+    "time",
+    "title",
+    "tr",
+    "track",
+    "tt",
+    "u",
+    "var",
+    "video",
+    "wbr",
+    "xmp"
 }
+TAGNAMES = {name.lower() for name in TAGNAMES_ORIGINAL}
+def taglower_to_cpp_name(taglower: str) -> str:
+    if taglower == "!doctype":
+        return "doctype"
+    if taglower == "!--":
+        return "comment"
+    if taglower == "template":
+        return "templatetag"
+    return taglower
 
-PROPNAMES = {
-    # common html-ish
-    "id", "class", "style", "href", "src", "title", "key", "alt", "type", "value",
-    "placeholder", "disabled", "checked", "selected", "name", "width", "height",
-    "maxlength", "minlength", "readonly", "multiple", "size", "tabindex",
-    # Volt / event handlers
-    "onClick",
-    "onInput",
-    "onChange",
-    "onAddElement",
-    "onBeforeMoveElement",
-    "onMoveElement",
-    "onRemoveElement",
+PROPNAMES_ORIGINAL = {
+    "accept",
+    "accept-charset",
+    "acceptcharset", # Volt allows both forms
+    "accesskey",
+    "action",
+    "align",
+    "alt",
+    "async",
+    "autocomplete",
+    "autofocus",
+    "autoplay",
+    "bgcolor",
+    "border",
+    "charset",
+    "checked",
+    "cite",
+    "class",
+    "classname", # Volt allows both forms
+    "color",
+    "cols",
+    "colspan",
+    "content",
+    "contenteditable",
+    "controls",
+    "coords",
+    "data",
+    "datetime",
+    "default",
+    "defer",
+    "dir",
+    "dirname",
+    "disabled",
+    "download",
+    "draggable",
+    "dropzone",
+    "enctype",
+    "enterkeyhint",
+    "for",
+    "form",
+    "formaction",
+    "headers",
+    "height",
+    "hidden",
+    "high",
+    "href",
+    "hreflang",
+    "http-equiv",
+    "httpequiv", # Volt allows both forms
+    "icon",
+    "id",
+    "inert",
+    "inputmode",
+    "ismap",
+    "kind",
+    "label",
+    "lang",
+    "list",
+    "loop",
+    "low",
+    "max",
+    "maxlength",
+    "media",
+    "method",
+    "min",
+    "minlength",
+    "multiple",
+    "muted",
+    "name",
+    "novalidate",
+    "open",
+    "optimum",
+    "pattern",
+    "placeholder",
+    "popover",
+    "popovertarget",
+    "popovertargetaction",
+    "poster",
+    "preload",
+    "readonly",
+    "rel",
+    "required",
+    "reversed",
+    "rows",
+    "rowspan",
+    "sandbox",
+    "scope",
+    "selected",
+    "shape",
+    "size",
+    "sizes",
+    "span",
+    "spellcheck",
+    "src",
+    "srcdoc",
+    "srclang",
+    "srcset",
+    "start",
+    "step",
+    "style",
+    "tabindex",
+    "target",
+    "title",
+    "translate",
+    "type",
+    "usemap",
+    "value",
+    "width",
+    "wrap",
+    # Volt specific
+    "key",
+    # Common event handlers
+    "onabort",
+    "onafterprint",
+    "onbeforeprint",
+    "onbeforeunload",
+    "onblur",
+    "oncanplay",
+    "oncanplaythrough",
+    "onchange",
+    "onclick",
+    "oncontextmenu",
+    "oncopy",
+    "oncuechange",
+    "oncut",
+    "ondblclick",
+    "ondrag",
+    "ondragend",
+    "ondragenter",
+    "ondragleave",
+    "ondragover",
+    "ondragstart",
+    "ondrop",
+    "ondurationchange",
+    "onemptied",
+    "onended",
+    "onerror",
+    "onfocus",
+    "onfocusin",
+    "onfocusout",
+    "onhashchange",
+    "oninput",
+    "oninvalid",
+    "onkeydown",
+    "onkeypress",
+    "onkeyup",
+    "onload",
+    "onloadeddata",
+    "onloadedmetadata",
+    "onloadstart",
+    "onmousedown",
+    "onmousemove",
+    "onmouseout",
+    "onmouseover",
+    "onmouseup",
+    "onmousewheel",
+    "onoffline",
+    "ononline",
+    "onpagehide",
+    "onpageshow",
+    "onpaste",
+    "onpause",
+    "onplay",
+    "onplaying",
+    "onpopstate",
+    "onprogress",
+    "onratechange",
+    "onreset",
+    "onresize",
+    "onscroll",
+    "onsearch",
+    "onseeked",
+    "onseeking",
+    "onselect",
+    "onstalled",
+    "onstorage",
+    "onsubmit",
+    "onsuspend",
+    "ontimeupdate",
+    "ontoggle",
+    "onunload",
+    "onvolumechange",
+    "onwaiting",
+    "onwheel",
+    # Volt specific
+    "onaddelement",
+    "onbeforemoveelement",
+    "onmoveelement",
+    "onremoveelement",
 }
+PROPNAMES = {name.lower() for name in PROPNAMES_ORIGINAL}
+def proplower_to_cpp_name(proplower: str) -> str:
+    if proplower == "accept-charset":
+        return "acceptcharset"
+    if proplower == "class":
+        return "classname"
+    if proplower == "default":
+        return "defaultattr"
+    if proplower == "for":
+        return "forattr"
+    if proplower == "http-equiv":
+        return "httpequiv"
+    return proplower
 
 IDENT_START = string.ascii_letters + "_"
 IDENT_BODY = IDENT_START + string.digits
@@ -354,7 +663,7 @@ def transform_props(text: str) -> str:
         # Try to match any propname at this position
         if text[i] in IDENT_START:
             name, j = parse_identifier_at(text, i)
-            if name in PROPNAMES and j + 2 <= n and text[j:j+3] == ':=(':
+            if name.lower() in PROPNAMES and j + 2 <= n and text[j:j+3] == ':=(':
                 # We have name:=(...
                 open_pos = j + 2  # index of '('
                 if open_pos >= n or text[open_pos] != '(':
@@ -370,7 +679,7 @@ def transform_props(text: str) -> str:
                     continue
 
                 arg = text[open_pos + 1 : close_pos]
-                out.append(f"volt::attr::{name}({arg})")
+                out.append(f"volt::attr::{proplower_to_cpp_name(name.lower())}({arg})")
                 i = close_pos + 1
                 continue
 
@@ -390,7 +699,6 @@ def classify_dsl_start(code: str, lt_pos: int) -> Optional[str]:
     Classify what kind of DSL starts at code[lt_pos] == '<'.
 
     We support:
-      - '<:=('       → 'expr'
       - '<render('   → 'render'
       - '<map('      → 'map'
       - '<('         → 'fragment'
@@ -398,10 +706,6 @@ def classify_dsl_start(code: str, lt_pos: int) -> Optional[str]:
     No whitespace is allowed between '<' and the token for now.
     """
     n = len(code)
-
-    # Expression
-    if lt_pos + 3 <= n and code.startswith("<:=(", lt_pos):
-        return "expr"
 
     # Render call
     if lt_pos + 8 <= n and code.startswith("<render(", lt_pos):
@@ -419,7 +723,7 @@ def classify_dsl_start(code: str, lt_pos: int) -> Optional[str]:
     i = lt_pos + 1
     if i < n and code[i] in IDENT_START:
         ident, j = parse_identifier_at(code, i)
-        if ident in TAGNAMES:
+        if ident.lower() in TAGNAMES:
             # next non-space must be '('
             while j < n and code[j].isspace():
                 j += 1
@@ -427,34 +731,6 @@ def classify_dsl_start(code: str, lt_pos: int) -> Optional[str]:
                 return "tag"
 
     return None
-
-
-def expand_expr_dsl(code: str, lt_pos: int, transform_nested) -> Optional[Tuple[str, int]]:
-    """
-    Expand <:=( expr )/> starting at lt_pos.
-
-    Returns (replacement_text, end_index_of_'>') or None on failure.
-    """
-    if not code.startswith("<:=(", lt_pos):
-        return None
-
-    open_pos = lt_pos + 3  # index of '('
-    close_pos = find_matching_paren(code, open_pos)
-    if close_pos is None:
-        return None
-
-    expr = code[open_pos + 1 : close_pos]
-    expr = transform_nested(expr)
-
-    # Find '/>' after close_pos
-    slash_idx = find_next_unmasked(code, close_pos + 1, lambda ch: ch == '/')
-    if slash_idx is None or slash_idx + 1 >= len(code) or code[slash_idx + 1] != '>':
-        return None
-
-    end_idx = slash_idx + 1
-    replacement = f"({expr}).track(__COUNTER__)"
-    return replacement, end_idx
-
 
 def expand_render_dsl(code: str, lt_pos: int, transform_nested) -> Optional[Tuple[str, int]]:
     """
@@ -570,7 +846,7 @@ def expand_tag_dsl(code: str, lt_pos: int, transform_nested) -> Optional[Tuple[s
     n = len(code)
     i = lt_pos + 1
     ident, j = parse_identifier_at(code, i)
-    if ident not in TAGNAMES:
+    if ident.lower() not in TAGNAMES:
         return None
 
     # find '(' after ident
@@ -595,7 +871,7 @@ def expand_tag_dsl(code: str, lt_pos: int, transform_nested) -> Optional[Tuple[s
         return None
 
     end_idx = slash_idx + 1
-    replacement = f"volt::tag::{ident}({args}).track(__COUNTER__)"
+    replacement = f"volt::tag::{taglower_to_cpp_name(ident.lower())}({args}).track(__COUNTER__)"
     return replacement, end_idx
 
 
@@ -635,9 +911,7 @@ def transform_code(code: str) -> str:
             pos = lt + 1
             continue
 
-        if kind == "expr":
-            res = expand_expr_dsl(code, lt, _transform_nested)
-        elif kind == "render":
+        if kind == "render":
             res = expand_render_dsl(code, lt, _transform_nested)
         elif kind == "map":
             res = expand_map_dsl(code, lt, _transform_nested)

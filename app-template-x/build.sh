@@ -76,12 +76,14 @@ emcc "$MAIN_SRC" \
     -I./dependencies/volt/include \
     -o output/app.js \
     -lembind \
-    -std=c++17 \
+    -std=c++20 \
     -s WASM=1 \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s MODULARIZE=1 \
     -s EXPORT_NAME="VoltApp" \
     -s EXPORTED_RUNTIME_METHODS='["ccall","cwrap"]' \
+    -s MEMORY64=1 \
+    -s WASM_BIGINT=1 \
     --bind \
     -O0 \
     -g

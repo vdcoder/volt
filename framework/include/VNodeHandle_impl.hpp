@@ -29,11 +29,11 @@ VNodeHandle::VNodeHandle(tag::ETag a_nTag, std::vector<std::pair<short, PropValu
             if constexpr (std::is_same_v<T, std::string>) {
                 switch (prop.first)
                 {
-                case attr::ATTR_ID:
+                case attr::ATTR_id:
                     m_pNode->setIdProp(arg);
                     attrProps.push_back({prop.first, std::move(arg)});
                     break;
-                case attr::ATTR_KEY:
+                case attr::ATTR_key:
                     m_pNode->setKeyProp(arg);
                     break;
                 default:
@@ -42,16 +42,16 @@ VNodeHandle::VNodeHandle(tag::ETag a_nTag, std::vector<std::pair<short, PropValu
             } else if constexpr (std::is_same_v<T, std::function<void(emscripten::val)>>) {
                 switch (prop.first)
                 {
-                case attr::ATTR_CUSTOM_EVT_ADDELEMENT:
+                case attr::ATTR_EVT_onaddelement:
                     m_pNode->setOnAddElementEvent(std::move(arg));
                     break;
-                case attr::ATTR_CUSTOM_EVT_BEFOREMOVEELEMENT:
+                case attr::ATTR_EVT_onbeforemoveelement:
                     m_pNode->setOnBeforeMoveElementEvent(std::move(arg));
                     break;
-                case attr::ATTR_CUSTOM_EVT_MOVEELEMENT:
+                case attr::ATTR_EVT_onmoveelement:
                     m_pNode->setOnMoveElementEvent(std::move(arg));
                     break;
-                case attr::ATTR_CUSTOM_EVT_REMOVEELEMENT:
+                case attr::ATTR_EVT_onremoveelement:
                     m_pNode->setOnRemoveElementEvent(std::move(arg));
                     break;
                 default:
