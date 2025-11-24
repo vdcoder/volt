@@ -275,3 +275,198 @@
     start,
   };
 })(window);
+
+
+// ==================================================
+//   VOLT DEBUG CONSOLE (Global: window.volt)
+// ==================================================
+(function() {
+
+    const VOLT_PREFIX = "Volt>";
+    const GLOBAL_NAME = "volt";
+
+    // Holds enabled categories
+    let enabled = new Set();
+
+    // Holds minimum global level
+    let globalLevel = 0; // TRACE_L
+
+    // Friendly level map (mirrors C++ enum values)
+    const levels = {
+        trace: 0,
+        debug: 1,
+        info:  2,
+        warn:  3,
+        error: 4,
+    };
+
+    const levelNames = ["TRACE","DEBUG","INFO","WARN","ERROR"];
+
+    // Pretty formatting
+    function colorForLevel(lvl) {
+        switch (lvl) {
+            case 0: return "color:#888";
+            case 1: return "color:#55f";
+            case 2: return "color:#0a0";
+            case 3: return "color:#da0";
+            case 4: return "color:#f33";
+            default: return "";
+        }
+    }
+
+    const STORAGE_KEY = "volt.log.settings";
+
+    function loadState() {
+        try {
+            if (typeof window === "undefined" || !window.localStorage) return;
+
+            const raw = window.localStorage.getItem(STORAGE_KEY);
+            if (!raw) return;
+
+            const parsed = JSON.parse(raw);
+            if (parsed && Array.isArray(parsed.enabled) && typeof parsed.level === "number") {
+                enabled = new Set(parsed.enabled);
+                globalLevel = parsed.level;
+                // Optional: announce in console
+                console.log(
+                    "Volt logging restored from storage:",
+                    {
+                        enabled: [...enabled],
+                        level: levelNames[globalLevel] || globalLevel
+                    }
+                );
+            }
+        } catch (e) {
+            console.warn("Volt: failed to restore log settings:", e);
+        }
+    }
+
+    function saveState() {
+        try {
+            if (typeof window === "undefined" || !window.localStorage) return;
+
+            const payload = {
+                enabled: [...enabled],
+                level: globalLevel,
+            };
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+        } catch (e) {
+            console.warn("Volt: failed to persist log settings:", e);
+        }
+    }
+
+    // Load persisted settings once on init
+    loadState();
+
+    // Public API object
+    const api = {
+        /**
+         * Enable a category prefix. Example:
+         * volt.on("DiffPatch")
+         */
+        on(cat = null) {
+            if (!cat) return api.help(); // print help if no args
+
+            enabled.add(cat);
+            saveState();
+            console.log(`✔ Volt logging enabled for category: ${cat}`);
+        },
+
+        /**
+         * Disable a category or reset all categories if none specified.
+         */
+        off(cat = null) {
+            if (cat === null) {
+                // Full reset
+                enabled.clear();
+                globalLevel = levels.info;   // optional: reset level to default
+                saveState();
+                console.log("✔ Volt logging reset. All categories disabled.");
+                console.log("  Level = INFO");
+                return;
+            }
+
+            // Disable just one
+            enabled.delete(cat);
+            saveState();
+            console.log(`✔ Volt logging disabled for: ${cat}`);
+        },
+
+        /**
+         * Show current enabled categories
+         */
+        show() {
+            if (enabled.size === 0)
+                return console.log("No Volt log categories enabled.");
+
+            console.log("Enabled Volt categories:");
+            for (const c of enabled) console.log(" • " + c);
+        },
+
+        /**
+         * Set global level threshold: "trace","debug","info","warn","error"
+         */
+        level(lvl) {
+            lvl = lvl.toLowerCase();
+            if (!(lvl in levels)) {
+                console.log(`Unknown level '${lvl}'. Valid: trace, debug, info, warn, error.`);
+                return;
+            }
+            globalLevel = levels[lvl];
+            saveState();
+            console.log(`✔ Volt log level = ${lvl.toUpperCase()}`);
+        },
+
+        /**
+         * Print all commands
+         */
+        help() {
+            console.log(
+`==================== Volt Debug Console ====================
+
+volt.on("<category>")     Enable a category (prefix match)
+volt.off("<category>")    Disable category
+volt.show()               Show all enabled categories
+volt.level("<level>")     Set minimum level (trace,debug,info,warn,error)
+volt.help()               Show this help
+
+Current:
+  level     = ${levelNames[globalLevel] || globalLevel}
+  enabled   = ${enabled.size ? [...enabled].join(", ") : "<none>"}
+
+Example:
+  volt.on("Volt>DiffPatch")
+  volt.level("debug")
+
+=============================================================`
+            );
+        },
+
+        // INTERNAL: used by C++ logging bridge
+        _shouldPrint(level, category) {
+            if (level < globalLevel) return false;
+            if (enabled.size === 0) return false;
+            for (const prefix of enabled) {
+                if (category.startsWith(prefix)) return true;
+            }
+            return false;
+        },
+
+        // INTERNAL: used by C++ logging bridge
+        _print(level, category, indent, message) {
+            const lvlName = levelNames[level] || "LOG";
+            const padding = " ".repeat(indent * 2);
+
+            console.log(
+                `%c${lvlName}%c ${category}%c ${padding}${message}`,
+                colorForLevel(level),
+                "color:#0af;font-weight:bold",
+                "color:inherit"
+            );
+        },
+    };
+
+    // Expose globally
+    window[GLOBAL_NAME] = api;
+
+})();

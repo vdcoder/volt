@@ -203,6 +203,7 @@ TAGNAMES_ORIGINAL = {
     "track",
     "tt",
     "u",
+    "ul",
     "var",
     "video",
     "wbr",

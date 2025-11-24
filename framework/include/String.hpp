@@ -19,7 +19,7 @@ EM_JS(EM_VAL, js_string_concat, (EM_VAL a_hS1, EM_VAL a_hS2), {
 });
 
 EM_JS(EM_VAL, create_js_string, (const char* a_cStr), {
-    const js_string = UTF8ToString(a_cStr);
+    const js_string = UTF8ToString(Number(a_cStr));
     return Emval.toHandle(js_string);
 });
 

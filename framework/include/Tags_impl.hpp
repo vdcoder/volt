@@ -138,6 +138,7 @@ inline const char* tagToString(ETag a_nTag) {
         case ETag::track: return "track";
         case ETag::tt: return "tt";
         case ETag::u: return "u";
+        case ETag::ul: return "ul";
         case ETag::var: return "var";
         case ETag::video: return "video";
         case ETag::wbr: return "wbr";

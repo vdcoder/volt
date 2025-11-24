@@ -134,6 +134,7 @@ enum class ETag {
     track,
     tt,
     u,
+    ul,
     var,
     video,
     wbr,

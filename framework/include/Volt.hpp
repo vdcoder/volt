@@ -14,6 +14,7 @@
     #include "Debug.hpp"
 #endif
 
+#include "VoltLog.hpp"
 #include "VoltConfig.hpp"
 #include "DOM.hpp"
 #include "IVoltRuntime.hpp"

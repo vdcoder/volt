@@ -73,6 +73,7 @@ echo "   Using sources from: $GENERATED_DIR/src"
 emcc "$MAIN_SRC" \
     -DVOLT_GUID=\"$GUID\" \
     -DDEBUG \
+    -DVOLT_ENABLE_LOG \
     -I./dependencies/volt/include \
     -o output/app.js \
     -lembind \

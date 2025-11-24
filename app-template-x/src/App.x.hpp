@@ -4,104 +4,92 @@
 
 using namespace volt;
 
-// VOLT_APP_NAME - Main Application
+// VOLT_APP_NAME — Main app
 class VOLT_APP_NAME_CAMEL : public AppBase {
 private:
     int counter = 0;
-    std::string message = "Hello from VOLT_APP_NAME!";
-    
-public:
-    VOLT_APP_NAME_CAMEL(VoltRuntime* runtime) : AppBase(runtime) {}
-    
-    VNodeHandle render() override {
-        return <div({style:=("font-family: sans-serif; padding: 20px;")},
-            <h1(message)/>,
-            <p("Counter: " + std::to_string(counter))/>, 
+    bool showPanel = true;
+    std::vector<std::string> fruits = {"Apple", "Banana", "Cherry"};
 
-            // Using reusable Button component
-            Button(getRuntime()).<render("Increment", [this](emscripten::val e) {
-                log("Increment button clicked");
-                counter++;
-            }, "primary")/>,
+public:
+    VOLT_APP_NAME_CAMEL(VoltRuntime* rt) : AppBase(rt) {}
+
+    VNodeHandle render() override {
+        return <div({ style:=("font-family: sans-serif; padding: 14px; max-width: 600px;") },
+
+            // TITLE
+            <h1("Welcome to Volt ⚡")/>,
+            <p("A C++ WebAssembly UI framework using the Volt X DSL.")/>,
+            <br()/>,
+
+            // COUNTER SECTION
+            <h2("Counter")/>,
+            <p("Current value: " + std::to_string(counter))/>,
 
             <div(
-                x::iff(counter % 2 == 0, [this](){
-                    return std::vector<VNodeHandle>{
-                        <button({
-                            onAddElement:=([this](emscripten::val e) {
-                                log("onAddElement button clicked");
-                            }),
-                            onBeforeMoveElement:=([this](emscripten::val e) {
-                                log("onBeforeMoveElement button clicked");
-                            }),
-                            onMoveElement:=([this](emscripten::val e) {
-                                log("onMoveElement button clicked");
-                            }),
-                            onRemoveElement:=([this](emscripten::val e) {
-                                log("onRemoveElement button clicked");
-                            }),
-                            onClick:=([this](emscripten::val e) {
-                                log("Reset button clicked");
-                                counter = 0;
-                            })
-                        }, "Reset")/>
-                    };
-                }, []() {
-                    return std::vector<VNodeHandle>{"No button for you!"};
-                })
+                Button(getRuntime()).<render("Increment", [this](auto){
+                    counter++;
+                }, "primary")/>,
+
+                Button(getRuntime()).<render("Decrement", [this](auto){
+                    counter--;
+                }, "secondary")/>
             )/>,
 
-            <button({onClick:=([this](emscripten::val e) {
-                                counter++;
-                            })}, "Increment")/>,
+            (counter > 10
+                ? <p({ style:=("color: #dc3545; font-weight: bold;") },
+                    "Careful! That's a high number.")/>
+                : <br()/>),
+            <br()/>,
 
-            (counter > 5 ? <p({style:=("color: red;")}, "Counter exceeded 5!")/> : <br()/>),
+            // TOGGLE PANEL
+            <h2("Toggle Panel")/>,
+            Button(getRuntime()).<render(
+                (showPanel ? "Hide Panel" : "Show Panel"),
+                [this](auto){ showPanel = !showPanel; },
+                "primary"
+            )/>,
 
-            <(counter > 5 ? <p({style:=("color: red;")}, "Counter exceeded 5!")/> : <br()/>)/>,
-
-            <map(std::vector<std::string>{"Apple"}, [this](const std::string& fruit) {
-                return <({ attr::key(fruit) },
-                    <article({style:=("border: 1px solid #ccc; padding: 10px; margin: 10px 0; height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;"),
-                            onAddElement:=([this](emscripten::val e) {
-                                log("onAddElement article");
-                            }),
-                            onBeforeMoveElement:=([this](emscripten::val e) {
-                                log("onBeforeMoveElement article");
-                                // Here you may want to save scroll position (only if your element jumps in the DOM)
-                                e.set("__scrollPositionTop", static_cast<double>(e["scrollTop"].as<double>()));
-                                e.set("__scrollPositionLeft", static_cast<double>(e["scrollLeft"].as<double>()));
-                            }),
-                            onMoveElement:=([this](emscripten::val e) {
-                                log("onMoveElement article");
-                                // Here you may want to restore scroll position (only if your element jumps in the DOM)
-                                e.set("scrollTop", static_cast<double>(e["__scrollPositionTop"].as<double>()));
-                                e.set("scrollLeft", static_cast<double>(e["__scrollPositionLeft"].as<double>()));
-                            }),
-                            onRemoveElement:=([this](emscripten::val e) {
-                                log("onRemoveElement article");
-                            })},
-                        <h1(fruit)/>,
-                        <br()/>,
-                        <a({href:=("https://example.com/" + fruit)}, fruit)/>,
-                        <map(std::vector<int>{0}, [fruit](int num) {
-                            std::vector<VNodeHandle> lines;
-                            for (int i = 0; i < 20; i++) {
-                                lines.push_back(<span({attr::id("fruit-" + fruit + "-line-span-" + std::to_string(i))}, " - " + fruit + " #" + std::to_string(i) + " ")/>);
-                                lines.push_back(<br({attr::id("fruit-" + fruit + "-line-br-" + std::to_string(i))})/>);
-                            }
-                            for (int i = 0; i < 20; i++) {
-                                lines.push_back(
-                                    <({attr::key("fruit-" + fruit + "-fragment-" + std::to_string(i))},
-                                        <span("in fragment - " + fruit + " #" + std::to_string(i) + " ")/>,
-                                        <br()/>
-                                    )/>
-                                );
-                            }
-                            return <(lines)/>;
-                        })/>
+            <div((!showPanel) 
+                ?   <p({style:=("color:#666;")}, "(panel is hidden)")/>
+                :   <div({ style:=("padding: 12px; border: 1px solid #ddd; border-radius: 6px;") },
+                        <h3("Hello from the Toggle Panel!")/>,
+                        <p("This demonstrates conditional rendering and structural reuse.")/>
                     )/>
-                )/>;
-            })/>
+            )/>,
+
+            <br()/>,
+
+            // FRUIT LIST
+            <h2("Fruit List")/>,
+            <p("Here Volt demonstrates <map>, keys, and structural reuse:")/>,
+
+            <ul(
+                <map(fruits, [this](const std::string& fruit){
+                    return <li({
+                        attr::key(fruit)
+                    },
+                        <span(fruit)/>,
+                        Button(getRuntime()).<render("Remove", [this, fruit](auto){
+                            // Remove fruit
+                            fruits.erase(std::remove(fruits.begin(), fruits.end(), fruit),
+                                         fruits.end());
+                        }, "danger")/>
+                    )/>;
+                })/>
+            )/>,
+
+            Button(getRuntime()).<render("Add Random Fruit", [this](auto){
+                static int id = 0;
+                fruits.push_back("Fruit" + std::to_string(++id));
+            }, "primary")/>,
+
+            <br()/>,
+            <br()/>,
+
+            // FOOTER
+            <p({style:=("color:#888; font-size: 13px;")},
+                "Edit src/App.x.hpp to begin your journey!")/>
         )/>;
     }
 };
