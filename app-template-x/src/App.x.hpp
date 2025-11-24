@@ -67,9 +67,15 @@ public:
                             }),
                             onBeforeMoveElement:=([this](emscripten::val e) {
                                 log("onBeforeMoveElement article");
+                                // Here you may want to save scroll position (only if your element jumps in the DOM)
+                                e.set("__scrollPositionTop", static_cast<double>(e["scrollTop"].as<double>()));
+                                e.set("__scrollPositionLeft", static_cast<double>(e["scrollLeft"].as<double>()));
                             }),
                             onMoveElement:=([this](emscripten::val e) {
                                 log("onMoveElement article");
+                                // Here you may want to restore scroll position (only if your element jumps in the DOM)
+                                e.set("scrollTop", static_cast<double>(e["__scrollPositionTop"].as<double>()));
+                                e.set("scrollLeft", static_cast<double>(e["__scrollPositionLeft"].as<double>()));
                             }),
                             onRemoveElement:=([this](emscripten::val e) {
                                 log("onRemoveElement article");
