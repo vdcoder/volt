@@ -115,7 +115,7 @@ void VoltRuntime::doRender() {
     //log("VoltRuntime::doRender here 5 out");
 
     m_pCurrentVTree = pNewVTree;
-    m_idManager.toString();
+    //m_idManager.toString();
 }
 
 } // namespace volt
