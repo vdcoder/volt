@@ -94,6 +94,7 @@ emcc "$MAIN_SRC" \
 
 # Copy HTML
 cp index.html output/
+cp global.css output/
 
 echo ""
 echo "✅ Build complete!"
