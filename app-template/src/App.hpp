@@ -13,7 +13,7 @@ private:
     std::string message = "Hello from VOLT_APP_NAME!";
     
 public:
-    VOLT_APP_NAME_CAMEL(VoltRuntime* runtime) : AppBase(runtime) {}
+    VOLT_APP_NAME_CAMEL(IRuntime& a_runtime) : AppBase(a_runtime) {}
     
     VNodeHandle render() override {
         return tag::div({attr::style("font-family: sans-serif; padding: 20px;")},
@@ -21,7 +21,7 @@ public:
             tag::p("Counter: " + std::to_string(counter)).TRACK,
 
             // Using reusable Button component
-            Button(getRuntime()).render("Increment", [this](emscripten::val e) {
+            Button(runtime()).render("Increment", [this](emscripten::val e) {
                 log("Increment button clicked");
                 counter++;
             }, "primary").TRACK,

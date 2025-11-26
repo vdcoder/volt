@@ -143,7 +143,7 @@
 
     const rootEl = document.getElementById(rootId);
     if (!rootEl) {
-      // Not fatal, but warn and continue (createRuntime currently uses hardcoded "root")
+      // Not fatal, but warn and continue (createVoltEngine currently uses hardcoded "root")
       console.warn(
         `VoltBootstrap: root element with id="${rootId}" not found. VoltRuntime will still create using its internal default.`
       );
@@ -176,7 +176,7 @@
           while (target && target !== limit) {
             if (target.__cpp_ptr) {
               try {
-                Module.invokeBubbleEvent(target.__cpp_ptr, event);
+                Module.invokeVoltBubbleEvent(target.__cpp_ptr, event);
               } catch (err) {
                 console.error(
                   "❌ VoltBootstrap: error while invoking bubble event:",
@@ -239,14 +239,14 @@
 
         attachEventHandlers(Module);
 
-        if (typeof Module.createRuntime !== "function") {
+        if (typeof Module.createVoltEngine !== "function") {
           throw new Error(
-            "Module.createRuntime() not found. Check your Emscripten/Volt bindings."
+            "Module.createVoltEngine() not found. Check your Emscripten/Volt bindings."
           );
         }
 
-        // Currently createRuntime creates VoltRuntime internally.
-        Module.createRuntime(rootId);
+        // Currently createVoltEngine creates VoltRuntime internally.
+        Module.createVoltEngine(rootId);
 
         if (debug) {
           console.log("✨ Volt app mounted!");

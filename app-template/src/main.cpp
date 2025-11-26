@@ -17,9 +17,6 @@ EMSCRIPTEN_BINDINGS(VOLT_APP_NAME_UNDERSCORE_module) {
     
     function("invokeBubbleEvent", +[](intptr_t __cpp_ptr_as_int, emscripten::val event) {
         VNode* pVNode = reinterpret_cast<volt::VNode*>(__cpp_ptr_as_int);
-        if (pVNode->bubbleCallback(event["type"].as<std::string>(), event)) {
-            // Event was handled
-            if (g_runtime) g_runtime->requestRender();
-        }
+        (void)pVNode->bubbleCallback(event["type"].as<std::string>(), event);
     }, emscripten::allow_raw_pointers());
 }

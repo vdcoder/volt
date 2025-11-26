@@ -5,14 +5,14 @@
 using namespace volt;
 
 // VOLT_APP_NAME — Main app
-class VOLT_APP_NAME_CAMEL : public AppBase {
+class VOLT_APP_NAME_CAMEL : public App {
 private:
     int counter = 0;
     bool showPanel = true;
     std::vector<std::string> fruits = {"Apple", "Banana", "Cherry"};
 
 public:
-    VOLT_APP_NAME_CAMEL(VoltRuntime* rt) : AppBase(rt) {}
+    VOLT_APP_NAME_CAMEL(IRuntime& a_runtime) : App(a_runtime) {}
 
     VNodeHandle render() override {
         return <div({ style:=("font-family: sans-serif; padding: 14px; max-width: 600px;") },

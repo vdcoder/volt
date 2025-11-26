@@ -9,7 +9,7 @@ using namespace volt;
 // ============================================================================
 class Button : public ComponentBase {
 public:
-    Button(IVoltRuntime* a_pRuntime) : ComponentBase(a_pRuntime) {}
+    Button(IRuntime& a_runtime) : ComponentBase(a_runtime) {}
     
     VNodeHandle render(
         const std::string& label, 

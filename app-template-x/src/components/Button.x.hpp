@@ -6,9 +6,9 @@ using namespace volt;
 // ============================================================================
 // Button Component - Stateless, reusable button with customizable appearance
 // ============================================================================
-class Button : public ComponentBase {
+class Button : public Component {
 public:
-    Button(IVoltRuntime* a_pRuntime) : ComponentBase(a_pRuntime) {}
+    Button(IRuntime& a_runtime) : Component(a_runtime) {}
     
     VNodeHandle render(
         const std::string& label, 

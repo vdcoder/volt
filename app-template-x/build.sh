@@ -2,6 +2,20 @@
 
 # ⚡ Volt App (X template) - Build Script 
 
+# Define some color/style variables for clarity
+BOLD=$(tput bold)
+GREEN=$(tput setaf 2)
+RED=$(tput setaf 1)
+NORMAL=$(tput sgr0) # Reset to normal mode
+
+echo -e "\033[2K\r" 
+echo "${BOLD}${GREEN}========================================================================"
+echo "========================================================================"
+echo ">>>>>>>                STARTING NEW BUILD STEP                 <<<<<<<"
+echo "========================================================================"
+echo "========================================================================"
+echo "${NORMAL}"
+
 set -e
 
 echo "⚡ Building Volt App (X template)..."

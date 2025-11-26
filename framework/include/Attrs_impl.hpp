@@ -1,6 +1,6 @@
 #include "Attrs.hpp"
-#include "RenderingRuntime.hpp"
-#include "VoltRuntime.hpp"
+#include "RenderingEngine.hpp"
+#include "VoltEngine.hpp"
 #include "VoltConfig.hpp"
 
 namespace volt {

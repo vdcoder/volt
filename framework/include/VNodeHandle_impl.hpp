@@ -5,8 +5,8 @@
 #include <functional>
 #include "VNodeHandle.hpp"
 #include "VNode.hpp"
-#include "RenderingRuntime.hpp"
-#include "VoltRuntime.hpp"
+#include "RenderingEngine.hpp"
+#include "VoltEngine.hpp"
 
 namespace volt {
 
@@ -16,7 +16,7 @@ namespace volt {
 
 // ASSUMPTION! Constructor with stable key, assumed to be non-default
 VNodeHandle::VNodeHandle(tag::ETag a_nTag, std::vector<std::pair<short, PropValueType>> a_props, std::vector<VNodeHandle> a_children) {
-    m_pNode = g_pRenderingRuntime->recycleVNode();
+    m_pNode = g_pRenderingEngine->recycleVNode();
     m_pNode->reuse(a_nTag);
 
     // Separate props into attributes and event handlers
@@ -55,12 +55,16 @@ VNodeHandle::VNodeHandle(tag::ETag a_nTag, std::vector<std::pair<short, PropValu
                     m_pNode->setOnRemoveElementEvent(std::move(arg));
                     break;
                 default:
+                    auto wrapper = [arg = std::move(arg), runtimeInstance = g_pRenderingEngine](emscripten::val e) {
+                        arg(e); 
+                        runtimeInstance->invalidate();
+                    };
                     if (prop.first >= attr::ATTR_EVT_NON_BUBBLE_START && prop.first < attr::ATTR_EVT_NON_BUBBLE_END) {
-                        // Non-bubble event
-                        nonBubbleEventProps.push_back({prop.first, std::move(arg)});
+                        // Non-bubble event  
+                        nonBubbleEventProps.push_back({prop.first, std::move(wrapper)});
                     } else {
                         // Bubble event
-                        bubbleEventProps[attr::attrIdToName(prop.first)] = std::move(arg);
+                        bubbleEventProps[attr::attrIdToName(prop.first)] = std::move(wrapper);
                     }
                     break;
                 }
@@ -98,13 +102,13 @@ VNodeHandle::VNodeHandle(tag::ETag a_nTag, std::vector<std::pair<short, PropValu
 }
 
 VNodeHandle::VNodeHandle(std::string a_sTextContent) {
-    m_pNode = g_pRenderingRuntime->recycleVNode();
+    m_pNode = g_pRenderingEngine->recycleVNode();
     
     m_pNode->setAsText(a_sTextContent);
 }
 
 VNodeHandle::VNodeHandle(const char * a_sTextContent) {
-    m_pNode = g_pRenderingRuntime->recycleVNode();
+    m_pNode = g_pRenderingEngine->recycleVNode();
 
     m_pNode->setAsText(std::string(a_sTextContent));
 }
