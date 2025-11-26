@@ -5,7 +5,7 @@
 
 namespace volt {
 
-void VoltDiffPatch::rebuild(IdManager& a_idManager, VNode* a_pNewVTree, emscripten::val a_hRootContainer) {
+void VoltDiffPatch::rebuild(IdManager& a_idManager, FocusManager& a_focusManager, VNode* a_pNewVTree, emscripten::val a_hRootContainer) {
     VOLT_INFO("Volt>DiffPatch", "rebuild() called: clearing container and rebuilding full tree");
     VOLT_LOG_INDENT_PUSH();
 
@@ -23,7 +23,7 @@ void VoltDiffPatch::rebuild(IdManager& a_idManager, VNode* a_pNewVTree, emscript
     VOLT_LOG_INDENT_POP();
 }
 
-void VoltDiffPatch::diffPatch(IdManager& a_idManager, VNode* a_pPrevVTree, VNode* a_pNewVTree, emscripten::val a_hRootContainer) {
+void VoltDiffPatch::diffPatch(IdManager& a_idManager, FocusManager& a_focusManager, VNode* a_pPrevVTree, VNode* a_pNewVTree, emscripten::val a_hRootContainer) {
     VOLT_INFO("Volt>DiffPatch", "diffPatch() called: performing structural reuse between previous and new tree");
     VOLT_LOG_INDENT_PUSH();
 
@@ -35,18 +35,37 @@ void VoltDiffPatch::diffPatch(IdManager& a_idManager, VNode* a_pPrevVTree, VNode
         " newChildren=" + std::to_string(newChildren.size())
     );
 
+    std::unordered_set<VNode*> unclaimedOldNodes;
+
     walk(
         a_idManager,
+        a_focusManager,
+        unclaimedOldNodes,
         prevChildren,
         newChildren,
         a_hRootContainer
     );
 
+    // Remove any remaining unlinked nodes, this unlinks the VNode and removes the DOM child
+    for (VNode* pUnclaimedNode : unclaimedOldNodes) {
+        VOLT_DEBUG(
+            "Volt>DiffPatch",
+            "diffPatch(): removing unclaimed node in pending list with tag=" + pUnclaimedNode->getTagName()
+        );
+
+        pUnclaimedNode->onRemoveElement(pUnclaimedNode->getMatchingElement());
+        dom::removeChild(pUnclaimedNode->getParent()->getMatchingElement(), pUnclaimedNode->getMatchingElement());
+        pUnclaimedNode->unlink();
+    }
+
     VOLT_LOG_INDENT_POP();
 }
 
+// ASSUMPTION!
 void VoltDiffPatch::walk(
     IdManager& a_idManager, 
+    FocusManager& a_focusManager,
+    std::unordered_set<VNode*>& a_unclaimedOldNodes,
     std::vector<VNode*>& a_prevNodes, 
     std::vector<VNode*>& a_newNodes, 
     emscripten::val a_hContainer) {
@@ -107,17 +126,62 @@ void VoltDiffPatch::walk(
                     "Volt>DiffPatch",
                     "walk(): identity match at same index → syncNodes (reuse in place)"
                 );
-                syncNodes(a_idManager, pNewNode, pOldNode);
+                syncNodes(a_idManager, a_focusManager, a_unclaimedOldNodes, pNewNode, pOldNode);
                 a_idManager.addVNode(sId, pNewNode);
                 ++newIdx;
                 ++prevIdx;
-            }  else if (pOldNode != nullptr) { // Matches node somewhere else, bring it in
+            } else if (
+                a_focusManager.isFocused(pPrevNode->getMatchingElement()) && 
+                pOldNode != nullptr) { 
+                    // Matches node somewhere else, but prev-node has focus, bring matching element in, it will cause a move
+                VOLT_DEBUG(
+                    "Volt>DiffPatch",
+                    "walk(): identity match, prev-node has focus → bringAndSyncNodes (DOM move)"
+                );
+                bringAndSyncNodes(
+                    a_idManager,
+                    a_focusManager,
+                    a_unclaimedOldNodes,
+                    pNewNode,
+                    pOldNode,
+                    a_hContainer,
+                    pPrevNode->getMatchingElement()
+                );
+                a_idManager.addVNode(sId, pNewNode);
+                ++newIdx;
+            } else if (
+                pOldNode != nullptr && 
+                pOldNode->getParent() != nullptr && 
+                pOldNode->getParent()->getMatchingElement() == a_hContainer && 
+                a_unclaimedOldNodes.count(pOldNode) == 0) { 
+                    // Matches an existing node, they are sibilings, and the old-node is linked & below us, remove/unlink all prev-nodes until old-node is at front, this avoids moves on the new nodes
+                VOLT_DEBUG(
+                    "Volt>DiffPatch",
+                    "walk(): identity match with sibling linked later on, unlink prev-nodes → syncNodes"
+                );
+                // Remove intervening prev nodes
+                do {
+                    a_unclaimedOldNodes.insert(a_prevNodes[prevIdx]);
+                    ++prevIdx;
+                } while (a_prevNodes[prevIdx] != pOldNode); // ASSUMPTION! There is a matching node later on
+                // Now prev-node == pOldNode <matching> pNewNode
+                syncNodes(a_idManager, a_focusManager, a_unclaimedOldNodes, pNewNode, pOldNode);
+                a_idManager.addVNode(sId, pNewNode);
+                ++newIdx;
+                ++prevIdx;
+            } else if (pOldNode != nullptr) { // Matches node somewhere else, bring it in, it will cause a move
                 VOLT_DEBUG(
                     "Volt>DiffPatch",
                     "walk(): identity match at different index → bringAndSyncNodes (DOM move)"
                 );
+                // Remove from unclaimed set if present as it is being reused now
+                if (a_unclaimedOldNodes.count(pOldNode) > 0) { 
+                    a_unclaimedOldNodes.erase(pOldNode);
+                }
                 bringAndSyncNodes(
                     a_idManager,
+                    a_focusManager,
+                    a_unclaimedOldNodes,
                     pNewNode,
                     pOldNode,
                     a_hContainer,
@@ -206,6 +270,8 @@ void VoltDiffPatch::syncTextNodes(
 
 void VoltDiffPatch::syncNodes(
     IdManager& a_idManager, 
+    FocusManager& a_focusManager,
+    std::unordered_set<VNode*>& a_unclaimedOldNodes,
     VNode* a_pNewNode,
     VNode* a_pOldNode) {
 
@@ -395,6 +461,8 @@ void VoltDiffPatch::syncNodes(
         );
         VoltDiffPatch::walk(
             a_idManager,
+            a_focusManager, 
+            a_unclaimedOldNodes,
             a_pOldNode->getChildren(), // The old node = prev node
             a_pNewNode->getChildren(),
             hElement
@@ -410,6 +478,8 @@ void VoltDiffPatch::syncNodes(
 
 void VoltDiffPatch::bringAndSyncNodes(
     IdManager& a_idManager, 
+    FocusManager& a_focusManager,
+    std::unordered_set<VNode*>& a_unclaimedOldNodes,
     VNode* a_pNewNode, 
     VNode* a_pOldNode,
     emscripten::val a_hContainer,
@@ -445,7 +515,7 @@ void VoltDiffPatch::bringAndSyncNodes(
     a_pNewNode->onMoveElement(a_pOldNode->getMatchingElement());
 
     // Sync props and children
-    syncNodes(a_idManager, a_pNewNode, a_pOldNode);
+    syncNodes(a_idManager, a_focusManager, a_unclaimedOldNodes, a_pNewNode, a_pOldNode);
 
     VOLT_LOG_INDENT_POP();
 }

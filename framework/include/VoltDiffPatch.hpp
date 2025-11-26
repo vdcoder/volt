@@ -1,7 +1,9 @@
 #pragma once
 #include <vector>
+#include <unordered_set>
 #include <emscripten/val.h>
 #include "IdManager.hpp"
+#include "FocusManager.hpp"
 
 namespace volt {
 
@@ -9,11 +11,13 @@ class VNode;
 
 class VoltDiffPatch {
 public:
-    static void rebuild(IdManager& a_idManager, VNode* a_pNewVTree, emscripten::val a_hRootContainer);
-    static void diffPatch(IdManager& a_idManager, VNode* a_pPrevVTree, VNode* a_pNewVTree, emscripten::val a_hRootContainer);
+    static void rebuild(IdManager& a_idManager, FocusManager& a_focusManager, VNode* a_pNewVTree, emscripten::val a_hRootContainer);
+    static void diffPatch(IdManager& a_idManager, FocusManager& a_focusManager, VNode* a_pPrevVTree, VNode* a_pNewVTree, emscripten::val a_hRootContainer);
 private:
     static void walk(    
         IdManager& a_idManager, 
+        FocusManager& a_focusManager,
+        std::unordered_set<VNode*>& a_unclaimedOldNodes,
         std::vector<VNode*>& a_prevNodes,
         std::vector<VNode*>& a_newNodes,
         emscripten::val a_hContainer);
@@ -23,10 +27,14 @@ private:
         VNode* a_pNewNode);
     static void syncNodes(
         IdManager& a_idManager, 
+        FocusManager& a_focusManager,
+        std::unordered_set<VNode*>& a_unclaimedOldNodes,
         VNode* a_pNewNode,
         VNode* a_pOldNode);
     static void bringAndSyncNodes(
         IdManager& a_idManager, 
+        FocusManager& a_focusManager,
+        std::unordered_set<VNode*>& a_unclaimedOldNodes,
         VNode* a_pNewNode, 
         VNode* a_pOldNode,
         emscripten::val a_hContainer,

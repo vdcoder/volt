@@ -48,6 +48,14 @@ void VoltEngine::mountApp() {
     invalidate();
 }
 
+void VoltEngine::clearFocussedElements() {
+    m_focusManager.clear();
+}
+    
+void VoltEngine::addFocussedElement(emscripten::val a_hElement) {
+    m_focusManager.add(a_hElement);
+}
+
 VNode* VoltEngine::recycleVNode() {
     if (m_pVNodeFreeListHead == nullptr) {
         // Allocate a new VNode
@@ -101,10 +109,10 @@ void VoltEngine::doRender() {
 
     if (m_pCurrentVTree == nullptr) {
         // Initial render: create DOM from scratch
-        VoltDiffPatch::rebuild(m_idManager, pNewVTree, m_hHostElement);
+        VoltDiffPatch::rebuild(m_idManager, m_focusManager, pNewVTree, m_hHostElement);
     } else {
         // Reconcile the prev and new trees, then patch the DOM
-        VoltDiffPatch::diffPatch(m_idManager, m_pCurrentVTree, pNewVTree, m_hHostElement);
+        VoltDiffPatch::diffPatch(m_idManager, m_focusManager, m_pCurrentVTree, pNewVTree, m_hHostElement);
     }
 
     std::string duplicateKeyDescription = m_idManager.getDuplicateKeyDescription();

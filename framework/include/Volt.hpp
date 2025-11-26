@@ -26,6 +26,7 @@
 #include "VNode.hpp"
 #include "VoltDiffPatch.hpp"
 #include "IdManager.hpp"
+#include "FocusManager.hpp"
 
 // Utilities
 #include "Shortcuts.hpp"

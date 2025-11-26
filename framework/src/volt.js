@@ -93,11 +93,22 @@
     "suspend",
     "timeupdate",
     "toggle",
+    "touchstart",
+    "touchmove",
     "unload",
     "volumechange",
     "waiting",
     "wheel",
   ];
+
+  const passiveEventNames = new Set([
+    "touchstart",
+    "touchmove",
+  ]);
+
+  function isPassiveEvent(eventName) {
+    return passiveEventNames.has(eventName);
+  }
 
   function defaultPrint(text) {
     console.log("📝 Volt:", text);
@@ -168,31 +179,111 @@
     const eventHandlers = [];
 
     function attachEventHandlers(Module) {
-      function makeHandler(eventType) {
+      function makeHandler() {
         return function (event) {
           let target = event.target;
-          const limit = this; // containerEl
-
-          while (target && target !== limit) {
+          while (target && target !== containerEl) {
             if (target.__cpp_ptr) {
               try {
                 Module.invokeVoltBubbleEvent(target.__cpp_ptr, event);
               } catch (err) {
-                console.error(
-                  "❌ VoltBootstrap: error while invoking bubble event:",
-                  err
-                );
+                console.error("❌ VoltBootstrap: error while invoking bubble event:", err);
               }
-              return;
+              if (event.cancelBubble === true) {
+                break;
+              }
             }
             target = target.parentNode;
           }
         };
       }
 
+      function makeFocusInOutHandlers() {
+        /** @type {{ type: 'in'|'out', event: FocusEvent }[]} */
+        const pending = [];
+        let processing = false;
+
+        function processFocusIn(event) {
+          // We’re entering / changing focus within this container
+          Module.clearVoltFocussedElements();
+
+          // Focus-register every node up to the container
+          let target = event.target;
+          while (target && target !== containerEl) {
+            try {
+              Module.addVoltFocussedElement(target);
+            } catch (err) {
+              console.error("❌ VoltBootstrap: error in focusin focus-register handler:", err);
+            }
+            target = target.parentNode;
+          }
+
+          // Call bubble event handlers up to the container
+          target = event.target;
+          while (target && target !== containerEl) {
+            if (target.__cpp_ptr) {
+              try {
+                Module.invokeVoltBubbleEvent(target.__cpp_ptr, event);
+              } catch (err) {
+                console.error("❌ VoltBootstrap: error in focusin handler:", err);
+              }
+              if (event.cancelBubble === true) {
+                break;
+              }
+            }
+            target = target.parentNode;
+          }
+        }
+
+        function processFocusOut(event) {
+          const related = event.relatedTarget;
+
+          if (related && containerEl.contains(related)) {
+            return;
+          }
+
+          // Focus has left the container entirely (or to null / browser chrome / other region).
+          try {
+            Module.clearVoltFocussedElements();
+          } catch (err) {
+            console.error("❌ VoltBootstrap: error in focusout handler:", err);
+          }
+        }
+
+        function drain() {
+          if (processing) return;
+          processing = true;
+          try {
+            while (pending.length > 0) {
+              const { type, event } = pending.shift();
+              if (type === "in") {
+                processFocusIn(event);
+              } else {
+                processFocusOut(event);
+              }
+            }
+          } finally {
+            processing = false;
+          }
+        }
+
+        function focusInHandler(event) {
+          pending.push({ type: "in", event });
+          drain();
+        }
+
+        function focusOutHandler(event) {
+          pending.push({ type: "out", event });
+          drain();
+        }
+
+        return { focusInHandler, focusOutHandler };
+      }
+
+      const { focusInHandler, focusOutHandler } = makeFocusInOutHandlers();
       events.forEach((type) => {
-        const handler = makeHandler(type);
-        containerEl.addEventListener(type, handler);
+        const handler = type === "focusin" ? focusInHandler : type === "focusout" ? focusOutHandler : makeHandler();
+        containerEl.addEventListener(type, handler, { passive: isPassiveEvent(type) });
         eventHandlers.push({ type, handler });
       });
 

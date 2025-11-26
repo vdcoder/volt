@@ -12,6 +12,7 @@
 #include "IRuntime.hpp"
 #include "App.hpp"
 #include "IdManager.hpp"
+#include "FocusManager.hpp"
 
 namespace volt {
 
@@ -39,6 +40,9 @@ public:
     // Id manager for stable element mapping
     IdManager& 
                 getIdManager                () { return m_idManager; }
+
+    void        clearFocussedElements       ();
+    void        addFocussedElement          (emscripten::val a_hElement);
 
     // VNode free list for recycling
     VNode*      recycleVNode                ();
@@ -69,6 +73,10 @@ private:
 
     // Id manager for stable element mapping
     IdManager   m_idManager;
+
+    // Focus manager for tracking focused elements
+    FocusManager
+                m_focusManager;
 
     // VNode memory manager
     std::vector<std::unique_ptr<VNode>> 
