@@ -15,23 +15,6 @@ inline const char* tagToString(ETag tag);
 // HTML Element Helper Functions
 // ============================================================================
 
-// Macro for minimal overloads for a tag (no if-variants)
-#define VNODE_TAG_HELPER_MINIMAL(tagName, tagEnum) \
-    inline VNodeHandle tagName() { \
-        return VNodeHandle(tag::ETag::tagEnum, {}, {}); \
-    } \
-    inline VNodeHandle tagName(std::vector<std::pair<short, PropValueType>> props) { \
-        return VNodeHandle(tag::ETag::tagEnum, std::move(props), {}); \
-    } \
-    template<typename... Children> \
-    inline VNodeHandle tagName(Children&&... children) { \
-        return VNodeHandle(tag::ETag::tagEnum, {}, {std::forward<Children>(children)...}); \
-    } \
-    template<typename... Children> \
-    inline VNodeHandle tagName(std::vector<std::pair<short, PropValueType>> props, Children&&... children) { \
-        return VNodeHandle(tag::ETag::tagEnum, std::move(props), {std::forward<Children>(children)...}); \
-    }
-
 // Macro to generate overloads for a tag using variadic templates
 // This allows natural syntax: div({props}, child1, child2, "text", ...)
 #define VNODE_TAG_HELPER(tagName, tagEnum) \
@@ -98,7 +81,7 @@ inline VNodeHandle _text(std::string a_sTextContent) {
 }
 
 // Fragment
-VNODE_TAG_HELPER_MINIMAL(_fragment, _FRAGMENT)
+VNODE_TAG_HELPER(_fragment, _FRAGMENT)
 
 // Common HTML elements
 VNODE_TAG_HELPER(doctype, doctype)

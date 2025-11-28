@@ -706,6 +706,7 @@ def classify_dsl_start(code: str, lt_pos: int) -> Optional[str]:
       - '<render('   → 'render'
       - '<map('      → 'map'
       - '<('         → 'fragment'
+      - '<?('        → 'fragment'
       - '<tagname('  → 'tag'  (tagname in TAGNAMES)
       - '<tagname?(' → 'tag'  (tagname in TAGNAMES)
     No whitespace is allowed between '<' and the token for now.
@@ -722,6 +723,8 @@ def classify_dsl_start(code: str, lt_pos: int) -> Optional[str]:
 
     # Fragment
     if lt_pos + 2 <= n and code.startswith("<(", lt_pos):
+        return "fragment"
+    if lt_pos + 3 <= n and code.startswith("<?(", lt_pos):
         return "fragment"
 
     # Tag: <tagname(
@@ -814,8 +817,13 @@ def expand_fragment_dsl(code: str, lt_pos: int, transform_nested) -> Optional[Tu
 
     Inner content is recursively transformed as DSL.
     """
-    if not code.startswith("<(", lt_pos):
+    if not code.startswith("<(", lt_pos) and not code.startswith("<?(", lt_pos):
         return None
+
+    fragment_if = False
+    if code.startswith("<?(", lt_pos):
+        fragment_if = True
+        lt_pos += 1  # adjust to point to '<('
 
     open_pos = lt_pos + 1  # index of '('
     if open_pos >= len(code) or code[open_pos] != '(':
@@ -833,7 +841,10 @@ def expand_fragment_dsl(code: str, lt_pos: int, transform_nested) -> Optional[Tu
         return None
 
     end_idx = slash_idx + 1
-    replacement = f"volt::tag::_fragment({inner}).track(__COUNTER__)"
+    if fragment_if:
+        replacement = f"volt::tag::_fragment_if({inner}).track(__COUNTER__)"
+    else:
+        replacement = f"volt::tag::_fragment({inner}).track(__COUNTER__)"
     return replacement, end_idx
 
 
