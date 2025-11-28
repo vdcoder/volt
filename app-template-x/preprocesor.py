@@ -707,6 +707,7 @@ def classify_dsl_start(code: str, lt_pos: int) -> Optional[str]:
       - '<map('      → 'map'
       - '<('         → 'fragment'
       - '<tagname('  → 'tag'  (tagname in TAGNAMES)
+      - '<tagname?(' → 'tag'  (tagname in TAGNAMES)
     No whitespace is allowed between '<' and the token for now.
     """
     n = len(code)
@@ -728,10 +729,12 @@ def classify_dsl_start(code: str, lt_pos: int) -> Optional[str]:
     if i < n and code[i] in IDENT_START:
         ident, j = parse_identifier_at(code, i)
         if ident.lower() in TAGNAMES:
-            # next non-space must be '('
+            # next non-space must be '(' or '?'
             while j < n and code[j].isspace():
                 j += 1
             if j < n and code[j] == '(':
+                return "tag"
+            if j + 1 < n and code[j] == '?' and code[j + 1] == '(':
                 return "tag"
 
     return None
@@ -853,11 +856,16 @@ def expand_tag_dsl(code: str, lt_pos: int, transform_nested) -> Optional[Tuple[s
     if ident.lower() not in TAGNAMES:
         return None
 
-    # find '(' after ident
+    # find '(' or '?(' after ident
     while j < n and code[j].isspace():
         j += 1
-    if j >= n or code[j] != '(':
+    if j >= n or (code[j] != '(' and not (code[j] == '?' and j + 1 < n and code[j + 1] == '(')):
         return None
+
+    tag_if = False
+    if code[j] == '?':
+        tag_if = True
+        j += 1
 
     open_pos = j
     close_pos = find_matching_paren(code, open_pos)
@@ -875,7 +883,10 @@ def expand_tag_dsl(code: str, lt_pos: int, transform_nested) -> Optional[Tuple[s
         return None
 
     end_idx = slash_idx + 1
-    replacement = f"volt::tag::{taglower_to_cpp_name(ident.lower())}({args}).track(__COUNTER__)"
+    if tag_if:
+        replacement = f"volt::tag::{taglower_to_cpp_name(ident.lower())}_if({args}).track(__COUNTER__)"
+    else:
+        replacement = f"volt::tag::{taglower_to_cpp_name(ident.lower())}({args}).track(__COUNTER__)"
     return replacement, end_idx
 
 

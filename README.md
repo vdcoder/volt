@@ -9,7 +9,7 @@ If you ever wished the web had a first-class C++ framework that feels modern, el
 **Welcome home.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![C++: 17](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://en.cppreference.com/w/cpp/17)
+[![C++: 20](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://en.cppreference.com/w/cpp/20)
 [![Platform: WebAssembly](https://img.shields.io/badge/WebAssembly-Enabled-purple.svg)](https://webassembly.org/)
 
 ---
@@ -22,12 +22,12 @@ A minimal, fast, JSX-like syntax for C++:
 ```cpp
 <div({ style:=("padding:20px") },
     <h1("Hello World")/>,
-    <button({ onClick:=([this]{ count++; }) }, "Click")/>
+    <button({ onClick:=([this](auto){ count++; }) }, "Click")/>
 )/>
 ```
 
-Zero magic. Zero runtime overhead.  
-Compiled into pure C++ via a lightweight preprocessor.
+Zero runtime overhead.  
+Coverted into pure C++ via a lightweight preprocessor.
 
 ---
 
