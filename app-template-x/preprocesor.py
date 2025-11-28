@@ -227,8 +227,15 @@ PROPNAMES_ORIGINAL = {
     "action",
     "align",
     "alt",
+    "aria-label",
     "ariaLabel",
+    "aria-labelledby",
+    "ariaLabelledby",
+    "aria-haspopup",
     "ariaHaspopup",
+    "aria-hidden",
+    "ariaHidden",
+    "aria-expanded",
     "ariaExpanded",
     "async",
     "autocomplete",
@@ -416,6 +423,16 @@ PROPNAMES = {name.lower() for name in PROPNAMES_ORIGINAL}
 def proplower_to_cpp_name(proplower: str) -> str:
     if proplower == "accept-charset":
         return "acceptcharset"
+    if proplower == "aria-labelledby":
+        return "arialabelledby"
+    if proplower == "aria-label":
+        return "arialabel"
+    if proplower == "aria-haspopup":
+        return "ariahaspopup"
+    if proplower == "aria-hidden":
+        return "ariahidden"
+    if proplower == "aria-expanded":
+        return "ariaexpanded"
     if proplower == "class":
         return "classname"
     if proplower == "default":
@@ -427,7 +444,8 @@ def proplower_to_cpp_name(proplower: str) -> str:
     return proplower
 
 IDENT_START = string.ascii_letters + "_"
-IDENT_BODY = IDENT_START + string.digits
+TAG_IDENT_BODY = IDENT_START + string.digits
+ATTR_IDENT_BODY = IDENT_START + string.digits + "-"
 
 
 # ---------------------------------------------------------------------------
@@ -637,7 +655,7 @@ def find_matching_paren(code: str, open_pos: int) -> Optional[int]:
 #  Helpers: identifiers and props
 # ---------------------------------------------------------------------------
 
-def parse_identifier_at(code: str, pos: int) -> Tuple[Optional[str], int]:
+def parse_identifier_at(code: str, pos: int, is_tag: bool) -> Tuple[Optional[str], int]:
     """
     Parse an identifier starting at pos. Returns (name or None, new_pos).
     """
@@ -646,7 +664,7 @@ def parse_identifier_at(code: str, pos: int) -> Tuple[Optional[str], int]:
         return None, pos
     start = pos
     pos += 1
-    while pos < n and code[pos] in IDENT_BODY:
+    while pos < n and code[pos] in (TAG_IDENT_BODY if is_tag else ATTR_IDENT_BODY):
         pos += 1
     return code[start:pos], pos
 
@@ -666,7 +684,7 @@ def transform_props(text: str) -> str:
     while i < n:
         # Try to match any propname at this position
         if text[i] in IDENT_START:
-            name, j = parse_identifier_at(text, i)
+            name, j = parse_identifier_at(text, i, is_tag=False)
             if name.lower() in PROPNAMES and j + 2 <= n and text[j:j+3] == ':=(':
                 # We have name:=(...
                 open_pos = j + 2  # index of '('
@@ -730,7 +748,7 @@ def classify_dsl_start(code: str, lt_pos: int) -> Optional[str]:
     # Tag: <tagname(
     i = lt_pos + 1
     if i < n and code[i] in IDENT_START:
-        ident, j = parse_identifier_at(code, i)
+        ident, j = parse_identifier_at(code, i, is_tag=True)
         if ident.lower() in TAGNAMES:
             # next non-space must be '(' or '?'
             while j < n and code[j].isspace():
@@ -863,7 +881,7 @@ def expand_tag_dsl(code: str, lt_pos: int, transform_nested) -> Optional[Tuple[s
     # Parse tag name
     n = len(code)
     i = lt_pos + 1
-    ident, j = parse_identifier_at(code, i)
+    ident, j = parse_identifier_at(code, i, is_tag=True)
     if ident.lower() not in TAGNAMES:
         return None
 

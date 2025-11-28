@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Attrs_impl.hpp"
 #include "Tags_impl.hpp"
 #include "DOM_impl.hpp"
 #include "IdManager_impl.hpp"
