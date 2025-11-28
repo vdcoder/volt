@@ -32,27 +32,27 @@ inline const char* tagToString(ETag tag);
     inline VNodeHandle tagName(std::vector<std::pair<short, PropValueType>> props, Children&&... children) { \
         return VNodeHandle(tag::ETag::tagEnum, std::move(props), {std::forward<Children>(children)...}); \
     } \
-    inline VNodeHandle tagName##_if(bool condition) { \
+    inline VNodeHandle tagName##_if(int stableKeyPositionT, int stableKeyPositionF, bool condition) { \
         if (condition) \
-            return VNodeHandle(tag::ETag::tagEnum, {}, {}); \
-        return _fragment(); \
+            return VNodeHandle(tag::ETag::tagEnum, {}, {}).track(stableKeyPositionT); \
+        return _fragment().track(stableKeyPositionF); \
     } \
-    inline VNodeHandle tagName##_if(bool condition, std::vector<std::pair<short, PropValueType>> props) { \
+    inline VNodeHandle tagName##_if(int stableKeyPositionT, int stableKeyPositionF, bool condition, std::vector<std::pair<short, PropValueType>> props) { \
         if (condition) \
-            return VNodeHandle(tag::ETag::tagEnum, std::move(props), {}); \
-        return _fragment(); \
-    } \
-    template<typename... Children> \
-    inline VNodeHandle tagName##_if(bool condition, Children&&... children) { \
-        if (condition) \
-            return VNodeHandle(tag::ETag::tagEnum, {}, {std::forward<Children>(children)...}); \
-        return _fragment(); \
+            return VNodeHandle(tag::ETag::tagEnum, std::move(props), {}).track(stableKeyPositionT); \
+        return _fragment().track(stableKeyPositionF); \
     } \
     template<typename... Children> \
-    inline VNodeHandle tagName##_if(bool condition, std::vector<std::pair<short, PropValueType>> props, Children&&... children) { \
+    inline VNodeHandle tagName##_if(int stableKeyPositionT, int stableKeyPositionF, bool condition, Children&&... children) { \
         if (condition) \
-            return VNodeHandle(tag::ETag::tagEnum, std::move(props), {std::forward<Children>(children)...}); \
-        return _fragment(); \
+            return VNodeHandle(tag::ETag::tagEnum, {}, {std::forward<Children>(children)...}).track(stableKeyPositionT); \
+        return _fragment().track(stableKeyPositionF); \
+    } \
+    template<typename... Children> \
+    inline VNodeHandle tagName##_if(int stableKeyPositionT, int stableKeyPositionF, bool condition, std::vector<std::pair<short, PropValueType>> props, Children&&... children) { \
+        if (condition) \
+            return VNodeHandle(tag::ETag::tagEnum, std::move(props), {std::forward<Children>(children)...}).track(stableKeyPositionT); \
+        return _fragment().track(stableKeyPositionF); \
     }
 
 
@@ -64,15 +64,15 @@ inline const char* tagToString(ETag tag);
     inline VNodeHandle tagName() { \
         return VNodeHandle(tag::ETag::tagEnum, {}, {}); \
     } \
-    inline VNodeHandle tagName##_if(bool condition, std::vector<std::pair<short, PropValueType>> props) { \
+    inline VNodeHandle tagName##_if(int stableKeyPositionT, int stableKeyPositionF, bool condition, std::vector<std::pair<short, PropValueType>> props) { \
         if (condition) \
-            return VNodeHandle(tag::ETag::tagEnum, std::move(props), {}); \
-        return _fragment(); \
+            return VNodeHandle(tag::ETag::tagEnum, std::move(props), {}).track(stableKeyPositionT); \
+        return _fragment().track(stableKeyPositionF); \
     } \
-    inline VNodeHandle tagName##_if(bool condition) { \
+    inline VNodeHandle tagName##_if(int stableKeyPositionT, int stableKeyPositionF, bool condition) { \
         if (condition) \
-            return VNodeHandle(tag::ETag::tagEnum, {}, {}); \
-        return _fragment(); \
+            return VNodeHandle(tag::ETag::tagEnum, {}, {}).track(stableKeyPositionT); \
+        return _fragment().track(stableKeyPositionF); \
     }
 
 // Text Node

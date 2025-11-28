@@ -842,7 +842,7 @@ def expand_fragment_dsl(code: str, lt_pos: int, transform_nested) -> Optional[Tu
 
     end_idx = slash_idx + 1
     if fragment_if:
-        replacement = f"volt::tag::_fragment_if({inner}).track(__COUNTER__)"
+        replacement = f"volt::tag::_fragment_if(__COUNTER__, __COUNTER__,{inner})"
     else:
         replacement = f"volt::tag::_fragment({inner}).track(__COUNTER__)"
     return replacement, end_idx
@@ -895,7 +895,7 @@ def expand_tag_dsl(code: str, lt_pos: int, transform_nested) -> Optional[Tuple[s
 
     end_idx = slash_idx + 1
     if tag_if:
-        replacement = f"volt::tag::{taglower_to_cpp_name(ident.lower())}_if({args}).track(__COUNTER__)"
+        replacement = f"volt::tag::{taglower_to_cpp_name(ident.lower())}_if(__COUNTER__, __COUNTER__,{args})"
     else:
         replacement = f"volt::tag::{taglower_to_cpp_name(ident.lower())}({args}).track(__COUNTER__)"
     return replacement, end_idx
