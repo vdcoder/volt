@@ -207,36 +207,93 @@ TAGNAMES_ORIGINAL = {
     "var",
     "video",
     "wbr",
-    "xmp"
+    "xmp",
+    # SVG
+    "animate",
+    "animateMotion",
+    "animateTransform",
+    "circle",
+    "clipPath",
+    "defs",
+    "desc",
+    "ellipse",
+    "feBlend",
+    "feColorMatrix",
+    "feComponentTransfer",
+    "feComposite",
+    "feConvolveMatrix",
+    "feDiffuseLighting",
+    "feDisplacementMap",
+    "feDistantLight",
+    "feDropShadow",
+    "feFlood",
+    "feFuncA",
+    "feFuncB",
+    "feFuncG",
+    "feFuncR",
+    "feGaussianBlur",
+    "feImage",
+    "feMerge",
+    "feMergeNode",
+    "feMorphology",
+    "feOffset",
+    "fePointLight",
+    "feSpecularLighting",
+    "feSpotLight",
+    "feTile",
+    "feTurbulence",
+    "filter",
+    "foreignObject",
+    "g",
+    "image",
+    "line",
+    "linearGradient",
+    "marker",
+    "mask",
+    "metadata",
+    "mpath",
+    "path",
+    "pattern",
+    "polygon",
+    "polyline",
+    "radialGradient",
+    "rect",
+    "set",
+    "stop",
+    "style",
+    "switch",
+    "symbol",
+    "text",
+    "textPath",
+    "tspan",
+    "use",
+    "view",
 }
-TAGNAMES = {name.lower() for name in TAGNAMES_ORIGINAL}
-def taglower_to_cpp_name(taglower: str) -> str:
-    if taglower == "!doctype":
+def tag_to_cpp_name(tag: str) -> str:
+    tag = tag.lower()
+    if tag == "!doctype":
         return "doctype"
-    if taglower == "!--":
+    if tag == "!--":
         return "comment"
-    if taglower == "template":
+    if tag == "switch":
+        return "switchtag"
+    if tag == "template":
         return "templatetag"
-    return taglower
+    return tag
+TAGNAMES = {tag_to_cpp_name(name) for name in TAGNAMES_ORIGINAL}
 
 PROPNAMES_ORIGINAL = {
     "accept",
     "accept-charset",
-    "acceptcharset", # Volt allows both forms
     "accesskey",
     "action",
     "align",
     "alt",
     "aria-label",
-    "ariaLabel",
     "aria-labelledby",
-    "ariaLabelledby",
     "aria-haspopup",
-    "ariaHaspopup",
     "aria-hidden",
-    "ariaHidden",
     "aria-expanded",
-    "ariaExpanded",
     "async",
     "autocomplete",
     "autofocus",
@@ -267,6 +324,7 @@ PROPNAMES_ORIGINAL = {
     "dropzone",
     "enctype",
     "enterkeyhint",
+    "fill",
     "for",
     "form",
     "formaction",
@@ -277,7 +335,6 @@ PROPNAMES_ORIGINAL = {
     "href",
     "hreflang",
     "http-equiv",
-    "httpequiv", # Volt allows both forms
     "icon",
     "id",
     "inert",
@@ -336,8 +393,105 @@ PROPNAMES_ORIGINAL = {
     "type",
     "usemap",
     "value",
+    "viewbox",
     "width",
     "wrap",
+    "xmlns",
+    # SVG
+    "by",
+    "cx",
+    "cy",
+    "d",
+    "fill-opacity",
+    "filter",
+    "flood-color",
+    "flood-opacity",
+    "font-size",
+    "font-size-adjust",
+    "font-style",
+    "fr",
+    "from",
+    "fx",
+    "fy",
+    "keyPoints",
+    "keyTimes",
+    "lengthAdjust",
+    "letter-spacing",
+    "lighting-color",
+    "markerHeight",
+    "markerUnits",
+    "markerWidth",
+    "mask",
+    "numOctaves",
+    "opacity",
+    "operator",
+    "orient",
+    "path",
+    "pathLength",
+    "patternContentUnits",
+    "patternTransform",
+    "patternUnits",
+    "pointer-events",
+    "points",
+    "pointsAtX",
+    "pointsAtY",
+    "pointsAtZ",
+    "preserveAlpha",
+    "r",
+    "radius",
+    "repeatCount",
+    "repeatDur",
+    "requiredExtensions",
+    "requiredFeatures",
+    "restart",
+    "rotate",
+    "rx",
+    "ry",
+    "scale",
+    "seed",
+    "shape-rendering",
+    "specularExponent",
+    "specularConstant",
+    "startoffset",
+    "stdDeviation",
+    "stitchTiles",
+    "stop-color",
+    "stop-opacity",
+    "strikethrough-position",
+    "strikethrough-thickness",
+    "stroke",
+    "stroke-dasharray",
+    "stroke-dashoffset",
+    "stroke-linecap",
+    "stroke-linejoin",
+    "stroke-miterlimit",
+    "stroke-opacity",
+    "stroke-width",
+    "surfaceScale",
+    "systemLanguage",
+    "tableValues",
+    "text-anchor",
+    "text-decoration",
+    "text-rendering",
+    "textLength",
+    "to",
+    "transform",
+    "vector-effect",
+    "visibility",
+    "word-spacing",
+    "writing-mode",
+    "x",
+    "x1",
+    "x2",
+    "xChannelSelector",
+    "xlink:href",
+    "xml:lang",
+    "y",
+    "y1",
+    "y2",
+    "yChannelSelector",
+    "z",
+    "zoomAndPan",
     # Volt specific
     "key",
     # Common event handlers
@@ -419,29 +573,18 @@ PROPNAMES_ORIGINAL = {
     "onmoveelement",
     "onremoveelement",
 }
-PROPNAMES = {name.lower() for name in PROPNAMES_ORIGINAL}
-def proplower_to_cpp_name(proplower: str) -> str:
-    if proplower == "accept-charset":
-        return "acceptcharset"
-    if proplower == "aria-labelledby":
-        return "arialabelledby"
-    if proplower == "aria-label":
-        return "arialabel"
-    if proplower == "aria-haspopup":
-        return "ariahaspopup"
-    if proplower == "aria-hidden":
-        return "ariahidden"
-    if proplower == "aria-expanded":
-        return "ariaexpanded"
+def prop_to_cpp_name(prop: str) -> str:
+    proplower = prop.lower()
     if proplower == "class":
         return "classname"
     if proplower == "default":
         return "defaultattr"
     if proplower == "for":
         return "forattr"
-    if proplower == "http-equiv":
-        return "httpequiv"
-    return proplower
+    if proplower == "operator":
+        return "operatorattr"
+    return proplower.replace("-", "").replace(":", "")
+PROPNAMES = {prop_to_cpp_name(name) for name in PROPNAMES_ORIGINAL}
 
 IDENT_START = string.ascii_letters + "_"
 TAG_IDENT_BODY = IDENT_START + string.digits
@@ -685,7 +828,7 @@ def transform_props(text: str) -> str:
         # Try to match any propname at this position
         if text[i] in IDENT_START:
             name, j = parse_identifier_at(text, i, is_tag=False)
-            if name.lower() in PROPNAMES and j + 2 <= n and text[j:j+3] == ':=(':
+            if prop_to_cpp_name(name) in PROPNAMES and j + 2 <= n and text[j:j+3] == ':=(':
                 # We have name:=(...
                 open_pos = j + 2  # index of '('
                 if open_pos >= n or text[open_pos] != '(':
@@ -701,7 +844,7 @@ def transform_props(text: str) -> str:
                     continue
 
                 arg = text[open_pos + 1 : close_pos]
-                out.append(f"volt::attr::{proplower_to_cpp_name(name.lower())}({arg})")
+                out.append(f"volt::attr::{prop_to_cpp_name(name)}({arg})")
                 i = close_pos + 1
                 continue
 
@@ -749,7 +892,7 @@ def classify_dsl_start(code: str, lt_pos: int) -> Optional[str]:
     i = lt_pos + 1
     if i < n and code[i] in IDENT_START:
         ident, j = parse_identifier_at(code, i, is_tag=True)
-        if ident.lower() in TAGNAMES:
+        if tag_to_cpp_name(ident) in TAGNAMES:
             # next non-space must be '(' or '?'
             while j < n and code[j].isspace():
                 j += 1
@@ -882,7 +1025,7 @@ def expand_tag_dsl(code: str, lt_pos: int, transform_nested) -> Optional[Tuple[s
     n = len(code)
     i = lt_pos + 1
     ident, j = parse_identifier_at(code, i, is_tag=True)
-    if ident.lower() not in TAGNAMES:
+    if tag_to_cpp_name(ident) not in TAGNAMES:
         return None
 
     # find '(' or '?(' after ident
@@ -913,9 +1056,9 @@ def expand_tag_dsl(code: str, lt_pos: int, transform_nested) -> Optional[Tuple[s
 
     end_idx = slash_idx + 1
     if tag_if:
-        replacement = f"volt::tag::{taglower_to_cpp_name(ident.lower())}_if(__COUNTER__, __COUNTER__,{args})"
+        replacement = f"volt::tag::{tag_to_cpp_name(ident)}_if(__COUNTER__, __COUNTER__,{args})"
     else:
-        replacement = f"volt::tag::{taglower_to_cpp_name(ident.lower())}({args}).track(__COUNTER__)"
+        replacement = f"volt::tag::{tag_to_cpp_name(ident)}({args}).track(__COUNTER__)"
     return replacement, end_idx
 
 

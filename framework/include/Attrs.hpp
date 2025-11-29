@@ -142,80 +142,178 @@ constexpr short ATTR_draggable = 236;
 constexpr short ATTR_dropzone = 237;
 constexpr short ATTR_enctype = 238;
 constexpr short ATTR_enterkeyhint = 239;
-constexpr short ATTR_forattr = 240;
-constexpr short ATTR_form = 241;
-constexpr short ATTR_formaction = 242;
-constexpr short ATTR_headers = 243;
-constexpr short ATTR_height = 244;
-constexpr short ATTR_hidden = 245;
-constexpr short ATTR_high = 246;
-constexpr short ATTR_href = 247;
-constexpr short ATTR_hreflang = 248;
-constexpr short ATTR_httpequiv = 249;
-constexpr short ATTR_icon = 250;
-constexpr short ATTR_id = 251;
-constexpr short ATTR_inert = 252;
-constexpr short ATTR_inputmode = 253;
-constexpr short ATTR_ismap = 254;
-constexpr short ATTR_kind = 255;
-constexpr short ATTR_label = 256;
-constexpr short ATTR_lang = 257;
-constexpr short ATTR_list = 258;
-constexpr short ATTR_loop = 259;
-constexpr short ATTR_low = 260;
-constexpr short ATTR_max = 261;
-constexpr short ATTR_maxlength = 262;
-constexpr short ATTR_media = 263;
-constexpr short ATTR_method = 264;
-constexpr short ATTR_min = 265;
-constexpr short ATTR_minlength = 266;
-constexpr short ATTR_multiple = 267;
-constexpr short ATTR_muted = 268;
-constexpr short ATTR_name = 269;
-constexpr short ATTR_novalidate = 270;
-constexpr short ATTR_open = 271;
-constexpr short ATTR_optimum = 272;
-constexpr short ATTR_pattern = 273;
-constexpr short ATTR_placeholder = 274;
-constexpr short ATTR_popover = 275;
-constexpr short ATTR_popovertarget = 276;
-constexpr short ATTR_popovertargetaction = 277;
-constexpr short ATTR_poster = 278;
-constexpr short ATTR_preload = 279;
-constexpr short ATTR_readonly = 280;
-constexpr short ATTR_rel = 281;
-constexpr short ATTR_required = 282;
-constexpr short ATTR_reversed = 283;
-constexpr short ATTR_rows = 284;
-constexpr short ATTR_rowspan = 285;
-constexpr short ATTR_sandbox = 286;
-constexpr short ATTR_scope = 287;
-constexpr short ATTR_selected = 288;
-constexpr short ATTR_shape = 289;
-constexpr short ATTR_size = 290;
-constexpr short ATTR_sizes = 291;
-constexpr short ATTR_span = 292;
-constexpr short ATTR_spellcheck = 293;
-constexpr short ATTR_src = 294;
-constexpr short ATTR_srcdoc = 295;
-constexpr short ATTR_srclang = 296;
-constexpr short ATTR_srcset = 297;
-constexpr short ATTR_start = 298;
-constexpr short ATTR_step = 299;
-constexpr short ATTR_style = 300;
-constexpr short ATTR_tabindex = 301;
-constexpr short ATTR_target = 302;
-constexpr short ATTR_title = 303;
-constexpr short ATTR_translate = 304;
-constexpr short ATTR_type = 305;
-constexpr short ATTR_usemap = 306;
-constexpr short ATTR_value = 307;
-constexpr short ATTR_width = 308;
-constexpr short ATTR_wrap = 309;
+constexpr short ATTR_fill = 240;
+constexpr short ATTR_forattr = 241;
+constexpr short ATTR_form = 242;
+constexpr short ATTR_formaction = 243;
+constexpr short ATTR_headers = 244;
+constexpr short ATTR_height = 245;
+constexpr short ATTR_hidden = 246;
+constexpr short ATTR_high = 247;
+constexpr short ATTR_href = 248;
+constexpr short ATTR_hreflang = 249;
+constexpr short ATTR_httpequiv = 250;
+constexpr short ATTR_icon = 251;
+constexpr short ATTR_id = 252;
+constexpr short ATTR_inert = 253;
+constexpr short ATTR_inputmode = 254;
+constexpr short ATTR_ismap = 255;
+constexpr short ATTR_kind = 256;
+constexpr short ATTR_label = 257;
+constexpr short ATTR_lang = 258;
+constexpr short ATTR_list = 259;
+constexpr short ATTR_loop = 260;
+constexpr short ATTR_low = 261;
+constexpr short ATTR_max = 262;
+constexpr short ATTR_maxlength = 263;
+constexpr short ATTR_media = 264;
+constexpr short ATTR_method = 265;
+constexpr short ATTR_min = 266;
+constexpr short ATTR_minlength = 267;
+constexpr short ATTR_multiple = 268;
+constexpr short ATTR_muted = 269;
+constexpr short ATTR_name = 270;
+constexpr short ATTR_novalidate = 271;
+constexpr short ATTR_open = 272;
+constexpr short ATTR_optimum = 273;
+constexpr short ATTR_pattern = 274;
+constexpr short ATTR_placeholder = 275;
+constexpr short ATTR_popover = 276;
+constexpr short ATTR_popovertarget = 277;
+constexpr short ATTR_popovertargetaction = 278;
+constexpr short ATTR_poster = 279;
+constexpr short ATTR_preload = 280;
+constexpr short ATTR_readonly = 281;
+constexpr short ATTR_rel = 282;
+constexpr short ATTR_required = 283;
+constexpr short ATTR_reversed = 284;
+constexpr short ATTR_rows = 285;
+constexpr short ATTR_rowspan = 286;
+constexpr short ATTR_sandbox = 287;
+constexpr short ATTR_scope = 288;
+constexpr short ATTR_selected = 289;
+constexpr short ATTR_shape = 290;
+constexpr short ATTR_size = 291;
+constexpr short ATTR_sizes = 292;
+constexpr short ATTR_span = 293;
+constexpr short ATTR_spellcheck = 294;
+constexpr short ATTR_src = 295;
+constexpr short ATTR_srcdoc = 296;
+constexpr short ATTR_srclang = 297;
+constexpr short ATTR_srcset = 298;
+constexpr short ATTR_start = 299;
+constexpr short ATTR_step = 300;
+constexpr short ATTR_style = 301;
+constexpr short ATTR_tabindex = 302;
+constexpr short ATTR_target = 303;
+constexpr short ATTR_title = 304;
+constexpr short ATTR_translate = 305;
+constexpr short ATTR_type = 306;
+constexpr short ATTR_usemap = 307;
+constexpr short ATTR_value = 308;
+constexpr short ATTR_viewbox = 309;
+constexpr short ATTR_width = 310;
+constexpr short ATTR_wrap = 311;
+constexpr short ATTR_xmlns = 312;
+// SGV
+constexpr short ATTR_by = 313;
+constexpr short ATTR_cx = 314;
+constexpr short ATTR_cy = 315;
+constexpr short ATTR_d = 316;
+constexpr short ATTR_fillopacity = 317;
+constexpr short ATTR_filter = 318;
+constexpr short ATTR_floodcolor = 319;
+constexpr short ATTR_floodopacity = 320;
+constexpr short ATTR_fontsize = 321;
+constexpr short ATTR_fontsizeadjust = 322;
+constexpr short ATTR_fontstyle = 323;
+constexpr short ATTR_fr = 324;
+constexpr short ATTR_from = 325;
+constexpr short ATTR_fx = 326;
+constexpr short ATTR_fy = 327;
+constexpr short ATTR_keypoints = 328;
+constexpr short ATTR_keytimes = 329;
+constexpr short ATTR_lengthadjust = 330;
+constexpr short ATTR_letterspacing = 331;
+constexpr short ATTR_lightingcolor = 332;
+constexpr short ATTR_markerheight = 333;
+constexpr short ATTR_markerunits = 334;
+constexpr short ATTR_markerwidth = 335;
+constexpr short ATTR_mask = 336;
+constexpr short ATTR_numoctaves = 337;
+constexpr short ATTR_opacity = 338;
+constexpr short ATTR_operatorattr = 339;
+constexpr short ATTR_orient = 340;
+constexpr short ATTR_path = 341;
+constexpr short ATTR_pathlength = 342;
+constexpr short ATTR_patterncontentunits = 343;
+constexpr short ATTR_patterntransform = 344;
+constexpr short ATTR_patternunits = 345;
+constexpr short ATTR_pointerevents = 346;
+constexpr short ATTR_points = 347;
+constexpr short ATTR_pointsatx = 348;
+constexpr short ATTR_pointsaty = 349;
+constexpr short ATTR_pointsatz = 350;
+constexpr short ATTR_preservealpha = 351;
+constexpr short ATTR_r = 352;
+constexpr short ATTR_radius = 353;
+constexpr short ATTR_repeatcount = 354;
+constexpr short ATTR_repeatdur = 355;
+constexpr short ATTR_requiredextensions = 356;
+constexpr short ATTR_requiredfeatures = 357;
+constexpr short ATTR_restart = 358;
+constexpr short ATTR_rotate = 359;
+constexpr short ATTR_rx = 360;
+constexpr short ATTR_ry = 361;
+constexpr short ATTR_scale = 362;
+constexpr short ATTR_seed = 363;
+constexpr short ATTR_shaperendering = 364;
+constexpr short ATTR_specularexponent = 365;
+constexpr short ATTR_specularconstant = 366;
+constexpr short ATTR_startoffset = 367;
+constexpr short ATTR_stddeviation = 368;
+constexpr short ATTR_stitchtiles = 369;
+constexpr short ATTR_stopcolor = 370;
+constexpr short ATTR_stopopacity = 371;
+constexpr short ATTR_strikethroughposition = 372;
+constexpr short ATTR_strikethroughthickness = 373;
+constexpr short ATTR_stroke = 374;
+constexpr short ATTR_strokedasharray = 375;
+constexpr short ATTR_strokedashoffset = 376;
+constexpr short ATTR_strokelinecap = 377;
+constexpr short ATTR_strokelinejoin = 378;
+constexpr short ATTR_strokemiterlimit = 379;
+constexpr short ATTR_strokeopacity = 380;
+constexpr short ATTR_strokewidth = 381;
+constexpr short ATTR_surfacescale = 382;
+constexpr short ATTR_systemlanguage = 383;
+constexpr short ATTR_tablevalues = 384;
+constexpr short ATTR_textanchor = 385;
+constexpr short ATTR_textdecoration = 386;
+constexpr short ATTR_textrendering = 387;
+constexpr short ATTR_textlength = 388;
+constexpr short ATTR_to = 389;
+constexpr short ATTR_transform = 390;
+constexpr short ATTR_vectoreffect = 391;
+constexpr short ATTR_visibility = 392;
+constexpr short ATTR_wordspacing = 393;
+constexpr short ATTR_writingmode = 394;
+constexpr short ATTR_x = 395;
+constexpr short ATTR_x1 = 396;
+constexpr short ATTR_x2 = 397;
+constexpr short ATTR_xchannelselector = 398;
+constexpr short ATTR_xlinkhref = 399;
+constexpr short ATTR_xmllang = 400;
+constexpr short ATTR_y = 401;
+constexpr short ATTR_y1 = 402;
+constexpr short ATTR_y2 = 403;
+constexpr short ATTR_ychannelselector = 404;
+constexpr short ATTR_z = 405;
+constexpr short ATTR_zoomandpan = 406;
 
 // Volt: Special attributes
-constexpr short ATTR_nodevalue = 400;
-constexpr short ATTR_key = 401;
+constexpr short ATTR_nodevalue = 1000;
+constexpr short ATTR_key = 1001;
 
 // Custom attributes start at 20000
 constexpr short ATTR_CUSTOM_START = 20000;
@@ -350,6 +448,7 @@ inline const char* attrIdToName(short id) {
         case ATTR_dropzone: return "dropzone";
         case ATTR_enctype: return "enctype";
         case ATTR_enterkeyhint: return "enterkeyhint";
+        case ATTR_fill: return "fill";
         case ATTR_forattr: return "for";
         case ATTR_form: return "form";
         case ATTR_formaction: return "formaction";
@@ -418,8 +517,105 @@ inline const char* attrIdToName(short id) {
         case ATTR_type: return "type";
         case ATTR_usemap: return "usemap";
         case ATTR_value: return "value";
+        case ATTR_viewbox: return "viewbox";
         case ATTR_width: return "width";
         case ATTR_wrap: return "wrap";
+        case ATTR_xmlns: return "xmlns";
+        // SGV
+        case ATTR_by: return "by";
+        case ATTR_cx: return "cx";
+        case ATTR_cy: return "cy";
+        case ATTR_d: return "d";
+        case ATTR_fillopacity: return "fill-opacity";
+        case ATTR_filter: return "filter";
+        case ATTR_floodcolor: return "flood-color";
+        case ATTR_floodopacity: return "flood-opacity";
+        case ATTR_fontsize: return "font-size";
+        case ATTR_fontsizeadjust: return "font-size-adjust";
+        case ATTR_fontstyle: return "font-style";
+        case ATTR_fr: return "fr";
+        case ATTR_from: return "from";
+        case ATTR_fx: return "fx";
+        case ATTR_fy: return "fy";
+        case ATTR_keypoints: return "keyPoints";
+        case ATTR_keytimes: return "keyTimes";
+        case ATTR_lengthadjust: return "lengthAdjust";
+        case ATTR_letterspacing: return "letter-spacing";
+        case ATTR_lightingcolor: return "lighting-color";
+        case ATTR_markerheight: return "markerHeight";
+        case ATTR_markerunits: return "markerUnits";
+        case ATTR_markerwidth: return "markerWidth";
+        case ATTR_mask: return "mask";
+        case ATTR_numoctaves: return "numOctaves";
+        case ATTR_opacity: return "opacity";
+        case ATTR_operatorattr: return "operator";
+        case ATTR_orient: return "orient";
+        case ATTR_path: return "path";
+        case ATTR_pathlength: return "pathLength";
+        case ATTR_patterncontentunits: return "patternContentUnits";
+        case ATTR_patterntransform: return "patternTransform";
+        case ATTR_patternunits: return "patternUnits";
+        case ATTR_pointerevents: return "pointer-events";
+        case ATTR_points: return "points";
+        case ATTR_pointsatx: return "pointsAtX";
+        case ATTR_pointsaty: return "pointsAtY";
+        case ATTR_pointsatz: return "pointsAtZ";
+        case ATTR_preservealpha: return "preserveAlpha";
+        case ATTR_r: return "r";
+        case ATTR_radius: return "radius";
+        case ATTR_repeatcount: return "repeatCount";
+        case ATTR_repeatdur: return "repeatDur";
+        case ATTR_requiredextensions: return "requiredExtensions";
+        case ATTR_requiredfeatures: return "requiredFeatures";
+        case ATTR_restart: return "restart";
+        case ATTR_rotate: return "rotate";
+        case ATTR_rx: return "rx";
+        case ATTR_ry: return "ry";
+        case ATTR_scale: return "scale";
+        case ATTR_seed: return "seed";
+        case ATTR_shaperendering: return "shape-rendering";
+        case ATTR_specularexponent: return "specularExponent";
+        case ATTR_specularconstant: return "specularConstant";
+        case ATTR_startoffset: return "startOffset";
+        case ATTR_stddeviation: return "stdDeviation";
+        case ATTR_stitchtiles: return "stitchTiles";
+        case ATTR_stopcolor: return "stop-color";
+        case ATTR_stopopacity: return "stop-opacity";
+        case ATTR_strikethroughposition: return "strikethrough-position";
+        case ATTR_strikethroughthickness: return "strikethrough-thickness";
+        case ATTR_stroke: return "stroke";
+        case ATTR_strokedasharray: return "stroke-dasharray";
+        case ATTR_strokedashoffset: return "stroke-dashoffset";
+        case ATTR_strokelinecap: return "stroke-linecap";
+        case ATTR_strokelinejoin: return "stroke-linejoin";
+        case ATTR_strokemiterlimit: return "stroke-miterlimit";
+        case ATTR_strokeopacity: return "stroke-opacity";
+        case ATTR_strokewidth: return "stroke-width";
+        case ATTR_surfacescale: return "surfaceScale";
+        case ATTR_systemlanguage: return "systemLanguage";
+        case ATTR_tablevalues: return "tableValues";
+        case ATTR_textanchor: return "text-anchor";
+        case ATTR_textdecoration: return "text-decoration";
+        case ATTR_textrendering: return "text-rendering";
+        case ATTR_textlength: return "textLength";
+        case ATTR_to: return "to";
+        case ATTR_transform: return "transform";
+        case ATTR_vectoreffect: return "vector-effect";
+        case ATTR_visibility: return "visibility";
+        case ATTR_wordspacing: return "word-spacing";
+        case ATTR_writingmode: return "writing-mode";
+        case ATTR_x: return "x";
+        case ATTR_x1: return "x1";
+        case ATTR_x2: return "x2";
+        case ATTR_xchannelselector: return "xChannelSelector";
+        case ATTR_xlinkhref: return "xlink:href";
+        case ATTR_xmllang: return "xml:lang";
+        case ATTR_y: return "y";
+        case ATTR_y1: return "y1";
+        case ATTR_y2: return "y2";
+        case ATTR_ychannelselector: return "yChannelSelector";
+        case ATTR_z: return "z";
+        case ATTR_zoomandpan: return "zoomAndPan";
 
         // Volt: Special attributes
         case ATTR_nodevalue: return "nodevalue"; // Special case for keeping text nodes's string content
@@ -478,6 +674,7 @@ DEFINE_ATTR_HELPER(draggable)
 DEFINE_ATTR_HELPER(dropzone)
 DEFINE_ATTR_HELPER(enctype)
 DEFINE_ATTR_HELPER(enterkeyhint)
+DEFINE_ATTR_HELPER(fill)
 DEFINE_ATTR_HELPER(forattr)
 DEFINE_ATTR_HELPER(form)
 DEFINE_ATTR_HELPER(formaction)
@@ -546,8 +743,105 @@ DEFINE_ATTR_HELPER(translate)
 DEFINE_ATTR_HELPER(type)
 DEFINE_ATTR_HELPER(usemap)
 DEFINE_ATTR_HELPER(value)
+DEFINE_ATTR_HELPER(viewbox)
 DEFINE_ATTR_HELPER(width)
 DEFINE_ATTR_HELPER(wrap)
+DEFINE_ATTR_HELPER(xmlns)
+// SGV
+DEFINE_ATTR_HELPER(by)
+DEFINE_ATTR_HELPER(cx)
+DEFINE_ATTR_HELPER(cy)
+DEFINE_ATTR_HELPER(d)
+DEFINE_ATTR_HELPER(fillopacity)
+DEFINE_ATTR_HELPER(filter)
+DEFINE_ATTR_HELPER(floodcolor)
+DEFINE_ATTR_HELPER(floodopacity)
+DEFINE_ATTR_HELPER(fontsize)
+DEFINE_ATTR_HELPER(fontsizeadjust)
+DEFINE_ATTR_HELPER(fontstyle)
+DEFINE_ATTR_HELPER(fr)
+DEFINE_ATTR_HELPER(from)
+DEFINE_ATTR_HELPER(fx)
+DEFINE_ATTR_HELPER(fy)
+DEFINE_ATTR_HELPER(keypoints)
+DEFINE_ATTR_HELPER(keytimes)
+DEFINE_ATTR_HELPER(lengthadjust)
+DEFINE_ATTR_HELPER(letterspacing)
+DEFINE_ATTR_HELPER(lightingcolor)
+DEFINE_ATTR_HELPER(markerheight)
+DEFINE_ATTR_HELPER(markerunits)
+DEFINE_ATTR_HELPER(markerwidth)
+DEFINE_ATTR_HELPER(mask)
+DEFINE_ATTR_HELPER(numoctaves)
+DEFINE_ATTR_HELPER(opacity)
+DEFINE_ATTR_HELPER(operatorattr)
+DEFINE_ATTR_HELPER(orient)
+DEFINE_ATTR_HELPER(path)
+DEFINE_ATTR_HELPER(pathlength)
+DEFINE_ATTR_HELPER(patterncontentunits)
+DEFINE_ATTR_HELPER(patterntransform)
+DEFINE_ATTR_HELPER(patternunits)
+DEFINE_ATTR_HELPER(pointerevents)
+DEFINE_ATTR_HELPER(points)
+DEFINE_ATTR_HELPER(pointsatx)
+DEFINE_ATTR_HELPER(pointsaty)
+DEFINE_ATTR_HELPER(pointsatz)
+DEFINE_ATTR_HELPER(preservealpha)
+DEFINE_ATTR_HELPER(r)
+DEFINE_ATTR_HELPER(radius)
+DEFINE_ATTR_HELPER(repeatcount)
+DEFINE_ATTR_HELPER(repeatdur)
+DEFINE_ATTR_HELPER(requiredextensions)
+DEFINE_ATTR_HELPER(requiredfeatures)
+DEFINE_ATTR_HELPER(restart)
+DEFINE_ATTR_HELPER(rotate)
+DEFINE_ATTR_HELPER(rx)
+DEFINE_ATTR_HELPER(ry)
+DEFINE_ATTR_HELPER(scale)
+DEFINE_ATTR_HELPER(seed)
+DEFINE_ATTR_HELPER(shaperendering)
+DEFINE_ATTR_HELPER(specularexponent)
+DEFINE_ATTR_HELPER(specularconstant)
+DEFINE_ATTR_HELPER(startoffset)
+DEFINE_ATTR_HELPER(stddeviation)
+DEFINE_ATTR_HELPER(stitchtiles)
+DEFINE_ATTR_HELPER(stopcolor)
+DEFINE_ATTR_HELPER(stopopacity)
+DEFINE_ATTR_HELPER(strikethroughposition)
+DEFINE_ATTR_HELPER(strikethroughthickness)
+DEFINE_ATTR_HELPER(stroke)
+DEFINE_ATTR_HELPER(strokedasharray)
+DEFINE_ATTR_HELPER(strokedashoffset)
+DEFINE_ATTR_HELPER(strokelinecap)
+DEFINE_ATTR_HELPER(strokelinejoin)
+DEFINE_ATTR_HELPER(strokemiterlimit)
+DEFINE_ATTR_HELPER(strokeopacity)
+DEFINE_ATTR_HELPER(strokewidth)
+DEFINE_ATTR_HELPER(surfacescale)
+DEFINE_ATTR_HELPER(systemlanguage)
+DEFINE_ATTR_HELPER(tablevalues)
+DEFINE_ATTR_HELPER(textanchor)
+DEFINE_ATTR_HELPER(textdecoration)
+DEFINE_ATTR_HELPER(textrendering)
+DEFINE_ATTR_HELPER(textlength)
+DEFINE_ATTR_HELPER(to)
+DEFINE_ATTR_HELPER(transform)
+DEFINE_ATTR_HELPER(vectoreffect)
+DEFINE_ATTR_HELPER(visibility)
+DEFINE_ATTR_HELPER(wordspacing)
+DEFINE_ATTR_HELPER(writingmode)
+DEFINE_ATTR_HELPER(x)
+DEFINE_ATTR_HELPER(x1)
+DEFINE_ATTR_HELPER(x2)
+DEFINE_ATTR_HELPER(xchannelselector)
+DEFINE_ATTR_HELPER(xlinkhref)
+DEFINE_ATTR_HELPER(xmllang)
+DEFINE_ATTR_HELPER(y)
+DEFINE_ATTR_HELPER(y1)
+DEFINE_ATTR_HELPER(y2)
+DEFINE_ATTR_HELPER(ychannelselector)
+DEFINE_ATTR_HELPER(z)
+DEFINE_ATTR_HELPER(zoomandpan)
 
 // Volt: Special Attributes
 DEFINE_ATTR_HELPER(key)
