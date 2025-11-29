@@ -369,6 +369,7 @@ PROPNAMES_ORIGINAL = {
     "rel",
     "required",
     "reversed",
+    "role",
     "rows",
     "rowspan",
     "sandbox",

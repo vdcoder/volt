@@ -65,7 +65,7 @@ public:
             <p("Here Volt demonstrates <map>, keys, and structural reuse:")/>,
 
             <ul(
-                <map(fruits, [this](const std::string& fruit){
+                <map(fruits, [this](const std::string& fruit, size_t idx){
                     return <li({
                         attr::key(fruit)
                     },

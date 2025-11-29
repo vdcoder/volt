@@ -83,8 +83,10 @@ template<typename Renderer>
 inline VNodeHandle loop(int a_nRepeat, Renderer a_fnRenderer) {
     std::vector<VNodeHandle> children;
     children.reserve(a_nRepeat);
-    while (children.size() < a_nRepeat) {
-        children.push_back(a_fnRenderer(children.size()).track(children.size()));
+    size_t idx = 0;
+    while (idx < a_nRepeat) {
+        children.push_back(a_fnRenderer(idx).track(idx));
+        ++idx;
     }
     return tag::_fragment(children);
 }
@@ -93,8 +95,10 @@ template<typename Container, typename Renderer>
 inline VNodeHandle map(const Container& a_container, Renderer a_fnRenderer) {
     std::vector<VNodeHandle> children;
     children.reserve(a_container.size());
+    size_t idx = 0;
     for (const auto& item : a_container) {
-        children.push_back(a_fnRenderer(item).track(children.size()));
+        children.push_back(a_fnRenderer(item, idx).track(idx));
+        ++idx;
     }
     return tag::_fragment(children);
 }
