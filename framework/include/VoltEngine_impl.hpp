@@ -73,8 +73,8 @@ EM_BOOL VoltEngine::onAnimationFrame(double a_nTimestamp, void* a_pThisAsVoidSta
     auto* pRuntime = static_cast<VoltEngine*>(a_pThisAsVoidStar);
 
     if (pRuntime->m_bHasInvalidated) {
+        pRuntime->m_bHasInvalidated = false; // Reset invalidation flag, before rendering
         pRuntime->doRender();
-        pRuntime->m_bHasInvalidated = false;
     }
     
     return EM_FALSE; // Don't repeat automatically

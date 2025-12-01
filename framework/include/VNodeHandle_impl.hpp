@@ -37,7 +37,10 @@ VNodeHandle::VNodeHandle(tag::ETag a_nTag, std::vector<std::pair<short, PropValu
                     m_pNode->setKeyProp(arg);
                     break;
                 default:
-                    attrProps.push_back({prop.first, std::move(arg)});
+                    if (prop.first != attr::ATTR_undefined) {
+                        attrProps.push_back({prop.first, std::move(arg)});
+                    }
+                    break;
                 }
             } else if constexpr (std::is_same_v<T, std::function<void(emscripten::val)>>) {
                 switch (prop.first)

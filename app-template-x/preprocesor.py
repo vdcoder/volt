@@ -294,6 +294,7 @@ PROPNAMES_ORIGINAL = {
     "aria-haspopup",
     "aria-hidden",
     "aria-expanded",
+    "aria-selected",
     "async",
     "autocomplete",
     "autofocus",
@@ -534,6 +535,8 @@ PROPNAMES_ORIGINAL = {
     "onloadeddata",
     "onloadedmetadata",
     "onloadstart",
+    "onmouseenter",
+    "onmouseleave",
     "onmousedown",
     "onmousemove",
     "onmouseout",
@@ -817,6 +820,8 @@ def transform_props(text: str) -> str:
     """
     Transform propname:=(...) into volt::attr::propname(...)
     where propname is in PROPNAMES.
+    also
+    Transform propname?:=(...) into volt::attr::propname_if(...)
 
     This is used on the *argument list* of a tag, after nested DSL
     has already been expanded.
@@ -829,9 +834,9 @@ def transform_props(text: str) -> str:
         # Try to match any propname at this position
         if text[i] in IDENT_START:
             name, j = parse_identifier_at(text, i, is_tag=False)
-            if prop_to_cpp_name(name) in PROPNAMES and j + 2 <= n and text[j:j+3] == ':=(':
-                # We have name:=(...
-                open_pos = j + 2  # index of '('
+            if prop_to_cpp_name(name) in PROPNAMES and ((j + 2 <= n and text[j:j+3] == ':=(') or (j + 3 <= n and text[j:j+4] == '?:=(')):
+                # We have name:=(... or name?:=(...
+                open_pos = j + 2 + (1 if text[j] == '?' else 0)  # index of '('
                 if open_pos >= n or text[open_pos] != '(':
                     # malformed, just copy and move on
                     out.append(text[i])
@@ -845,7 +850,10 @@ def transform_props(text: str) -> str:
                     continue
 
                 arg = text[open_pos + 1 : close_pos]
-                out.append(f"volt::attr::{prop_to_cpp_name(name)}({arg})")
+                if text[j] == '?':
+                    out.append(f"volt::attr::{prop_to_cpp_name(name)}_if({arg})")
+                else:
+                    out.append(f"volt::attr::{prop_to_cpp_name(name)}({arg})")
                 i = close_pos + 1
                 continue
 
