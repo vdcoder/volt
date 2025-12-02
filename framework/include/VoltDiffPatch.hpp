@@ -47,6 +47,9 @@ private:
 
     static void transferNode(
         VNode* a_pNewNode, emscripten::val a_hElement);
+    static emscripten::val 
+                makeNonBubbleJSHandler(
+        VNode* a_pNode, short a_nEventAttrId);
 };
 
 }

@@ -289,8 +289,13 @@ void VoltDiffPatch::syncNodes(
     // ---------------------------
     auto& newEvents = a_pNewNode->getNonBubbleEvents();
     auto& oldEvents = a_pOldNode->getNonBubbleEvents();
-    size_t nNewEventIdx = 0;
-    size_t nOldEventIdx = 0;
+
+    auto itNewEvent = newEvents.cbegin();
+     //itNewEvent != newEvents.cend(); 
+     //++itNewEvent;
+    auto itOldEvent = oldEvents.cbegin();
+     //itOldEvent != oldEvents.cend(); 
+     //++itOldEvent;
 
     VOLT_TRACE(
         "Volt>DiffPatch",
@@ -299,61 +304,80 @@ void VoltDiffPatch::syncNodes(
     );
 
     // Walk both sorted vectors in parallel
-    while (nOldEventIdx < oldEvents.size() || nNewEventIdx < newEvents.size()) {
-        if (nOldEventIdx == oldEvents.size()) { // Remaining items in new are additions
-            while (nNewEventIdx < newEvents.size()) { 
+    while (itOldEvent != oldEvents.cend() || itNewEvent != newEvents.cend()) {
+        if (itOldEvent == oldEvents.cend()) { // Remaining items in new are additions
+            while (itNewEvent != newEvents.cend()) { 
                 VOLT_DEBUG(
                     "Volt>DiffPatch",
                     "syncNodes(): adding non-bubble event attrId=" +
-                    std::to_string(newEvents[nNewEventIdx].first)
+                    std::string(attr::attrIdToName(itNewEvent->first))
                 );
+                // hElement.call<void>("addEventListener", 
+                //     std::string(attr::attrIdToName(itNewEvent->first)),
+                //     makeNonBubbleJSHandler(a_pNewNode, itNewEvent->first)
+                // );
                 hElement.set(
-                    attr::attrIdToName(newEvents[nNewEventIdx].first), 
-                    emscripten::val(newEvents[nNewEventIdx].second));
-                ++nNewEventIdx;
+                    "on" + std::string(attr::attrIdToName(itNewEvent->first)),
+                    makeNonBubbleJSHandler(a_pNewNode, itNewEvent->first)
+                );
+                ++itNewEvent;
             }
-        } else if (nNewEventIdx == newEvents.size()) { // Remaining items in old are removals
-            while (nOldEventIdx < oldEvents.size()) {
+        } else if (itNewEvent == newEvents.cend()) { // Remaining items in old are removals
+            while (itOldEvent != oldEvents.cend()) {
                 VOLT_DEBUG(
                     "Volt>DiffPatch",
                     "syncNodes(): removing non-bubble event attrId=" +
-                    std::to_string(oldEvents[nOldEventIdx].first)
+                    std::string(attr::attrIdToName(itOldEvent->first))
                 );
-                hElement.delete_(attr::attrIdToName(oldEvents[nOldEventIdx].first));
-                ++nOldEventIdx;
+                hElement.delete_("on" + std::string(attr::attrIdToName(itOldEvent->first)));
+                // hElement.call("removeEventListener", 
+                //     attr::attrIdToName(itOldEvent->first),
+                //     makeNonBubbleJSHandler(a_pNewNode, itOldEvent->first) ?????
+                // );
+                ++itOldEvent;
             }
-        } else if (oldEvents[nOldEventIdx].first < newEvents[nNewEventIdx].first) {
+        } else if (itOldEvent->first < itNewEvent->first) {
             // Old key not in new = removal
             VOLT_DEBUG(
                 "Volt>DiffPatch",
                 "syncNodes(): removing non-bubble event attrId=" +
-                std::to_string(oldEvents[nOldEventIdx].first)
+                std::string(attr::attrIdToName(itOldEvent->first))
             );
-            hElement.delete_(attr::attrIdToName(oldEvents[nOldEventIdx].first));
-            ++nOldEventIdx;
-        } else if (newEvents[nNewEventIdx].first < oldEvents[nOldEventIdx].first) {
+            hElement.delete_("on" + std::string(attr::attrIdToName(itOldEvent->first)));
+            // hElement.call("removeEventListener", 
+            //     attr::attrIdToName(itOldEvent->first),
+            //     makeNonBubbleJSHandler(a_pNewNode, itOldEvent->first) ?????
+            // );
+            ++itOldEvent;
+        } else if (itNewEvent->first < itOldEvent->first) {
             // New key not in old = addition
             VOLT_DEBUG(
                 "Volt>DiffPatch",
                 "syncNodes(): adding non-bubble event attrId=" +
-                std::to_string(newEvents[nNewEventIdx].first)
+                std::string(attr::attrIdToName(itNewEvent->first))
             );
+            // hElement.call<void>("addEventListener", 
+            //     std::string(attr::attrIdToName(itNewEvent->first)),
+            //     makeNonBubbleJSHandler(a_pNewNode, itNewEvent->first)
+            // );
             hElement.set(
-                attr::attrIdToName(newEvents[nNewEventIdx].first), 
-                emscripten::val(newEvents[nNewEventIdx].second));
-            ++nNewEventIdx;
+                "on" + std::string(attr::attrIdToName(itNewEvent->first)),
+                makeNonBubbleJSHandler(a_pNewNode, itNewEvent->first)
+            );
+            ++itNewEvent;
         } else {
-            // Same key, update to new callback
-            VOLT_TRACE(
+            // Same key, update to new callback, we got a new a_pNewNode pointer
+            VOLT_DEBUG(
                 "Volt>DiffPatch",
-                "syncNodes(): updating non-bubble event attrId=" +
-                std::to_string(newEvents[nNewEventIdx].first)
+                "syncNodes(): update non-bubble event attrId=" +
+                std::string(attr::attrIdToName(itNewEvent->first))
             );
             hElement.set(
-                attr::attrIdToName(newEvents[nNewEventIdx].first), 
-                emscripten::val(newEvents[nNewEventIdx].second));
-            ++nOldEventIdx;
-            ++nNewEventIdx;
+                "on" + std::string(attr::attrIdToName(itNewEvent->first)),
+                makeNonBubbleJSHandler(a_pNewNode, itNewEvent->first)
+            );
+            ++itOldEvent;
+            ++itNewEvent;
         }
     }
 
@@ -377,7 +401,7 @@ void VoltDiffPatch::syncNodes(
                 VOLT_DEBUG(
                     "Volt>DiffPatch",
                     "syncNodes(): adding prop attrId=" +
-                    std::to_string(newProps[nNewPropIdx].first)
+                    std::string(attr::attrIdToName(newProps[nNewPropIdx].first))
                 );
                 dom::setAttribute(
                     hElement,
@@ -391,7 +415,7 @@ void VoltDiffPatch::syncNodes(
                 VOLT_DEBUG(
                     "Volt>DiffPatch",
                     "syncNodes(): removing prop attrId=" +
-                    std::to_string(oldProps[nOldPropIdx].first)
+                    std::string(attr::attrIdToName(oldProps[nOldPropIdx].first))
                 );
                 dom::removeAttribute(
                     hElement,
@@ -404,7 +428,7 @@ void VoltDiffPatch::syncNodes(
             VOLT_DEBUG(
                 "Volt>DiffPatch",
                 "syncNodes(): removing prop attrId=" +
-                std::to_string(oldProps[nOldPropIdx].first)
+                std::string(attr::attrIdToName(oldProps[nOldPropIdx].first))
             );
             dom::removeAttribute(
                 hElement,
@@ -416,7 +440,7 @@ void VoltDiffPatch::syncNodes(
             VOLT_DEBUG(
                 "Volt>DiffPatch",
                 "syncNodes(): adding prop attrId=" +
-                std::to_string(newProps[nNewPropIdx].first)
+                std::string(attr::attrIdToName(newProps[nNewPropIdx].first))
             );
             dom::setAttribute(
                 hElement,
@@ -430,7 +454,7 @@ void VoltDiffPatch::syncNodes(
                 VOLT_DEBUG(
                     "Volt>DiffPatch",
                     "syncNodes(): updating prop attrId=" +
-                    std::to_string(newProps[nNewPropIdx].first)
+                    std::string(attr::attrIdToName(newProps[nNewPropIdx].first))
                 );
                 dom::setAttribute(
                     hElement,
@@ -441,7 +465,7 @@ void VoltDiffPatch::syncNodes(
                 VOLT_TRACE(
                     "Volt>DiffPatch",
                     "syncNodes(): prop unchanged attrId=" +
-                    std::to_string(newProps[nNewPropIdx].first)
+                    std::string(attr::attrIdToName(newProps[nNewPropIdx].first))
                 );
             }
             ++nOldPropIdx;
@@ -541,10 +565,27 @@ void VoltDiffPatch::addNode(
     else {
         hNewElement = dom::createElement(tag::tagToString(a_pNewNode->getTag()));
 
+        for (const auto& [eventAttrId, value] : a_pNewNode->getNonBubbleEvents()) {
+            VOLT_TRACE(
+                "Volt>DiffPatch",
+                "addNode(): adding non-bubble event attrId=" +
+                std::string(attr::attrIdToName(eventAttrId))
+            );
+            log("3 Adding non-bubble event attrId=" + std::string(attr::attrIdToName(eventAttrId)));
+            // hNewElement.call<void>("addEventListener", 
+            //     std::string(attr::attrIdToName(eventAttrId)),
+            //     makeNonBubbleJSHandler(a_pNewNode, eventAttrId)
+            // );
+            hNewElement.set(
+                "on" + std::string(attr::attrIdToName(eventAttrId)),
+                makeNonBubbleJSHandler(a_pNewNode, eventAttrId)
+            );
+        }
+
         for (auto & [attrId, value] : a_pNewNode->getProps()) {
             VOLT_TRACE(
                 "Volt>DiffPatch",
-                "addNode(): setting initial prop attrId=" + std::to_string(attrId)
+                "addNode(): setting initial prop attrId=" + std::string(attr::attrIdToName(attrId))
             );
             dom::setAttribute(hNewElement, attr::attrIdToName(attrId), value);
         }
@@ -595,6 +636,23 @@ void VoltDiffPatch::transferNode(
     a_hElement.set("__cpp_ptr", static_cast<double>(pointerAddress));
 
     VOLT_LOG_INDENT_POP();
+}
+
+emscripten::val VoltDiffPatch::makeNonBubbleJSHandler(VNode* a_pNode, short a_nEventAttrId) {
+    intptr_t ptr_as_int = reinterpret_cast<intptr_t>(a_pNode);
+
+    // Get the embind function from *this* module instance
+    emscripten::val invoke = emscripten::val::module_property("invokeVoltNonBubbleEvent");
+
+    // JS equivalent:
+    //   invoke.bind(undefined, ptr_as_int, eventAttrId)
+    // Result: function(event) { invoke(ptr_as_int, eventAttrId, event); }
+    return invoke.call<emscripten::val>(
+        "bind",
+        emscripten::val::undefined(),
+        ptr_as_int,
+        static_cast<int>(a_nEventAttrId)  // promoted to JS number
+    );
 }
 
 } // namespace volt

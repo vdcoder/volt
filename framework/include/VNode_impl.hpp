@@ -40,12 +40,8 @@ void VNode::setBubbleEvents(std::unordered_map<std::string, std::function<void(e
     m_bubbleEvents = std::move(a_events);
 }
 
-void VNode::setNonBubbleEvents(std::vector<std::pair<short, std::function<void(emscripten::val)>>> a_events) {
+void VNode::setNonBubbleEvents(std::map<short, std::function<void(emscripten::val)>> a_events) {
     m_nonBubbleEvents = std::move(a_events);
-
-    // Sort non-bubble events by attribute ID for efficient diffing
-    std::sort(m_nonBubbleEvents.begin(), m_nonBubbleEvents.end(), 
-        [](const auto& a_a, const auto& a_b) { return a_a.first < a_b.first; });
 }
 
 void VNode::setChildren(std::vector<VNode*> a_children) {

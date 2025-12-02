@@ -20,6 +20,11 @@ EMSCRIPTEN_BINDINGS(VOLT_APP_NAME_UNDERSCORE_module) {
         (void)pVNode->bubbleCallback(event["type"].as<std::string>(), event);
     }, emscripten::allow_raw_pointers());
 
+    function("invokeVoltNonBubbleEvent", +[](intptr_t __cpp_ptr_as_int, short nEventAttrId, emscripten::val event) {
+        VNode* pVNode = reinterpret_cast<volt::VNode*>(__cpp_ptr_as_int);
+        (void)pVNode->nonBubbleCallback(nEventAttrId, event);
+    }, emscripten::allow_raw_pointers());
+
     function("clearVoltFocussedElements", +[]() {
         g_voltEngine->clearFocussedElements();
     });

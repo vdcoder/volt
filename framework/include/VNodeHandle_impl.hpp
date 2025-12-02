@@ -1,4 +1,5 @@
 #include <vector>
+#include <map>
 #include <string>
 #include <memory>
 #include <algorithm>
@@ -22,8 +23,12 @@ VNodeHandle::VNodeHandle(tag::ETag a_nTag, std::vector<std::pair<short, PropValu
     // Separate props into attributes and event handlers
     std::vector<std::pair<short, std::string>> attrProps;
     std::unordered_map<std::string, std::function<void(emscripten::val)>> bubbleEventProps;
-    std::vector<std::pair<short, std::function<void(emscripten::val)>>> nonBubbleEventProps;
+    std::map<short, std::function<void(emscripten::val)>> nonBubbleEventProps;
     for (const auto& prop : a_props) {
+        if (prop.first == attr::ATTR_undefined) {
+            continue; // Skip undefined props
+        }
+
         std::visit([&](auto&& arg) {
             using T = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<T, std::string>) {
@@ -37,9 +42,7 @@ VNodeHandle::VNodeHandle(tag::ETag a_nTag, std::vector<std::pair<short, PropValu
                     m_pNode->setKeyProp(arg);
                     break;
                 default:
-                    if (prop.first != attr::ATTR_undefined) {
-                        attrProps.push_back({prop.first, std::move(arg)});
-                    }
+                    attrProps.push_back({prop.first, std::move(arg)});
                     break;
                 }
             } else if constexpr (std::is_same_v<T, std::function<void(emscripten::val)>>) {
@@ -64,7 +67,7 @@ VNodeHandle::VNodeHandle(tag::ETag a_nTag, std::vector<std::pair<short, PropValu
                     };
                     if (prop.first >= attr::ATTR_EVT_NON_BUBBLE_START && prop.first < attr::ATTR_EVT_NON_BUBBLE_END) {
                         // Non-bubble event  
-                        nonBubbleEventProps.push_back({prop.first, std::move(wrapper)});
+                        nonBubbleEventProps[prop.first] = std::move(wrapper);
                     } else {
                         // Bubble event
                         bubbleEventProps[attr::attrIdToName(prop.first)] = std::move(wrapper);

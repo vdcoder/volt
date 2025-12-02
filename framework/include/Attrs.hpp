@@ -889,6 +889,12 @@ DEFINE_ATTR_HELPER(key)
 #define DECLARE_EVENT_HELPER(funcEvtName) \
     inline std::pair<short, std::function<void(emscripten::val)>> funcEvtName(std::function<void(emscripten::val)> a_fnCallback) { \
         return {ATTR_EVT_##funcEvtName, a_fnCallback}; \
+    } \
+    inline std::pair<short, std::function<void(emscripten::val)>> funcEvtName##_if(bool a_bCondition, std::function<void(emscripten::val)> a_fnCallback) { \
+        if (!a_bCondition) { \
+            return {ATTR_undefined, [](auto){}}; \
+        } \
+        return {ATTR_EVT_##funcEvtName, a_fnCallback}; \
     }
 
 // Bubble Events
