@@ -12,6 +12,8 @@ namespace dom {
 
 void setAttribute(emscripten::val a_element, std::string a_sKey, std::string a_sValue);
 
+void setAttribute(emscripten::val a_element, std::string a_sKey, emscripten::val a_value);
+
 void removeAttribute(emscripten::val a_element, std::string a_sKey);
 
 emscripten::val createElement(std::string a_sTagName);

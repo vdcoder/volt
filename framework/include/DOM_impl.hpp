@@ -9,6 +9,11 @@ void setAttribute(emscripten::val a_element, std::string a_sKey, std::string a_s
     a_element.call<void>("setAttribute", a_sKey, a_sValue);
 }
 
+void setAttribute(emscripten::val a_element, std::string a_sKey, emscripten::val a_value) {
+    //a_element.set(a_sKey, a_value);
+    a_element.call<void>("setAttribute", a_sKey, a_value);
+}
+
 void removeAttribute(emscripten::val a_element, std::string a_sKey) {
     //a_element.delete_(a_sKey);
     a_element.call<void>("removeAttribute", a_sKey);

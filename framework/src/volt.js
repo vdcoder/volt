@@ -148,7 +148,7 @@
 
     if (typeof global.VoltApp !== "function") {
       throw new Error(
-        "VoltApp factory not found. Make sure app.js (Emscripten output) is loaded before volt-app.js."
+        "VoltApp factory not found. Make sure app.js (Emscripten output) is loaded before volt.js."
       );
     }
 
@@ -186,24 +186,23 @@
     const eventHandlers = [];
 
     function attachEventHandlers(Module) {
-      function makeHandler() {
-        return function (event) {
-          let target = event.target;
-          while (target && target !== containerEl) {
-            if (target.__cpp_ptr) {
-              try {
-                Module.invokeVoltBubbleEvent(target.__cpp_ptr, event);
-              } catch (err) {
-                console.error("❌ VoltBootstrap: error while invoking bubble event:", err);
-              }
-              if (event.cancelBubble === true) {
-                break;
-              }
+      const genericHandler = (event) => {
+        let target = event.target;
+        while (target && target !== containerEl) {
+          if (target.__cpp_ptr) {
+            event.__volt_cpp_ptr = target.__cpp_ptr;
+            try {
+              Module.invokeVoltBubbleEvent(event);
+            } catch (err) {
+              console.error("❌ VoltBootstrap: error while invoking bubble event:", err);
             }
-            target = target.parentNode;
+            if (event.cancelBubble === true) {
+              break;
+            }
           }
-        };
-      }
+          target = target.parentNode;
+        }
+      };
 
       function makeFocusInOutHandlers() {
         /** @type {{ type: 'in'|'out', event: FocusEvent }[]} */
@@ -229,8 +228,9 @@
           target = event.target;
           while (target && target !== containerEl) {
             if (target.__cpp_ptr) {
+              event.__volt_cpp_ptr = target.__cpp_ptr;
               try {
-                Module.invokeVoltBubbleEvent(target.__cpp_ptr, event);
+                Module.invokeVoltBubbleEvent(event);
               } catch (err) {
                 console.error("❌ VoltBootstrap: error in focusin handler:", err);
               }
@@ -289,7 +289,7 @@
 
       const { focusInHandler, focusOutHandler } = makeFocusInOutHandlers();
       events.forEach((type) => {
-        const handler = type === "focusin" ? focusInHandler : type === "focusout" ? focusOutHandler : makeHandler();
+        const handler = type === "focusin" ? focusInHandler : type === "focusout" ? focusOutHandler : genericHandler;
         containerEl.addEventListener(type, handler, { passive: isPassiveEvent(type) });
         eventHandlers.push({ type, handler });
       });

@@ -11,7 +11,7 @@ namespace volt {
 // VoltEngine Implementation
 // ============================================================================
 
-VoltEngine::VoltEngine(std::string a_sElementId) {
+VoltEngine::VoltEngine(std::string a_sElementId, std::string a_sModuleName) {
     // Get the DOM element to mount to
     val document = val::global("document");
     val element = document.call<val>("getElementById", a_sElementId);
@@ -23,6 +23,7 @@ VoltEngine::VoltEngine(std::string a_sElementId) {
     }
 
     m_hHostElement = element;
+    m_sModuleName = a_sModuleName;
 }
 
 VoltEngine::~VoltEngine() {
@@ -102,9 +103,6 @@ void VoltEngine::doRender() {
     // Render the new VTree, put inside a fragment to always work with a list of children
     VNode* pNewVTree = tag::_fragment(m_pApp->render()).getNodePtr();
 
-    // Clear rendering runtime
-    g_pRenderingEngine = nullptr;
-
     //log("VoltEngine::doRender here 4");
 
     if (m_pCurrentVTree == nullptr) {
@@ -119,6 +117,9 @@ void VoltEngine::doRender() {
     if (!duplicateKeyDescription.empty()) {
         emscripten_log(EM_LOG_WARN, "Volt: Duplicate keys detected:\n%s", duplicateKeyDescription.c_str());
     }
+
+    // Clear rendering runtime
+    g_pRenderingEngine = nullptr;
 
     //log("VoltEngine::doRender here 5 out");
 

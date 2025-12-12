@@ -34,9 +34,9 @@ public:
         }
         return false;
     }
-    bool nonBubbleCallback(short a_nEventAttrId, emscripten::val a_event) {
-        auto it = m_nonBubbleEvents.find(a_nEventAttrId);
-        if (it != m_nonBubbleEvents.end()) {
+    bool nonBubbleCallback(std::string a_eventName, emscripten::val a_event) {
+        auto it = m_nonBubbleEventsByName.find(a_eventName);
+        if (it != m_nonBubbleEventsByName.end()) {
             it->second(a_event);
             return true;
         }
@@ -79,7 +79,7 @@ public:
      }
     int getStableKeyPosition() { return m_nStableKeyPosition; }
     std::unordered_map<std::string, std::function<void(emscripten::val)>>& getBubbleEvents() { return m_bubbleEvents; }
-    std::map<short, std::function<void(emscripten::val)>>& getNonBubbleEvents() { return m_nonBubbleEvents; }
+    std::vector<std::pair<short, std::function<void(emscripten::val)>>>& getNonBubbleEvents() { return m_nonBubbleEvents; }
     std::vector<VNode*>& getChildren() { return m_children; }
 
     // Setup VNode data
@@ -94,7 +94,7 @@ public:
     void setOnBeforeMoveElementEvent(std::function<void(emscripten::val)> a_fn) { m_onBeforeMoveElementEvent = a_fn; }
     void setOnMoveElementEvent(std::function<void(emscripten::val)> a_fn) { m_onMoveElementEvent = a_fn; }
     void setOnRemoveElementEvent(std::function<void(emscripten::val)> a_fn) { m_onRemoveElementEvent = a_fn; }
-    void setNonBubbleEvents(std::map<short, std::function<void(emscripten::val)>> a_events);
+    void setNonBubbleEvents(std::vector<std::pair<short, std::function<void(emscripten::val)>>> a_events);
     void setChildren(std::vector<VNode*> a_children);
 
     // Set as text node
@@ -130,7 +130,8 @@ public:
 
 private:
     std::unordered_map<std::string, std::function<void(emscripten::val)>> m_bubbleEvents;
-    std::map<short, std::function<void(emscripten::val)>> m_nonBubbleEvents; // Kept sorted for efficient diffing
+    std::vector<std::pair<short, std::function<void(emscripten::val)>>> m_nonBubbleEvents; // Kept sorted for efficient diffing
+    std::unordered_map<std::string, std::function<void(emscripten::val)>> m_nonBubbleEventsByName;
     std::function<void(emscripten::val)> m_onAddElementEvent;
     std::function<void(emscripten::val)> m_onBeforeMoveElementEvent;
     std::function<void(emscripten::val)> m_onMoveElementEvent;

@@ -25,7 +25,7 @@ class VNode;
 class VoltEngine : public IRuntime {
 public:
     // Constructor: Create a runtime bound to a DOM element by ID
-    explicit    VoltEngine                 (std::string a_sElementId);
+    explicit    VoltEngine                 (std::string a_sElementId, std::string a_sModuleName);
     
     // Destructor: Clean up DOM and callbacks
                 ~VoltEngine                ();
@@ -36,6 +36,10 @@ public:
     // Mount app
     template<typename TApp> void 
                 mountApp                    ();
+
+    // Id manager for stable element mapping
+    std::string 
+                getModuleName               () { return m_sModuleName; }
 
     // Id manager for stable element mapping
     IdManager& 
@@ -60,6 +64,9 @@ private:
     // DOM element handle for mounting
     emscripten::val      
                 m_hHostElement = emscripten::val::undefined();
+
+    // Module name for global communication, if needed
+    std::string m_sModuleName;
     
     // Current app instance
     std::unique_ptr<App> 
