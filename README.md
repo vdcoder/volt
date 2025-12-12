@@ -29,7 +29,8 @@ A minimal, fast, JSX-like syntax for C++:
 
 Zero runtime overhead.  
 Coverted into pure C++ via a lightweight preprocessor.
-Header only C++ library <volt.hpp>.
+
+Header only library (#include <volt.hpp>)
 
 ---
 
