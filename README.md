@@ -223,6 +223,7 @@ window.volt_my_app
 - Native-level performance  
 - Deterministic memory model  
 - No GC pauses  
+- Modern standards ready
 - Perfect for simulation, real-time UI, dashboards, tools, games  
 - And now — with Volt — a *beautiful* declarative UI model
 
