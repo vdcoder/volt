@@ -27,13 +27,19 @@ public:
             <p("Current value: " + std::to_string(counter))/>,
 
             <div(
-                Button(getRuntime()).<render("Increment", [this](auto){
-                    counter++;
-                }, "primary")/>,
+                <(Button(
+                    getRuntime(), 
+                    "Increment", 
+                    [this](auto){ counter++; }, 
+                    "primary"
+                ))/>,
 
-                Button(getRuntime()).<render("Decrement", [this](auto){
-                    counter--;
-                }, "secondary")/>
+                <(Button(
+                    getRuntime(), 
+                    "Decrement", 
+                    [this](auto){ counter--; }, 
+                    "secondary"
+                ))/>
             )/>,
 
             (counter > 10
@@ -44,14 +50,15 @@ public:
 
             // TOGGLE PANEL
             <h2("Toggle Panel")/>,
-            Button(getRuntime()).<render(
+            <(Button(
+                getRuntime(),
                 (showPanel ? "Hide Panel" : "Show Panel"),
                 [this](auto){ showPanel = !showPanel; },
                 "primary"
-            )/>,
+            ))/>,
 
             <div((!showPanel) 
-                ?   <p({style:=("color:#666;")}, "(panel is hidden)")/>
+                ?   <p({ style:=("color:#666;") }, "(panel is hidden)")/>
                 :   <div({ style:=("padding: 12px; border: 1px solid #ddd; border-radius: 6px;") },
                         <h3("Hello from the Toggle Panel!")/>,
                         <p("This demonstrates conditional rendering and structural reuse.")/>
@@ -66,23 +73,31 @@ public:
 
             <ul(
                 <map(fruits, [this](const std::string& fruit, size_t idx){
-                    return <li({
-                        attr::key(fruit)
-                    },
+                    return <li({ key:=(fruit) },
                         <span(fruit)/>,
-                        Button(getRuntime()).<render("Remove", [this, fruit](auto){
-                            // Remove fruit
-                            fruits.erase(std::remove(fruits.begin(), fruits.end(), fruit),
-                                         fruits.end());
-                        }, "danger")/>
+                        <(Button(
+                            getRuntime(), 
+                            "Remove", 
+                            [this, fruit](auto){
+                                // Remove fruit
+                                fruits.erase(std::remove(fruits.begin(), fruits.end(), fruit),
+                                            fruits.end());
+                            }, 
+                            "danger"
+                        ))/>
                     )/>;
                 })/>
             )/>,
 
-            Button(getRuntime()).<render("Add Random Fruit", [this](auto){
-                static int id = 0;
-                fruits.push_back("Fruit" + std::to_string(++id));
-            }, "primary")/>,
+            <(Button(
+                getRuntime(),
+                "Add Random Fruit", 
+                [this](auto){
+                    static int id = 0;
+                    fruits.push_back("Fruit" + std::to_string(++id));
+                }, 
+                "primary"
+            ))/>,
 
             <br()/>,
             <br()/>,

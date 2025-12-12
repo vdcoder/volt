@@ -9,7 +9,8 @@ If you ever wished the web had a first-class C++ framework that feels modern, el
 **Welcome home.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![C++: 20](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://en.cppreference.com/w/cpp/20)
+[![C++: 20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://en.cppreference.com/w/cpp/20)
+[![Bits: MEMORY64](https://img.shields.io/badge/Bits-MEMORY64-purple.svg)](https://webassembly.github.io/spec/)
 [![Platform: WebAssembly](https://img.shields.io/badge/WebAssembly-Enabled-purple.svg)](https://webassembly.org/)
 
 ---
@@ -28,26 +29,36 @@ A minimal, fast, JSX-like syntax for C++:
 
 Zero runtime overhead.  
 Coverted into pure C++ via a lightweight preprocessor.
+Header only C++ library <volt.hpp>.
 
 ---
 
 ### 🧠 The Structural Reuse Algorithm  
 Volt surgically updates the DOM using **identity-preserving diffing**, ensuring:
 
-- DOM nodes are **reused**, not replaced  
-- elements **move** rather than re-render  
-- scroll position, focus, and text selection stay intact  
-- third-party JS widgets remain stable  
-- fragments and lists update cleanly and predictably
-
-This is Volt’s superpower.
+- DOM nodes are stable, their identity is fixed, never re-created
+- this means element "things" stay intact: scroll position, focus, text selection, etc.
+- it's the closest behaviour to vanila HTML/JS, great for third-party JS widgets (or C++)
+- similar to React, the "key" prop supports stable identity across re-orderings, via user data
+- additionally, the "id" prop automatically gives stable identity, regardless of location, useful when elements move but are the same, for example a canvas or a rich editor
+- in short: minimal, predictable and focus-friendly DOM updates
 
 ---
 
-### 🧩 Component Architecture  
-- Simple and flexible `render(...)` signatures  
-- Stateless and stateful components  
-- Automatic invalidation on event handlers  
+### 🧠 Mutability Is Back!
+
+Live your life, modify your memory. Volt does not track changes, instead it efficiently re-renders anytime an event is called, this means:
+
+- no re-rendering nightmares on multiple React effect setups
+- end of rendering optimizations at the user code, such as memoing blocks or callbacks
+- from external codes, invalitate() can be called to schedule a re-render
+- want to write your own change tracker? simply turn off AUTO_INVALIDATE_ON_EVENTS
+
+---
+
+### 🧩 Functional Component Architecture  
+- Simple and flexible, anything returning a VNodeHandle is a component
+- Support for stateless and stateful components
 - Completely safe runtime interface via `IRuntime*`  
 - Zero cost when unused
 
@@ -62,8 +73,8 @@ You can run two, ten, or a hundred Volt runtimes on the same page — each isola
 ### 🛠️ Developer Experience  
 - `create-volt-app.sh` — instant app scaffolding  
 - Choose between **raw C++ template** or **X template**  
-- Modern JS bootstrap `volt-app.js`  
-- Predictable, transparent preprocessor output  
+- Modern JS bootstrap `volt.js`  
+- Predictable, transparent, debug-friendly preprocessor output  
 - Clean project structure
 
 ---
@@ -110,11 +121,11 @@ Done. Your first C++ web app is running.
 #include <Volt.hpp>
 using namespace volt;
 
-class CounterApp : public VoltRuntime::AppBase {
+class CounterApp : public App {
     int count = 0;
 
 public:
-    CounterApp(VoltRuntime* rt) : AppBase(rt) {}
+    CounterApp(IRuntime& a_runtime) : App(a_runtime) {}
 
     VNodeHandle render() override {
         return <div({ style:=("font-family:sans-serif; padding:20px;") },
@@ -130,15 +141,15 @@ public:
 
 ```cpp
 #include <Volt.hpp>
-#include "../dependencies/volt/src/VoltRuntime.cpp"
 #include "App.x.hpp"
+#include <emscripten/bind.h>
 
-std::unique_ptr<VoltRuntime> g_runtime;
+std::unique_ptr<volt::VoltEngine> g_voltEngine = nullptr;
 
-EMSCRIPTEN_BINDINGS(counter) {
-    function("createRuntime", []{
-        g_runtime = std::make_unique<VoltRuntime>("root");
-        g_runtime->mountApp<CounterApp>();
+EMSCRIPTEN_BINDINGS(CounterApp) {
+    function("createVoltEngine", +[](std::string rootId) {
+        g_voltEngine = std::make_unique<volt::VoltEngine>(rootId, "CounterApp");
+        g_voltEngine->mountApp<CounterApp>();
     });
 }
 ```
@@ -151,11 +162,12 @@ VoltBootstrap handles events and setup automatically.
 
 1. You implement a `render()` method that returns a **VNode tree**  
 2. Volt compares new vs old using the **Structural Reuse Algorithm**  
-3. Matching nodes are **reused**  
+3. Matching nodes are sycned  
 4. Moved nodes are **physically relocated** in the DOM  
 5. Changed props are patched  
-6. Removed nodes fire lifecycle hooks  
+6. Removed nodes are gone
 7. DOM remains stable and predictable
+8. lifecycle hooks are triggered
 
 ---
 
@@ -166,17 +178,14 @@ volt/
 ├── framework/
 │   ├── include/
 │   │   ├── Volt.hpp
-│   │   ├── VoltRuntime.hpp
-│   │   ├── VNode.hpp
-│   │   ├── Attrs.hpp
-│   │   ├── VoltEvents.hpp
-│   │   ├── Diff.hpp
-│   │   └── Patch.hpp
+│   │   └── ...
 │   ├── src/
+│   │   └── volt.js
 │   └── user-scripts/
-└── app-template/
-    ├── raw/
-    └── x/
+│       ├── create-volt-app.sh
+│       └── ...
+├── app-template/
+└── app-template-x/
 ```
 
 ---
