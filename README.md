@@ -42,7 +42,8 @@ Volt surgically updates the DOM using **identity-preserving diffing**, ensuring:
 - it's the closest behaviour to vanila HTML/JS, great for third-party JS widgets (or C++)
 - similar to React, the "key" prop supports stable identity across re-orderings, via user data
 - additionally, the "id" prop automatically gives stable identity, regardless of location, useful when elements move but are the same, for example a canvas or a rich editor
-- in short: minimal, predictable and focus-friendly DOM updates
+
+"Minimal, predictable and focus-friendly DOM updates"
 
 ---
 
