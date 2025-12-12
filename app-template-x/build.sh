@@ -57,6 +57,7 @@ mkdir -p "$GENERATED_DIR/src"
 echo "   - Scanning src/ for source files..."
 find src -type f -print0 | while IFS= read -r -d '' SRC_FILE; do
     # Compute relative path and destination path
+    ABS_SRC_FILE=$(realpath "$SRC_FILE")
     REL_PATH="${SRC_FILE#src/}"
     DEST_PATH="$GENERATED_DIR/src/$REL_PATH"
 
@@ -64,7 +65,7 @@ find src -type f -print0 | while IFS= read -r -d '' SRC_FILE; do
 
     if [[ "$SRC_FILE" == *".x."* ]]; then
         echo "   • Preprocessing: $SRC_FILE -> $DEST_PATH"
-        python3 preprocesor.py "$SRC_FILE" > "$DEST_PATH"
+        python3 preprocesor.py "$ABS_SRC_FILE" > "$DEST_PATH"
     else
         # Normal copy
         cp "$SRC_FILE" "$DEST_PATH"

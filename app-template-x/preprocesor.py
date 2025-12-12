@@ -1149,14 +1149,18 @@ def transform_code(code: str) -> str:
 def main(argv: list[str]) -> None:
     if len(argv) > 1 and argv[1] not in ("-", ""):
         # Read from file
-        with open(argv[1], "r", encoding="utf-8") as f:
+        filePath = argv[1]
+        with open(filePath, "r", encoding="utf-8") as f:
             code = f.read()
+            debugReference = "#line 1 \"" + filePath + "\"\n"
+            transformed = transform_code(code)
     else:
         # Read from stdin
         code = sys.stdin.read()
+        debugReference = ""
 
     transformed = transform_code(code)
-    sys.stdout.write(transformed)
+    sys.stdout.write(debugReference + transformed)
 
 
 if __name__ == "__main__":
