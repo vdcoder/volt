@@ -10,10 +10,6 @@
 //   using namespace volt;
 // ============================================================================
 
-#if defined(DEBUG) || defined(_DEBUG)
-    #include "Debug.hpp"
-#endif
-
 #include "VoltLog.hpp"
 #include "VoltConfig.hpp"
 #include "DOM.hpp"

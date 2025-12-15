@@ -84,7 +84,6 @@ namespace volt {
         emscripten::val console = emscripten::val::global("console");
         console.call<void>("log", a_sMessage);
     }
-}
 
 #else  // !VOLT_ENABLE_LOG
 

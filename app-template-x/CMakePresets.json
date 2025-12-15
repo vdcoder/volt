@@ -1,0 +1,25 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 20, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "windows-native-remote-debug",
+      "displayName": "Windows (VS2022) - Native Remote Debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build_win_remote",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "VOLT_BUILD_WASM": "OFF",
+        "VOLT_BUILD_NATIVE_REMOTE": "ON",
+        "VOLT_GUID": "demo",
+        "CMAKE_TOOLCHAIN_FILE": "C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "windows-native-remote-debug",
+      "configurePreset": "windows-native-remote-debug"
+    }
+  ]
+}
