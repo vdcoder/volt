@@ -98,7 +98,7 @@ public:
     void setChildren(std::vector<VNode*> a_children);
 
     // Set as text node
-    void setAsText(std::string a_sTextContent);
+    void setAsText(std::string_view a_sTextContent);
 
     // Check if this is a text node
     bool isText() const { return m_nTag == tag::ETag::_TEXT; }

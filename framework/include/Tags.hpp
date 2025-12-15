@@ -76,8 +76,14 @@ inline const char* tagToString(ETag tag);
     }
 
 // Text Node
+inline VNodeHandle _text(std::string_view a_sTextContent) {
+    return VNodeHandle{a_sTextContent};
+}
+inline VNodeHandle _text(const char* a_sTextContent) {
+    return VNodeHandle{a_sTextContent};
+}
 inline VNodeHandle _text(std::string a_sTextContent) {
-    return VNodeHandle(a_sTextContent);
+    return VNodeHandle(std::move(a_sTextContent));
 }
 
 // Fragment

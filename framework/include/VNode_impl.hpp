@@ -58,9 +58,9 @@ void VNode::setChildren(std::vector<VNode*> a_children) {
     m_children = std::move(a_children);
 }
 
-void VNode::setAsText(std::string a_sTextContent) {
+void VNode::setAsText(std::string_view a_sTextContent) {
     reuse(tag::ETag::_TEXT);
-    m_props.push_back({attr::ATTR_nodevalue, std::move(a_sTextContent)});
+    m_props.push_back({attr::ATTR_nodevalue, std::string(a_sTextContent)});
 }
 
 // Get text content (only valid for TEXT nodes)

@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 project(VoltApp LANGUAGES CXX)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 # ==========================================
 # Options
@@ -29,13 +30,13 @@ foreach(SRC ${APP_ALL_FILES})
     file(RELATIVE_PATH REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src" "${SRC}")
     set(OUT_PATH "${GENERATED_DIR}/src/${REL_PATH}")
     get_filename_component(OUT_DIR "${OUT_PATH}" DIRECTORY)
-    file(MAKE_DIRECTORY "${OUT_DIR}")
 
     if("${SRC}" MATCHES "\\.x\\.")
         add_custom_command(
             OUTPUT "${OUT_PATH}"
             COMMAND ${CMAKE_COMMAND} -E echo "Preprocessing ${REL_PATH}"
-            COMMAND bash -c "python3 \"${CMAKE_CURRENT_SOURCE_DIR}/preprocesor.py\" \"${SRC}\" > \"${OUT_PATH}\""
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${OUT_DIR}"
+            COMMAND ${Python3_EXECUTABLE} "${CMAKE_CURRENT_SOURCE_DIR}/preprocesor.py" "${SRC}" "${OUT_PATH}"
             DEPENDS "${SRC}" "${CMAKE_CURRENT_SOURCE_DIR}/preprocesor.py"
             VERBATIM
         )
@@ -43,6 +44,7 @@ foreach(SRC ${APP_ALL_FILES})
         add_custom_command(
             OUTPUT "${OUT_PATH}"
             COMMAND ${CMAKE_COMMAND} -E echo "Copying ${REL_PATH}"
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${OUT_DIR}"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SRC}" "${OUT_PATH}"
             DEPENDS "${SRC}"
             VERBATIM

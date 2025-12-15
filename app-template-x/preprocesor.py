@@ -1147,20 +1147,33 @@ def transform_code(code: str) -> str:
 # ---------------------------------------------------------------------------
 
 def main(argv: list[str]) -> None:
-    if len(argv) > 1 and argv[1] not in ("-", ""):
-        # Read from file
-        filePath = argv[1]
-        with open(filePath, "r", encoding="utf-8") as f:
+    # argv[0] = script name
+    in_path = None
+    out_path = None
+
+    if len(argv) >= 2 and argv[1] not in ("-", ""):
+        in_path = argv[1]
+    if len(argv) >= 3 and argv[2] not in ("-", ""):
+        out_path = argv[2]
+
+    if in_path:
+        with open(in_path, "r", encoding="utf-8") as f:
             code = f.read()
-            debugReference = "#line 1 \"" + filePath + "\"\n"
-            transformed = transform_code(code)
+        debugReference = "#line 1 \"" + in_path + "\"\n"
     else:
-        # Read from stdin
         code = sys.stdin.read()
         debugReference = ""
 
     transformed = transform_code(code)
-    sys.stdout.write(debugReference + transformed)
+    final_text = debugReference + transformed
+
+    if out_path:
+        # Write to file (cross-platform; avoids shell redirection)
+        with open(out_path, "w", encoding="utf-8", newline="") as f:
+            f.write(final_text)
+    else:
+        # Backward-compatible: write to stdout
+        sys.stdout.write(final_text)
 
 
 if __name__ == "__main__":

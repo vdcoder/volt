@@ -15,6 +15,8 @@
 #include "DOM.hpp"
 #include "IRuntime.hpp"
 #include "EventBridge.hpp"
+#include "ETags.hpp"
+#include "VNodeHandle.hpp"
 #include "App.hpp"
 #include "VoltEngine.hpp"
 #include "RenderingEngine.hpp"

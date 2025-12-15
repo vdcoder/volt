@@ -108,7 +108,7 @@ VNodeHandle::VNodeHandle(tag::ETag a_nTag, std::vector<std::pair<short, PropValu
     m_pNode->setChildren(std::move(children));
 }
 
-VNodeHandle::VNodeHandle(std::string a_sTextContent) {
+VNodeHandle::VNodeHandle(std::string_view a_sTextContent) {
     m_pNode = g_pRenderingEngine->recycleVNode();
     
     m_pNode->setAsText(a_sTextContent);
@@ -118,6 +118,12 @@ VNodeHandle::VNodeHandle(const char * a_sTextContent) {
     m_pNode = g_pRenderingEngine->recycleVNode();
 
     m_pNode->setAsText(std::string(a_sTextContent));
+}
+
+VNodeHandle::VNodeHandle(std::string a_sTextContent) {
+    m_pNode = g_pRenderingEngine->recycleVNode();
+
+    m_pNode->setAsText(std::move(a_sTextContent));
 }
 
 VNodeHandle VNodeHandle::track(int a_nStableKeyPosition) const { 
