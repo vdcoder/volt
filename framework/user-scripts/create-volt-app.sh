@@ -172,7 +172,7 @@ echo ""
 # Copy template
 print_info "Copying template files..."
 cp -r "$TEMPLATE_DIR" "$OUTPUT_DIR"
-cp -r "$SCRIPT_DIR/../../framework/src/"*.js "$OUTPUT_DIR/output"
+cp -r "$SCRIPT_DIR/../../framework/src/"*.js "$OUTPUT_DIR/static/js/"
 print_success "Template copied"
 
 # Copy framework
@@ -211,9 +211,9 @@ else
 fi
 
 # Update index.html with app name
-if [ -f "$OUTPUT_DIR/index.html" ]; then
-    sed -i "s/Volt App/${APP_NAME}/g" "$OUTPUT_DIR/index.html" 2>/dev/null || \
-        sed -i '' "s/Volt App/${APP_NAME}/g" "$OUTPUT_DIR/index.html"
+if [ -f "$OUTPUT_DIR/static/index.html" ]; then
+    sed -i "s/Volt App/${APP_NAME}/g" "$OUTPUT_DIR/static/index.html" 2>/dev/null || \
+        sed -i '' "s/Volt App/${APP_NAME}/g" "$OUTPUT_DIR/static/index.html"
 fi
 
 # Update build.sh with GUID
@@ -256,7 +256,7 @@ print_info "Next steps:"
 echo ""
 echo "  cd $OUTPUT_DIR"
 echo "  ./build.sh              # Build the app"
-echo "  cd output"
+echo "  cd build_wasm/output"
 echo "  python3 -m http.server 8001"
 echo "  # Open http://localhost:8001"
 echo ""

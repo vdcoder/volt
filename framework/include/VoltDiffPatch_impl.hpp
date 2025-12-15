@@ -620,7 +620,8 @@ void VoltDiffPatch::transferNode(
 }
 
 emscripten::val VoltDiffPatch::nonBubbleHandler() {
-    return emscripten::val::module_property("invokeVoltNonBubbleEvent");
+    static emscripten::val s_handler = emscripten::val::module_property("invokeVoltNonBubbleEvent");
+    return s_handler;
 }
 
 } // namespace volt

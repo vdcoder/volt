@@ -8,9 +8,9 @@ using namespace volt;
 // ============================================================================
 VNodeHandle Button(
     IRuntime& a_runtime,
-    const std::string& label, 
+    std::string_view label, 
     std::function<void(emscripten::val)> onButtonClick,
-    const std::string& variant = "primary"
+    std::string_view variant = "primary"
 ) {
     // Define button styles based on variant
     std::string baseStyle = "padding: 10px 20px; margin: 5px; border: none; "

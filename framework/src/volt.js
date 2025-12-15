@@ -108,13 +108,14 @@
     "wheel",
   ];
 
-  const passiveEventNames = new Set([
+  const defaultPassiveEventNames = new Set([
     "touchstart",
     "touchmove",
+    "wheel",
   ]);
 
-  function isPassiveEvent(eventName) {
-    return passiveEventNames.has(eventName);
+  function isPassiveEvent(passiveEvents, eventName) {
+    return passiveEvents.has(eventName);
   }
 
   function defaultPrint(text) {
@@ -144,6 +145,7 @@
       debug = true,
       events = DEFAULT_EVENTS,
       moduleOverrides = {},
+      passiveEvents = defaultPassiveEventNames,
     } = options || {};
 
     if (typeof global.VoltApp !== "function") {
@@ -161,10 +163,7 @@
 
     const rootEl = document.getElementById(rootId);
     if (!rootEl) {
-      // Not fatal, but warn and continue (createVoltEngine currently uses hardcoded "root")
-      console.warn(
-        `VoltBootstrap: root element with id="${rootId}" not found. VoltRuntime will still create using its internal default.`
-      );
+      throw new Error(`VoltBootstrap: root element with id="${rootId}" not found.`);
     }
 
     const mergedModuleConfig = Object.assign(
@@ -190,6 +189,12 @@
         let target = event.target;
         while (target && target !== containerEl) {
           if (target.__cpp_ptr) {
+            // Sanity check (temporary)
+            const t = typeof target.__cpp_ptr;
+            if (t !== "bigint" && t !== "number") {
+              console.warn("VoltBootstrap: unexpected __cpp_ptr type:", t, target.__cpp_ptr);
+            }
+            
             event.__volt_cpp_ptr = target.__cpp_ptr;
             try {
               Module.invokeVoltBubbleEvent(event);
@@ -217,7 +222,9 @@
           let target = event.target;
           while (target && target !== containerEl) {
             try {
-              Module.addVoltFocussedElement(target);
+              if (target.__cpp_ptr) {
+                Module.addVoltFocussedElement(target);
+              }
             } catch (err) {
               console.error("❌ VoltBootstrap: error in focusin focus-register handler:", err);
             }
@@ -290,7 +297,7 @@
       const { focusInHandler, focusOutHandler } = makeFocusInOutHandlers();
       events.forEach((type) => {
         const handler = type === "focusin" ? focusInHandler : type === "focusout" ? focusOutHandler : genericHandler;
-        containerEl.addEventListener(type, handler, { passive: isPassiveEvent(type) });
+        containerEl.addEventListener(type, handler, { passive: isPassiveEvent(passiveEvents, type) });
         eventHandlers.push({ type, handler });
       });
 
@@ -552,6 +559,8 @@ Example:
 
         // INTERNAL: used by C++ logging bridge
         _print(level, category, indent, message) {
+            if (!api._shouldPrint(level, category)) return;
+
             const lvlName = levelNames[level] || "LOG";
             const padding = " ".repeat(indent * 2);
 

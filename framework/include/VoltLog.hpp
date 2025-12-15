@@ -64,7 +64,7 @@ namespace volt {
     }
 
     // Core logging function used by macros.
-    inline void log(LogLevel level,
+    inline void volt_log(LogLevel level,
                     const char* category,
                     const std::string& message)
     {
@@ -80,6 +80,12 @@ namespace volt {
         );
     }
 
+    inline void log(const std::string& a_sMessage) {
+        emscripten::val console = emscripten::val::global("console");
+        console.call<void>("log", a_sMessage);
+    }
+}
+
 #else  // !VOLT_ENABLE_LOG
 
     // When logging is disabled, we still declare the functions so the macros
@@ -93,9 +99,11 @@ namespace volt {
         return "";
     }
 
-    inline void log(LogLevel,
+    inline void volt_log(LogLevel,
                     const char*,
                     const std::string&) {}
+
+    inline void log(const std::string& a_sMessage) {}
 
 #endif // VOLT_ENABLE_LOG
 
@@ -106,7 +114,7 @@ namespace volt {
 #ifdef VOLT_ENABLE_LOG
 
     #define VOLT_LOG(level, category, msg_expr) \
-        do { ::volt::log((level), (category), (msg_expr)); } while (0)
+        do { ::volt::volt_log((level), (category), (msg_expr)); } while (0)
 
     #define VOLT_TRACE(cat, msg_expr) VOLT_LOG(::volt::LogLevel::TRACE_L, (cat), (msg_expr))
     #define VOLT_DEBUG(cat, msg_expr) VOLT_LOG(::volt::LogLevel::DEBUG_L, (cat), (msg_expr))
