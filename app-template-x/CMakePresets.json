@@ -12,7 +12,8 @@
         "VOLT_BUILD_WASM": "OFF",
         "VOLT_BUILD_NATIVE_REMOTE": "ON",
         "VOLT_GUID": "demo",
-        "CMAKE_TOOLCHAIN_FILE": "C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        "CMAKE_TOOLCHAIN_FILE": "C:/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-windows"
       }
     }
   ],

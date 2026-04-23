@@ -13,7 +13,8 @@ set(VOLT_GUID "demo" CACHE STRING "Volt GUID identifier")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(VOLT_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/volt/include")
+set(VOLT_FRAMEWORK_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/volt/include")
+set(VOLT_FRAMEWORK_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/volt/src")
 set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/_generated")
 
 # ==========================================
@@ -57,7 +58,7 @@ foreach(SRC ${APP_ALL_FILES})
     if("${OUT_PATH}" MATCHES "\\.(c|cc|cpp|cxx|C|CC|CPP|CXX)$")
         get_filename_component(OUT_NAME "${OUT_PATH}" NAME)
 
-        if(OUT_NAME STREQUAL "main.x.cpp" OR OUT_NAME STREQUAL "main.remote.x.cpp")
+        if(OUT_NAME STREQUAL "main.x.cpp" OR OUT_NAME STREQUAL "main.remote.x.cpp" OR OUT_NAME MATCHES "^VoltRem")
             # skip entrypoints (added per-target below)
         else()
             list(APPEND GENERATED_COMPILE_SOURCES "${OUT_PATH}")
@@ -74,7 +75,7 @@ if(GENERATED_COMPILE_SOURCES)
     add_dependencies(volt_app_obj volt_generated)
 
     target_include_directories(volt_app_obj PRIVATE
-        "${VOLT_INCLUDE_DIR}"
+        "${VOLT_FRAMEWORK_INCLUDE_DIR}"
         "${GENERATED_DIR}/src"
     )
 
@@ -84,7 +85,6 @@ endif()
 
 # Convenient variables for entrypoints (generated)
 set(VOLT_WASM_ENTRY   "${GENERATED_DIR}/src/main.x.cpp")
-set(VOLT_REMOTE_ENTRY "${GENERATED_DIR}/src/main.remote.x.cpp")
 
 # ==========================================
 # WASM (Emscripten) target
@@ -99,7 +99,7 @@ if(VOLT_BUILD_WASM)
     endif()
 
     target_include_directories(volt_app_wasm PRIVATE
-        "${VOLT_INCLUDE_DIR}"
+        "${VOLT_FRAMEWORK_INCLUDE_DIR}"
         "${GENERATED_DIR}/src"
     )
     target_compile_definitions(volt_app_wasm PRIVATE
@@ -163,26 +163,56 @@ endif()
 # ==========================================
 # Native Remote-UI target (Visual Studio / Linux)
 # ==========================================
+# Convenient variables for entrypoints (generated)
+set(VOLT_REMOTE_ENTRY "${GENERATED_DIR}/src/main.remote.x.cpp")
+set(VOLT_REMOTE  "${VOLT_FRAMEWORK_SRC_DIR}/VoltRem.cpp")
+set(VOLT_REMOTE_SERVER  "${VOLT_FRAMEWORK_SRC_DIR}/VoltRemServer.cpp")
+
 if(VOLT_BUILD_NATIVE_REMOTE)
     add_executable(volt_app_remote "${VOLT_REMOTE_ENTRY}")
     add_dependencies(volt_app_remote volt_generated)
 
+    # Add shared objects (if any)
     if(TARGET volt_app_obj)
         target_sources(volt_app_remote PRIVATE $<TARGET_OBJECTS:volt_app_obj>)
     endif()
 
-    target_compile_definitions(volt_app_remote PRIVATE
-        EM_REMOTE
-        DEBUG
-        VOLT_ENABLE_LOG
-    )
+    # Add remote-only sources (compile under this target so it inherits Boost usage reqs)
+    if(EXISTS "${VOLT_REMOTE}")
+        target_sources(volt_app_remote PRIVATE "${VOLT_REMOTE}")
+    endif()
+    if(EXISTS "${VOLT_REMOTE_SERVER}")
+        target_sources(volt_app_remote PRIVATE "${VOLT_REMOTE_SERVER}")
+    endif()
 
     target_include_directories(volt_app_remote PRIVATE
-        "${VOLT_INCLUDE_DIR}"
+        "${VOLT_FRAMEWORK_INCLUDE_DIR}"
         "${GENERATED_DIR}/src"
     )
 
-    # TODO later: add Boost.Beast sources or link libs here via vcpkg
-    # target_sources(volt_app_remote PRIVATE ...)
+    target_compile_definitions(volt_app_remote PRIVATE
+        EM_REMOTE
+        $<$<CONFIG:Debug>:DEBUG;VOLT_ENABLE_LOG>
+        $<$<CONFIG:RelWithDebInfo>:VOLT_ENABLE_LOG>
+        VOLT_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+    )
 
+    if(MSVC AND TARGET volt_app_obj)
+        target_compile_options(volt_app_obj PRIVATE /bigobj)
+    endif()
+
+    if(MSVC AND TARGET volt_app_remote)
+        target_compile_options(volt_app_remote PRIVATE /bigobj)
+    endif()
+
+    # vcpkg Boost ports (split packages, CONFIG mode)
+    find_package(boost_system CONFIG REQUIRED)
+    find_package(boost_asio   CONFIG REQUIRED)
+    find_package(boost_beast  CONFIG REQUIRED)
+
+    target_link_libraries(volt_app_remote PRIVATE
+        Boost::system
+        Boost::asio
+        Boost::beast
+    )
 endif()
