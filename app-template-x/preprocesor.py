@@ -1147,32 +1147,36 @@ def transform_code(code: str) -> str:
 # ---------------------------------------------------------------------------
 
 def main(argv: list[str]) -> None:
-    if len(argv) > 1 and argv[1] not in ("-", ""):
-        # Read from file
-        filePath = argv[1]
-        with open(filePath, "r", encoding="utf-8") as f:
+    # argv[0] = script name
+    in_path = None
+    out_path = None
+
+    if len(argv) >= 2 and argv[1] not in ("-", ""):
+        in_path = argv[1]
+    if len(argv) >= 3 and argv[2] not in ("-", ""):
+        out_path = argv[2]
+
+    if in_path:
+        with open(in_path, "r", encoding="utf-8") as f:
             code = f.read()
-        # Windows fix: escape backslashes so C++ doesn't see \U as a Unicode escape
-        # e.g. C:\Users\... becomes C:\\Users\\...
-        escapedPath = filePath.replace("\\", "\\\\")
-        debugReference = "#line 1 \"" + escapedPath + "\"\n"
-        transformed = transform_code(code)  # called ONCE (upstream had a duplicate call bug)
+        # Windows fix: escape backslashes in the #line path so the C++ compiler
+        # does not interpret C:\Users\... as Unicode/hex escape sequences (\U, \u, \n, etc.)
+        escaped_path = in_path.replace("\\", "\\\\")
+        debugReference = "#line 1 \"" + escaped_path + "\"\n"
     else:
-        # Read from stdin
         code = sys.stdin.read()
         debugReference = ""
-        transformed = transform_code(code)
 
-    output = debugReference + transformed
+    transformed = transform_code(code)
+    final_text = debugReference + transformed
 
-    # Optional second argument: write directly to output file (avoids PowerShell encoding issues)
-    if len(argv) > 2 and argv[2] not in ("-", ""):
-        with open(argv[2], "w", encoding="utf-8", newline="\n") as f:
-            f.write(output)
-    elif sys.platform == "win32":
-        sys.stdout.buffer.write(output.encode("utf-8"))
+    if out_path:
+        # Write to file (cross-platform; avoids shell redirection encoding issues)
+        with open(out_path, "w", encoding="utf-8", newline="") as f:
+            f.write(final_text)
     else:
-        sys.stdout.write(output)
+        # Backward-compatible: write to stdout
+        sys.stdout.write(final_text)
 
 
 if __name__ == "__main__":

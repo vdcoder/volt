@@ -1,4 +1,4 @@
-// volt.js
+﻿// volt.js
 // Tiny bootstrap helper for Volt apps using the Emscripten-generated VoltApp factory.
 //
 // Assumes that `app.js` has defined a global `VoltApp` function:
@@ -108,21 +108,22 @@
     "wheel",
   ];
 
-  const passiveEventNames = new Set([
+  const defaultPassiveEventNames = new Set([
     "touchstart",
     "touchmove",
+    "wheel",
   ]);
 
-  function isPassiveEvent(eventName) {
-    return passiveEventNames.has(eventName);
+  function isPassiveEvent(passiveEvents, eventName) {
+    return passiveEvents.has(eventName);
   }
 
   function defaultPrint(text) {
-    console.log("📝 Volt:", text);
+    console.log("≡ƒô¥ Volt:", text);
   }
 
   function defaultPrintErr(text) {
-    console.error("❌ Volt Error:", text);
+    console.error("Γ¥î Volt Error:", text);
   }
 
   /**
@@ -144,6 +145,7 @@
       debug = true,
       events = DEFAULT_EVENTS,
       moduleOverrides = {},
+      passiveEvents = defaultPassiveEventNames,
     } = options || {};
 
     if (typeof global.VoltApp !== "function") {
@@ -161,10 +163,7 @@
 
     const rootEl = document.getElementById(rootId);
     if (!rootEl) {
-      // Not fatal, but warn and continue (createVoltEngine currently uses hardcoded "root")
-      console.warn(
-        `VoltBootstrap: root element with id="${rootId}" not found. VoltRuntime will still create using its internal default.`
-      );
+      throw new Error(`VoltBootstrap: root element with id="${rootId}" not found.`);
     }
 
     const mergedModuleConfig = Object.assign(
@@ -176,7 +175,7 @@
     );
 
     if (debug) {
-      console.log("⚡ VoltBootstrap starting...");
+      console.log("ΓÜí VoltBootstrap starting...");
       console.log("  containerId:", containerId);
       console.log("  rootId:", rootId);
       console.log("  events:", events.join(", "));
@@ -190,11 +189,17 @@
         let target = event.target;
         while (target && target !== containerEl) {
           if (target.__cpp_ptr) {
+            // Sanity check (temporary)
+            const t = typeof target.__cpp_ptr;
+            if (t !== "bigint" && t !== "number") {
+              console.warn("VoltBootstrap: unexpected __cpp_ptr type:", t, target.__cpp_ptr);
+            }
+            
             event.__volt_cpp_ptr = target.__cpp_ptr;
             try {
               Module.invokeVoltBubbleEvent(event);
             } catch (err) {
-              console.error("❌ VoltBootstrap: error while invoking bubble event:", err);
+              console.error("Γ¥î VoltBootstrap: error while invoking bubble event:", err);
             }
             if (event.cancelBubble === true) {
               break;
@@ -210,16 +215,18 @@
         let processing = false;
 
         function processFocusIn(event) {
-          // We’re entering / changing focus within this container
+          // WeΓÇÖre entering / changing focus within this container
           Module.clearVoltFocussedElements();
 
           // Focus-register every node up to the container
           let target = event.target;
           while (target && target !== containerEl) {
             try {
-              Module.addVoltFocussedElement(target);
+              if (target.__cpp_ptr) {
+                Module.addVoltFocussedElement(target);
+              }
             } catch (err) {
-              console.error("❌ VoltBootstrap: error in focusin focus-register handler:", err);
+              console.error("Γ¥î VoltBootstrap: error in focusin focus-register handler:", err);
             }
             target = target.parentNode;
           }
@@ -232,7 +239,7 @@
               try {
                 Module.invokeVoltBubbleEvent(event);
               } catch (err) {
-                console.error("❌ VoltBootstrap: error in focusin handler:", err);
+                console.error("Γ¥î VoltBootstrap: error in focusin handler:", err);
               }
               if (event.cancelBubble === true) {
                 break;
@@ -253,7 +260,7 @@
           try {
             Module.clearVoltFocussedElements();
           } catch (err) {
-            console.error("❌ VoltBootstrap: error in focusout handler:", err);
+            console.error("Γ¥î VoltBootstrap: error in focusout handler:", err);
           }
         }
 
@@ -290,13 +297,13 @@
       const { focusInHandler, focusOutHandler } = makeFocusInOutHandlers();
       events.forEach((type) => {
         const handler = type === "focusin" ? focusInHandler : type === "focusout" ? focusOutHandler : genericHandler;
-        containerEl.addEventListener(type, handler, { passive: isPassiveEvent(type) });
+        containerEl.addEventListener(type, handler, { passive: isPassiveEvent(passiveEvents, type) });
         eventHandlers.push({ type, handler });
       });
 
       if (debug) {
         console.log(
-          `✅ VoltBootstrap: attached ${events.length} event listeners to #${containerId}`
+          `Γ£à VoltBootstrap: attached ${events.length} event listeners to #${containerId}`
         );
       }
     }
@@ -324,14 +331,14 @@
       .VoltApp(mergedModuleConfig)
       .then(function (Module) {
         if (debug) {
-          console.log("🚀 Volt Runtime Initialized!");
+          console.log("≡ƒÜÇ Volt Runtime Initialized!");
         }
 
         let voltNamespace = null;
         if (typeof Module.getVoltNamespace === "function") {
           voltNamespace = Module.getVoltNamespace();
           if (debug) {
-            console.log("🔧 Using namespace:", voltNamespace);
+            console.log("≡ƒöº Using namespace:", voltNamespace);
           }
         }
 
@@ -347,12 +354,12 @@
         Module.createVoltEngine(rootId);
 
         if (debug) {
-          console.log("✨ Volt app mounted!");
+          console.log("Γ£¿ Volt app mounted!");
         }
 
         function destroy() {
           if (debug) {
-            console.log("🧹 VoltBootstrap: destroying app instance...");
+            console.log("≡ƒº╣ VoltBootstrap: destroying app instance...");
           }
           detachEventHandlers();
           // NOTE: If/when Volt exposes a runtime destroy/unmount API,
@@ -362,7 +369,7 @@
         return { Module, voltNamespace, destroy };
       })
       .catch(function (err) {
-        console.error("❌ VoltBootstrap: failed to initialize Volt:", err);
+        console.error("Γ¥î VoltBootstrap: failed to initialize Volt:", err);
         showErrorOverlay(err && err.message ? err.message : err);
         throw err;
       });
@@ -467,7 +474,7 @@
 
             enabled.add(cat);
             saveState();
-            console.log(`✔ Volt logging enabled for category: ${cat}`);
+            console.log(`Γ£ö Volt logging enabled for category: ${cat}`);
         },
 
         /**
@@ -479,7 +486,7 @@
                 enabled.clear();
                 globalLevel = levels.info;   // optional: reset level to default
                 saveState();
-                console.log("✔ Volt logging reset. All categories disabled.");
+                console.log("Γ£ö Volt logging reset. All categories disabled.");
                 console.log("  Level = INFO");
                 return;
             }
@@ -487,7 +494,7 @@
             // Disable just one
             enabled.delete(cat);
             saveState();
-            console.log(`✔ Volt logging disabled for: ${cat}`);
+            console.log(`Γ£ö Volt logging disabled for: ${cat}`);
         },
 
         /**
@@ -498,7 +505,7 @@
                 return console.log("No Volt log categories enabled.");
 
             console.log("Enabled Volt categories:");
-            for (const c of enabled) console.log(" • " + c);
+            for (const c of enabled) console.log(" ΓÇó " + c);
         },
 
         /**
@@ -512,7 +519,7 @@
             }
             globalLevel = levels[lvl];
             saveState();
-            console.log(`✔ Volt log level = ${lvl.toUpperCase()}`);
+            console.log(`Γ£ö Volt log level = ${lvl.toUpperCase()}`);
         },
 
         /**
@@ -552,6 +559,8 @@ Example:
 
         // INTERNAL: used by C++ logging bridge
         _print(level, category, indent, message) {
+            if (!api._shouldPrint(level, category)) return;
+
             const lvlName = levelNames[level] || "LOG";
             const padding = " ".repeat(indent * 2);
 
