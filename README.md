@@ -12,6 +12,7 @@ If you ever wished the web had a first-class, modern, elegant, fast C++ UI frame
 [![C++: 20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://en.cppreference.com/w/cpp/20)
 [![Bits: MEMORY64](https://img.shields.io/badge/Bits-MEMORY64-purple.svg)](https://webassembly.github.io/spec/)
 [![Platform: WebAssembly](https://img.shields.io/badge/WebAssembly-Enabled-purple.svg)](https://webassembly.org/)
+[![Platform: Windows](https://img.shields.io/badge/Windows-PowerShell-blue.svg)](WINDOWS.md)
 
 ---
 
@@ -138,7 +139,8 @@ Run one, two, or a hundred applications on the same page, each isolated by a GUI
 ---
 
 ### 🛠️ Developer Experience  
-- `create-volt-app.sh` — instant project scaffolding  
+- `create-volt-app.sh` — instant project scaffolding (Linux / macOS)  
+- `create-volt-app.ps1` — native Windows PowerShell scaffolding  
 - Choose **Raw C++** or **Volt X** template  
 - Simple Python preprocessor
 - Clear, debuggable output
@@ -149,7 +151,9 @@ Run one, two, or a hundred applications on the same page, each isolated by a GUI
 
 # 🚀 Quick Start
 
-## 1. Install Emscripten
+## Linux / macOS
+
+### 1. Install Emscripten
 
 ```bash
 git clone https://github.com/emscripten-core/emsdk.git
@@ -159,14 +163,14 @@ cd emsdk
 source ./emsdk_env.sh
 ```
 
-## 2. Create a Volt App
+### 2. Create a Volt App
 
 ```bash
 git clone https://github.com/vdcoder/volt.git
 ./volt/framework/user-scripts/create-volt-app.sh my-app
 ```
 
-## 3. Build & Run
+### 3. Build & Run
 
 ```bash
 cd my-app
@@ -178,6 +182,43 @@ python3 -m http.server 8001
 Open → **http://localhost:8001**
 
 Your first C++ web app is live.
+
+---
+
+## 🪟 Windows
+
+### 1. Install Emscripten
+
+```powershell
+git clone https://github.com/emscripten-core/emsdk.git
+cd emsdk
+.\emsdk install latest
+.\emsdk activate latest
+. .\emsdk_env.ps1
+```
+
+### 2. Create a Volt App
+
+```powershell
+git clone https://github.com/vdcoder/volt.git
+.\volt\framework\user-scripts\create-volt-app.ps1 my-app
+```
+
+### 3. Build & Run
+
+```powershell
+cd my-app
+. <path-to-emsdk>\emsdk_env.ps1   # activate Emscripten
+.\build.ps1
+cd output
+python -m http.server 8001
+```
+
+Open → **http://localhost:8001**
+
+Your first C++ web app is live on Windows. ⚡
+
+> 📖 Full Windows guide, troubleshooting, and known limitations: **[WINDOWS.md](WINDOWS.md)**
 
 ---
 

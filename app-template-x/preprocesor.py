@@ -1152,15 +1152,27 @@ def main(argv: list[str]) -> None:
         filePath = argv[1]
         with open(filePath, "r", encoding="utf-8") as f:
             code = f.read()
-            debugReference = "#line 1 \"" + filePath + "\"\n"
-            transformed = transform_code(code)
+        # Windows fix: escape backslashes so C++ doesn't see \U as a Unicode escape
+        # e.g. C:\Users\... becomes C:\\Users\\...
+        escapedPath = filePath.replace("\\", "\\\\")
+        debugReference = "#line 1 \"" + escapedPath + "\"\n"
+        transformed = transform_code(code)  # called ONCE (upstream had a duplicate call bug)
     else:
         # Read from stdin
         code = sys.stdin.read()
         debugReference = ""
+        transformed = transform_code(code)
 
-    transformed = transform_code(code)
-    sys.stdout.write(debugReference + transformed)
+    output = debugReference + transformed
+
+    # Optional second argument: write directly to output file (avoids PowerShell encoding issues)
+    if len(argv) > 2 and argv[2] not in ("-", ""):
+        with open(argv[2], "w", encoding="utf-8", newline="\n") as f:
+            f.write(output)
+    elif sys.platform == "win32":
+        sys.stdout.buffer.write(output.encode("utf-8"))
+    else:
+        sys.stdout.write(output)
 
 
 if __name__ == "__main__":
