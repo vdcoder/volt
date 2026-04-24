@@ -83,6 +83,8 @@ Required:
 - Git  
 - A browser (Chrome, Firefox, Safari)  
 
+## Linux / macOS
+
 Install Emscripten:
 
 ```bash
@@ -102,6 +104,31 @@ cd demo
 cd output
 python3 -m http.server 8001
 ```
+
+## 🪟 Windows (PowerShell)
+
+Install Emscripten:
+
+```powershell
+git clone https://github.com/emscripten-core/emsdk
+cd emsdk
+.\emsdk install latest
+.\emsdk activate latest
+. .\emsdk_env.ps1
+```
+
+Test:
+
+```powershell
+.\volt\framework\user-scripts\create-volt-app.ps1 demo
+cd demo
+. <path-to-emsdk>\emsdk_env.ps1
+.\build.ps1
+cd output
+python -m http.server 8001
+```
+
+> See **[WINDOWS.md](WINDOWS.md)** for the full Windows guide, known limitations, and troubleshooting.
 
 ---
 

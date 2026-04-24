@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 // ============================================================================
 // Volt Framework - Single Include Header
@@ -10,15 +10,13 @@
 //   using namespace volt;
 // ============================================================================
 
-#if defined(DEBUG) || defined(_DEBUG)
-    #include "Debug.hpp"
-#endif
-
 #include "VoltLog.hpp"
 #include "VoltConfig.hpp"
 #include "DOM.hpp"
 #include "IRuntime.hpp"
 #include "EventBridge.hpp"
+#include "ETags.hpp"
+#include "VNodeHandle.hpp"
 #include "App.hpp"
 #include "VoltEngine.hpp"
 #include "RenderingEngine.hpp"

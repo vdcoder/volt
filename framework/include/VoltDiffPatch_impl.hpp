@@ -1,4 +1,4 @@
-#include "VoltDiffPatch.hpp"
+﻿#include "VoltDiffPatch.hpp"
 #include "VNode.hpp"
 #include "DOM.hpp"
 #include "VoltLog.hpp"
@@ -98,7 +98,7 @@ void VoltDiffPatch::walk(
             // Both are text nodes, reuse regardless of stable identity
             VOLT_DEBUG(
                 "Volt>DiffPatch",
-                "walk(): both text nodes → syncTextNodes and reuse DOM"
+                "walk(): both text nodes ΓåÆ syncTextNodes and reuse DOM"
             );
             syncTextNodes(a_idManager, pPrevNode, pNewNode);
             ++newIdx;
@@ -106,7 +106,7 @@ void VoltDiffPatch::walk(
         } else if (pNewNode->isText()) {
             VOLT_DEBUG(
                 "Volt>DiffPatch",
-                "walk(): new is text, prev is not → addNode before prev DOM element"
+                "walk(): new is text, prev is not ΓåÆ addNode before prev DOM element"
             );
             addNode(a_idManager, pNewNode, a_hContainer, pPrevNode->getMatchingElement());
             ++newIdx;
@@ -124,7 +124,7 @@ void VoltDiffPatch::walk(
             if (pOldNode == pPrevNode) { // Matches at the same position, ready to diff
                 VOLT_DEBUG(
                     "Volt>DiffPatch",
-                    "walk(): identity match at same index → syncNodes (reuse in place)"
+                    "walk(): identity match at same index ΓåÆ syncNodes (reuse in place)"
                 );
                 syncNodes(a_idManager, a_focusManager, a_unclaimedOldNodes, pNewNode, pOldNode);
                 a_idManager.addVNode(sId, pNewNode);
@@ -136,7 +136,7 @@ void VoltDiffPatch::walk(
                     // Matches node somewhere else, but prev-node has focus, bring matching element in, it will cause a move
                 VOLT_DEBUG(
                     "Volt>DiffPatch",
-                    "walk(): identity match, prev-node has focus → bringAndSyncNodes (DOM move)"
+                    "walk(): identity match, prev-node has focus ΓåÆ bringAndSyncNodes (DOM move)"
                 );
                 bringAndSyncNodes(
                     a_idManager,
@@ -157,7 +157,7 @@ void VoltDiffPatch::walk(
                     // Matches an existing node, they are sibilings, and the old-node is linked & below us, remove/unlink all prev-nodes until old-node is at front, this avoids moves on the new nodes
                 VOLT_DEBUG(
                     "Volt>DiffPatch",
-                    "walk(): identity match with sibling linked later on, unlink prev-nodes → syncNodes"
+                    "walk(): identity match with sibling linked later on, unlink prev-nodes ΓåÆ syncNodes"
                 );
                 // Remove intervening prev nodes
                 do {
@@ -172,7 +172,7 @@ void VoltDiffPatch::walk(
             } else if (pOldNode != nullptr) { // Matches node somewhere else, bring it in, it will cause a move
                 VOLT_DEBUG(
                     "Volt>DiffPatch",
-                    "walk(): identity match at different index → bringAndSyncNodes (DOM move)"
+                    "walk(): identity match at different index ΓåÆ bringAndSyncNodes (DOM move)"
                 );
                 // Remove from unclaimed set if present as it is being reused now
                 if (a_unclaimedOldNodes.count(pOldNode) > 0) { 
@@ -192,7 +192,7 @@ void VoltDiffPatch::walk(
             } else { // New node, no match, add it
                 VOLT_DEBUG(
                     "Volt>DiffPatch",
-                    "walk(): no identity match → addNode as new DOM element"
+                    "walk(): no identity match ΓåÆ addNode as new DOM element"
                 );
                 // TEMPORARY: Balance stack before
                 a_idManager.popToken();
@@ -620,7 +620,8 @@ void VoltDiffPatch::transferNode(
 }
 
 emscripten::val VoltDiffPatch::nonBubbleHandler() {
-    return emscripten::val::module_property("invokeVoltNonBubbleEvent");
+    static emscripten::val s_handler = emscripten::val::module_property("invokeVoltNonBubbleEvent");
+    return s_handler;
 }
 
 } // namespace volt
