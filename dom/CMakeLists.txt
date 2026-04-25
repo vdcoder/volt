@@ -1,5 +1,5 @@
 # ============================================================================
-# dom – JS Value Abstraction Library
+# dom – JS Value Abstraction Library (volt::Val, volt::dom::*)
 # ============================================================================
 
 add_library(volt_dom STATIC
@@ -16,17 +16,23 @@ target_compile_definitions(volt_dom PUBLIC
 )
 
 if(VOLT_TARGET STREQUAL "ULTRALIGHT")
-    # Ultralight SDK includes
+    # Through AppCore's deps, the SDK headers are at the AppCore deps path.
+    # AppCore already adds these include dirs for its own targets; we add them
+    # explicitly here for volt_dom so it can use JavaScriptCore API directly.
     target_include_directories(volt_dom PUBLIC
-        ${CMAKE_SOURCE_DIR}/third_party/ultralight/include
+        ${CMAKE_SOURCE_DIR}/third_party/AppCore/deps/UltralightCore/include
+        ${CMAKE_SOURCE_DIR}/third_party/AppCore/deps/WebCore/include
+        ${CMAKE_SOURCE_DIR}/third_party/AppCore/deps/Ultralight/include
     )
     target_link_directories(volt_dom PUBLIC
-        ${CMAKE_SOURCE_DIR}/third_party/ultralight/lib/Win64
+        ${CMAKE_SOURCE_DIR}/third_party/AppCore/deps/UltralightCore/lib
+        ${CMAKE_SOURCE_DIR}/third_party/AppCore/deps/WebCore/lib
+        ${CMAKE_SOURCE_DIR}/third_party/AppCore/deps/Ultralight/lib
     )
     target_link_libraries(volt_dom PUBLIC
-        Ultralight
+        AppCore
         UltralightCore
         WebCore
-        AppCore
+        Ultralight
     )
 endif()

@@ -9,14 +9,17 @@
         {
             "name": "native",
             "displayName": "Native (MSVC + Ultralight)",
-            "description": "Build for native Windows debugging with Ultralight SDK",
+            "description": "Build for native Windows debugging with Ultralight SDK via AppCore",
             "generator": "Visual Studio 18 2026",
             "architecture": "x64",
             "binaryDir": "${sourceDir}/build/native",
             "cacheVariables": {
                 "VOLT_TARGET": "ULTRALIGHT",
                 "CMAKE_CXX_STANDARD": "20",
-                "CMAKE_CXX_STANDARD_REQUIRED": "ON"
+                "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+                "PORT": "UltralightWin",
+                "UL_D3D_DRIVER": "d3d11",
+                "ALLINONE_BUILD": "OFF"
             }
         },
         {

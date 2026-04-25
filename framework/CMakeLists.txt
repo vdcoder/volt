@@ -30,9 +30,6 @@ target_link_libraries(volt_framework PUBLIC
 
 # ---- Emscripten-specific flags ----
 if(VOLT_TARGET STREQUAL "EMSCRIPTEN")
-    set_target_properties(volt_framework PROPERTIES
-        LINK_FLAGS "--bind -lembind"
-    )
     target_link_options(volt_framework PUBLIC
         "SHELL:--bind"
         "SHELL:-lembind"
@@ -42,9 +39,6 @@ endif()
 # ---- Ultralight-specific flags ----
 if(VOLT_TARGET STREQUAL "ULTRALIGHT")
     target_link_libraries(volt_framework PUBLIC
-        Ultralight
-        UltralightCore
-        WebCore
         AppCore
     )
 endif()
