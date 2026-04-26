@@ -44,3 +44,9 @@ endif()
 # ---- Subdirectories ----
 add_subdirectory(dom)
 add_subdirectory(framework)
+
+# ---- Test subdirectory (Ultralight only, links SDK directly) ----
+if(VOLT_TARGET STREQUAL "ULTRALIGHT")
+    # Requires: SDK downloaded via AppCore ExternalProject_Add first
+    add_subdirectory(test/ultralight)
+endif()
