@@ -1,5 +1,6 @@
 # Build outputs
 output/
+build/
 !.gitkeep
 !framework/user-scripts/*.sh
 !app-template/build.sh
@@ -60,3 +61,7 @@ my-app/
 *.log
 npm-debug.log*
 yarn-debug.log*
+
+# SDK (too large for git)
+third_party/ultralight-sdk/
+

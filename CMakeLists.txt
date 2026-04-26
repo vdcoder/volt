@@ -30,23 +30,19 @@ else()
     message(FATAL_ERROR "Unknown VOLT_TARGET '${VOLT_TARGET}'. Use EMSCRIPTEN or ULTRALIGHT.")
 endif()
 
-# ---- AppCore (Ultralight native target only) ----
-# AppCore provides window creation, GPU context, input handling, and
-# auto-downloads the prebuilt Ultralight SDK (WebCore, UltralightCore,
-# Ultralight engine) from S3 via ExternalProject_Add.
+# ---- Ultralight SDK (native target only) ----
+# Uses pre-built SDK at third_party/ultralight-sdk/ (v1.4.0+).
+# Creates imported targets: Ultralight::AppCore, ::Ultralight, etc.
 if(VOLT_TARGET STREQUAL "ULTRALIGHT")
-    set(PORT "UltralightWin" CACHE STRING "Ultralight platform port")
-    set(UL_D3D_DRIVER "d3d11" CACHE STRING "Direct3D driver for Ultralight")
-    set(ALLINONE_BUILD OFF CACHE BOOL "Not an all-in-one build")
-    add_subdirectory(third_party/AppCore)
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+    find_package(UltralightSDK REQUIRED)
 endif()
 
 # ---- Subdirectories ----
 add_subdirectory(dom)
 add_subdirectory(framework)
 
-# ---- Test subdirectory (Ultralight only, links SDK directly) ----
+# ---- Test subdirectories (Ultralight only) ----
 if(VOLT_TARGET STREQUAL "ULTRALIGHT")
-    # Requires: SDK downloaded via AppCore ExternalProject_Add first
-    add_subdirectory(test/ultralight)
+    add_subdirectory(test/appcore)
 endif()

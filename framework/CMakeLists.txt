@@ -39,6 +39,6 @@ endif()
 # ---- Ultralight-specific flags ----
 if(VOLT_TARGET STREQUAL "ULTRALIGHT")
     target_link_libraries(volt_framework PUBLIC
-        AppCore
+        Ultralight::AppCore
     )
 endif()

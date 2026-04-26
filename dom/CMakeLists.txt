@@ -16,23 +16,12 @@ target_compile_definitions(volt_dom PUBLIC
 )
 
 if(VOLT_TARGET STREQUAL "ULTRALIGHT")
-    # Through AppCore's deps, the SDK headers are at the AppCore deps path.
-    # AppCore already adds these include dirs for its own targets; we add them
-    # explicitly here for volt_dom so it can use JavaScriptCore API directly.
-    target_include_directories(volt_dom PUBLIC
-        ${CMAKE_SOURCE_DIR}/third_party/AppCore/deps/UltralightCore/include
-        ${CMAKE_SOURCE_DIR}/third_party/AppCore/deps/WebCore/include
-        ${CMAKE_SOURCE_DIR}/third_party/AppCore/deps/Ultralight/include
-    )
-    target_link_directories(volt_dom PUBLIC
-        ${CMAKE_SOURCE_DIR}/third_party/AppCore/deps/UltralightCore/lib
-        ${CMAKE_SOURCE_DIR}/third_party/AppCore/deps/WebCore/lib
-        ${CMAKE_SOURCE_DIR}/third_party/AppCore/deps/Ultralight/lib
-    )
+    # Pre-built SDK targets (created by FindUltralightSDK.cmake)
+    # These already provide include dirs for Ultralight, AppCore, JavaScriptCore.
     target_link_libraries(volt_dom PUBLIC
-        AppCore
-        UltralightCore
-        WebCore
-        Ultralight
+        Ultralight::AppCore
+        Ultralight::UltralightCore
+        Ultralight::WebCore
+        Ultralight::Ultralight
     )
 endif()
