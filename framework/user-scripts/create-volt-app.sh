@@ -53,6 +53,7 @@ Options:
                            Available:
                              raw      -> app-template
                              x        -> app-template-x
+                             x+       -> app-template-x-plus (Windows / VS 2026)
     --no-git               Don't initialize git repository
     --help, -h             Show this help message
 
@@ -125,6 +126,22 @@ if [ -z "$OUTPUT_DIR" ]; then
 fi
 
 # Resolve template directory and template-specific filenames
+if [ "$TEMPLATE_VARIANT" = "x+" ]; then
+    PYTHON="${EMSDK_PYTHON:-}"
+    if [ -z "$PYTHON" ]; then
+        for candidate in python3 python; do
+            if "$candidate" -c 'import sys; sys.exit(sys.version_info.major != 3)' >/dev/null 2>&1; then
+                PYTHON="$candidate"
+                break
+            fi
+        done
+    fi
+    if [ -z "$PYTHON" ]; then print_error "Python 3 is required to create x+ apps"; exit 1; fi
+    CREATE_ARGS=("$SCRIPT_DIR/create-xplus-app.py" "$APP_NAME" --guid "$APP_GUID" --output "$OUTPUT_DIR")
+    if [ "$INIT_GIT" = false ]; then CREATE_ARGS+=(--no-git); fi
+    exec "$PYTHON" "${CREATE_ARGS[@]}"
+fi
+
 case "$TEMPLATE_VARIANT" in
     raw)
         TEMPLATE_DIR="${TEMPLATE_BASE_DIR}app-template"
@@ -140,7 +157,7 @@ case "$TEMPLATE_VARIANT" in
         ;;
     *)
         print_error "Unknown template: $TEMPLATE_VARIANT"
-        print_info "Valid templates: raw, x"
+        print_info "Valid templates: raw, x, x+"
         exit 1
         ;;
 esac

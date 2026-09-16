@@ -1,4 +1,5 @@
 #include "EventBridge.hpp"
+#include "VoltConfig.hpp"
 
 namespace volt {
 
@@ -8,7 +9,7 @@ void invokeBubbleEvent(emscripten::val event) {
         return;
     }
 
-    intptr_t cpp_ptr_as_int = event["__volt_cpp_ptr"].as<intptr_t>();
+    intptr_t cpp_ptr_as_int = static_cast<intptr_t>(event["__volt_cpp_ptr"].as<config::NodePointerWire>());
     if (cpp_ptr_as_int == 0) {
         return;
     }
@@ -32,7 +33,7 @@ void invokeNonBubbleEvent(emscripten::val event) {
         return;
     }
 
-    intptr_t cpp_ptr_as_int = target["__cpp_ptr"].as<intptr_t>();
+    intptr_t cpp_ptr_as_int = static_cast<intptr_t>(target["__cpp_ptr"].as<config::NodePointerWire>());
     if (cpp_ptr_as_int == 0) {
         return;
     }

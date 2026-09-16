@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{VOLT_CLIENT_PROJECT_GUID}</ProjectGuid>
+    <Keyword>MakeFileProj</Keyword>
+    <RootNamespace>Client</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <OutDir>$(ProjectDir)..\output\$(Configuration)\web\</OutDir>
+    <IntDir>$(ProjectDir)..\intermediate\$(Configuration)\client\</IntDir>
+    <NMakeBuildCommandLine>call &quot;$(ProjectDir)..\tools\build-client.cmd&quot; build $(Configuration)</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>call &quot;$(ProjectDir)..\tools\build-client.cmd&quot; rebuild $(Configuration)</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine>call &quot;$(ProjectDir)..\tools\build-client.cmd&quot; clean $(Configuration)</NMakeCleanCommandLine>
+    <NMakeOutput>$(OutDir)index.html</NMakeOutput>
+    <NMakePreprocessorDefinitions>__EMSCRIPTEN__;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath Condition="'$(EMSDK)' != ''">$(EMSDK)\upstream\emscripten\cache\sysroot\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeAdditionalOptions>/std:c++20 $(NMakeAdditionalOptions)</NMakeAdditionalOptions>
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="src\**\*" />
+    <None Include="public\**\*" />
+    <None Include="..\tools\build-client.ps1" />
+    <None Include="..\app.json" />
+    <None Include="..\tools\build-client.cmd" />
+    <None Include="..\README.md" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

@@ -18,7 +18,7 @@
     Where to create the app (defaults to <repo-root>/../<AppName>).
 
 .PARAMETER Template
-    "x" (default) or "raw".
+    "x" (default), "raw", or "x+" (Visual Studio 2026 / Windows server).
 
 .PARAMETER NoGit
     Skip git init.
@@ -34,7 +34,7 @@ param(
 
     [string]$Guid        = "",
     [string]$OutputDir   = "",
-    [ValidateSet("x","raw")]
+    [ValidateSet("x","raw","x+")]
     [string]$Template    = "x",
     [switch]$NoGit
 )
@@ -54,6 +54,17 @@ function Err     { param($m) Write-Host "[ERR ]  $m" -ForegroundColor Red; exit 
 # ---------------------------------------------------------------------------
 $ScriptDir   = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot    = (Resolve-Path (Join-Path $ScriptDir "..\..")).Path
+
+if ($Template -eq 'x+') {
+    $python = if ($env:EMSDK_PYTHON) { $env:EMSDK_PYTHON } else { 'python' }
+    $createArgs = @((Join-Path $ScriptDir 'create-xplus-app.py'), $AppName)
+    if ($Guid) { $createArgs += @('--guid', $Guid) }
+    if ($OutputDir) { $createArgs += @('--output', $OutputDir) }
+    if ($NoGit) { $createArgs += '--no-git' }
+    & $python @createArgs
+    if ($LASTEXITCODE -ne 0) { throw 'Volt X+ creation failed' }
+    return
+}
 
 if ($Guid -eq "")      { $Guid      = $AppName }
 if ($OutputDir -eq "") { $OutputDir = Join-Path $RepoRoot "..\$AppName" }

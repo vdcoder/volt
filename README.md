@@ -141,7 +141,8 @@ Run one, two, or a hundred applications on the same page, each isolated by a GUI
 ### 🛠️ Developer Experience  
 - `create-volt-app.sh` — instant project scaffolding (Linux / macOS)  
 - `create-volt-app.ps1` — native Windows PowerShell scaffolding  
-- Choose **Raw C++** or **Volt X** template  
+- Choose **Raw C++** or **Volt X** template
+- Or choose **[Volt X+](app-template-x-plus/README.md)** (`-Template 'x+'`) for a Visual Studio 2026 solution, Debug/Release browser builds, and a native Windows HTTP/WebSocket server.
 - Simple Python preprocessor
 - Clear, debuggable output
 - Clean project layout

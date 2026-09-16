@@ -1,0 +1,7 @@
+output/
+intermediate/
+.vs/
+.tools/
+*.user
+__pycache__/
+*.pyc

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Seasocks support">
+      <UniqueIdentifier>{FF46B953-7A50-44F2-909F-304CA6D5F540}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="seasocks_impl.cpp" />
+    <ClCompile Include="..\dependencies\seasocks\src\main\c\seasocks\win32\wepoll.c">
+      <Filter>Seasocks support</Filter>
+    </ClCompile>
+    <ClInclude Include="..\dependencies\seasocks\generated\internal\Config.h">
+      <Filter>Seasocks support</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

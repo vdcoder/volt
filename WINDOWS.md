@@ -1,5 +1,20 @@
 # ⚡ Volt on Windows
 
+## Visual Studio 2026: Volt X+
+
+For a solution with a browser client and native Seasocks server:
+
+```powershell
+.\volt\framework\user-scripts\create-volt-app.ps1 my-app -Template 'x+'
+```
+
+Open `my-app.sln`, build Debug or Release with Ctrl+Shift+B, and run the **Server**
+project with F5. Browse http://127.0.0.1:8000/. Requires the Desktop development
+with C++ workload (MSVC v145), Python 3, and an activated Emscripten SDK.
+The `x` and `raw` templates keep their existing workflow.
+See [the X+ template guide](app-template-x-plus/README.md) for folder layout,
+SDK discovery, command-line builds, source mapping, and the `/ws` endpoint.
+
 Full Windows support for Volt — create apps, build to WebAssembly, and run in any browser, without leaving PowerShell.
 
 ---

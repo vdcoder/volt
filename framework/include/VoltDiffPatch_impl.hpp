@@ -2,6 +2,7 @@
 #include "VNode.hpp"
 #include "DOM.hpp"
 #include "VoltLog.hpp"
+#include "VoltConfig.hpp"
 
 namespace volt {
 
@@ -614,7 +615,7 @@ void VoltDiffPatch::transferNode(
     a_pNewNode->setMatchingElement(a_hElement);
 
     // For bubble events. Set back-reference to this VNode in the DOM element
-    a_hElement.set("__cpp_ptr", reinterpret_cast<intptr_t>(a_pNewNode));
+    a_hElement.set("__cpp_ptr", static_cast<config::NodePointerWire>(reinterpret_cast<intptr_t>(a_pNewNode)));
 
     VOLT_LOG_INDENT_POP();
 }

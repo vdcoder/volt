@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <cstdint>
+#include <type_traits>
 
 // ============================================================================
 // Volt Framework Configuration
@@ -23,6 +25,10 @@
 namespace volt {
 
 namespace config {
+
+// Embind's MEMORY64 wire overload accepts int64_t explicitly, while intptr_t
+// can be a distinct 64-bit long. Preserve the existing wasm32 number type.
+using NodePointerWire = std::conditional_t<(sizeof(intptr_t) > 4), int64_t, intptr_t>;
 
 // Sanitize GUID for use as JavaScript identifier (replace invalid chars with _)
 inline std::string sanitizeForJs(const std::string& str) {
