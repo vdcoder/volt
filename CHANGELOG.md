@@ -11,6 +11,28 @@ https://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+### Added
+
+- **Volt X+ (`x+`) template** for Windows and Visual Studio 2026: a normal solution
+  with an Emscripten client project and a native MSVC Seasocks server project.
+- Debug/Release MEMORY64 client builds, existing `#line` source diagnostics,
+  separate client/server outputs, and native server build/run settings.
+- Static serving on loopback and a text/binary WebSocket echo handler at `/ws`.
+- Shared X+ scaffolding behind the PowerShell and Bash app creators, with local
+  copies of framework headers, bootstrap JS, preprocessor, and pinned Seasocks.
+- Generator, HTTP/WebSocket, source-mapping, clean/rebuild, and locked-log checks.
+
+### Fixed
+
+- Use an explicit 64-bit Embind wire type for Volt event pointers under MEMORY64,
+  preserving the existing wasm32 pointer representation.
+- Keep X+ generated client files separate from Visual Studio's active build logs.
+- In the bundled Seasocks snapshot, add WASM MIME handling, a WebSocket close
+  response, and Windows send-buffer handling for larger browser artifacts.
+
+Fresh-system validation remains deferred. See the
+[X+ guide](app-template-x-plus/README.md) for the current supported workflow.
+
 ---
 
 ## [0.2.0] – 2025-11-20  

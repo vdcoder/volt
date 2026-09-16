@@ -152,6 +152,36 @@ Run one, two, or a hundred applications on the same page, each isolated by a GUI
 
 # 🚀 Quick Start
 
+## Choose a template
+
+| Template | What you get | Workflow |
+|---|---|---|
+| `x` (default) | Volt X DSL client and Python preprocessor | Script build; serve the browser output |
+| `raw` | Plain C++ client sources without the DSL preprocessing step | Script-based starter |
+| `x+` | Volt X client, native Seasocks HTTP/WebSocket server, and a Visual Studio solution | Windows / Visual Studio 2026; Debug and Release |
+
+### Volt X+ with Visual Studio 2026
+
+With Git, Python 3, an activated Emscripten SDK, and VS 2026's Desktop development
+with C++ workload installed, run from your projects folder:
+
+```powershell
+git clone https://github.com/vdcoder/volt.git
+.\volt\framework\user-scripts\create-volt-app.ps1 my-app -Template 'x+' -OutputDir .\my-app
+```
+
+Open `my-app/my-app.sln` in Visual Studio with the SDK environment available.
+Select Debug or Release, build with **Ctrl+Shift+B**, and run **Server** with **F5**.
+Browse [http://127.0.0.1:8000/](http://127.0.0.1:8000/).
+
+X+ ships the client UI, server, build tools, and local Volt/Seasocks dependencies.
+It uses MEMORY64, preserves compiler source locations with `#line`, and includes
+a WebSocket echo endpoint at `/ws`.
+See the **[Volt X+ guide](app-template-x-plus/README.md)** for SDK setup, creation
+options, folder layout, configuration outputs, and troubleshooting.
+
+The following script-based quick starts use the default `x` template.
+
 ## Linux / macOS
 
 ### 1. Install Emscripten
@@ -294,7 +324,8 @@ volt/
 │       ├── create-volt-app.sh
 │       └── ...
 ├── app-template/
-└── app-template-x/
+├── app-template-x/
+└── app-template-x-plus/     # Visual Studio client + native Windows server
 ```
 
 ---
@@ -302,6 +333,9 @@ volt/
 # 🔧 Namespacing (GUID)
 
 Volt apps are isolated via GUID:
+
+For X+, set `-Guid my_app_v1` during creation or edit `guid` in the generated
+`app.json`, then rebuild. For the script-based templates:
 ```bash
 VOLT_GUID='my-app' ./build.sh
 ```
@@ -333,6 +367,8 @@ Volt lets C++ developers feel _at home_ on the web.
 PRs and contributions are warmly welcomed.
 
 See **CONTRIBUTING.md** for coding standards, project architecture, and contribution guidelines.
+
+Thanks to OpenAI's Codex for collaborating on the Volt X+ template, Visual Studio integration, Seasocks server, build improvements, and documentation.
 
 ---
 

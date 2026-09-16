@@ -1,279 +1,80 @@
-# ⚡ Volt Quickstart
+# Volt Quickstart
 
-Welcome to Volt! This guide gives you the fastest possible introduction to building reactive WebAssembly apps using Volt’s Virtual DOM, stable identity tracking, and component model.
+Choose `x+` for a Visual Studio client/server solution, or `x` for the existing
+script-based browser app. `x` remains the default when no template is specified.
 
----
+## Volt X+ — Windows and Visual Studio 2026
 
-# 🚀 Installation & First App
+You need Visual Studio 2026 with the **Desktop development with C++** workload
+(MSVC v145 and a Windows SDK), Git, Python 3, and an activated Emscripten SDK.
+The template has been tested with Emscripten 6.0.9 and uses MEMORY64.
+
+From your projects folder:
+
+```powershell
+git clone https://github.com/vdcoder/volt.git
+.\volt\framework\user-scripts\create-volt-app.ps1 my-app -Template 'x+' -OutputDir .\my-app
+```
+
+PowerShell uses `-Template` with one dash. The Git Bash equivalent is:
 
 ```bash
-# Clone framework
+./volt/framework/user-scripts/create-volt-app.sh my-app --template 'x+' --output ./my-app
+```
+
+1. Open `my-app/my-app.sln` in Visual Studio with the SDK environment available.
+2. Select **Debug | x64** or **Release | x64**.
+3. Press **Ctrl+Shift+B** to build the client and server.
+4. Set **Server** as the startup project, then press **F5** or **Ctrl+F5**.
+5. Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/).
+
+For exact SDK installation and launch commands, follow the
+[Volt X+ guide](app-template-x-plus/README.md). Starting VS from an activated
+Developer PowerShell avoids the common missing-SDK environment issue.
+
+The app ships with a Volt X counter/panel/list demo, native Seasocks static
+server, `/ws` echo endpoint, build tools, and local dependency sources. SDKs
+are installed separately. F5 debugs the native server; open the browser manually.
+
+| Edit or inspect | Location in the generated app |
+|---|---|
+| UI | `client/src/App.x.hpp` |
+| Reusable UI components | `client/src/components/` |
+| HTML, CSS, static assets | `client/public/` |
+| Server and WebSocket handler | `server/main.cpp` |
+| App GUID | `app.json` |
+| Debug website | `output/Debug/web/` |
+| Release website | `output/Release/web/` |
+| Native executable | `output/<configuration>/server/Server.exe` |
+
+Rebuild after edits, then refresh the browser. Stop the server before rebuilding
+its executable. Generated C++ lives under `intermediate/`; edit the original
+sources instead. Compiler errors use the existing `#line` source mapping.
+
+## Volt X — script-based browser app
+
+With Emscripten activated and Python 3 available, from your projects folder:
+
+```bash
 git clone https://github.com/vdcoder/volt.git
-
-# Create a new Volt app
-./volt/framework/user-scripts/create-volt-app.sh my-app
-
-# Build and run
+./volt/framework/user-scripts/create-volt-app.sh my-app --template x
 cd my-app
 ./build.sh
 cd output
 python3 -m http.server 8001
-# Open http://localhost:8001
 ```
 
----
-
-# 🏗️ Basic App Structure
-
-Every Volt app defines a class inheriting from `VoltRuntime::AppBase`:
-
-```cpp
-#include <Volt.hpp>
-using namespace volt;
-
-class MyApp : public VoltRuntime::AppBase {
-private:
-    int count = 0;
-
-public:
-    MyApp(VoltRuntime* r) : AppBase(r) {}
-
-    VNodeHandle render() override {
-        return tag::div(
-            tag::h1("Counter: " + std::to_string(count)).TRACK,
-
-            tag::button({
-                attr::onClick([this](emscripten::val e) {
-                    count++;
-                })
-            }, "Increment").TRACK
-
-        ).TRACK;
-    }
-};
-
-int main() {
-    VoltRuntime runtime("root");
-    runtime.mount<MyApp>();
-    return 0;
-}
-```
-
-### Notes
-- Event handlers **automatically schedule re-rendering**.  
-- `.TRACK` expands to `.track(__COUNTER__)` — ensuring **stable identity** across renders.
-
----
-
-# 🎨 Elements & Attributes
-
-Volt provides first-class bindings for HTML-like elements:
-
-```cpp
-tag::div(...)
-tag::span(...)
-tag::section(...)
-tag::header(...)
-tag::footer(...)
-tag::nav(...)
-tag::input(...)
-```
-
-## Common attributes
-
-```cpp
-attr::id("header")
-attr::className("title")
-attr::style("color: red; font-size: 20px;")
-attr::href("https://example.com")
-attr::src("/img.png")
-attr::disabled()
-```
-
----
-
-# 🎯 Events
-
-Volt supports many event types:
-
-```cpp
-attr::onClick([this](emscripten::val e) { ... })
-attr::onInput([this](std::string value) { ... })
-attr::onChange([this](std::string value) { ... })
-attr::onSubmit([this](emscripten::val e) { ... })
-attr::onKeyDown([this](std::string key) { ... })
-attr::onFocus([this](emscripten::val e) { ... })
-attr::onBlur([this](emscripten::val e) { ... })
-```
-
-All events automatically trigger a rerender unless you opt out.
-
----
-
-# 🔄 State Management
-
-Volt promotes simple, clear state updates:
-
-```cpp
-class MyApp : public VoltRuntime::AppBase {
-private:
-    std::string text = "";
-
-public:
-    VNodeHandle render() override {
-        return tag::div(
-            tag::input({
-                attr::value(text),
-                attr::onInput([this](std::string v) { text = v; })
-            }).TRACK,
-
-            tag::p("You typed: " + text).TRACK
-        ).TRACK;
-    }
-};
-```
-
-No manual invalidation is needed — the framework handles it.
-
----
-
-# 🧩 Component Patterns
-
-Volt supports two component patterns:
-
----
-
-## 1. Stateless Components
-
-```cpp
-class Button : public VoltRuntime::ComponentBase {
-public:
-    using ComponentBase::ComponentBase;
-
-    VNodeHandle render(std::string label, std::function<void()> fn) {
-        return tag::button({
-            attr::onClick([this, fn](emscripten::val e) {
-                fn();
-            })
-        }, label).TRACK;
-    }
-};
-```
-
-Use:
-
-```cpp
-Button(this).render("Click", [this] { ... });
-```
-
----
-
-## 2. Stateful Components
-
-```cpp
-class Counter : public VoltRuntime::ComponentBase {
-private:
-    int value = 0;
-
-public:
-    using ComponentBase::ComponentBase;
-
-    VNodeHandle render() {
-        return tag::div(
-            tag::h1(std::to_string(value)).TRACK,
-            tag::button({
-                attr::onClick([this](emscripten::val e) { value++; })
-            }, "+").TRACK
-        ).TRACK;
-    }
-};
-```
-
----
-
-# 🧱 Fragments
-
-Use fragments when you don’t want to create a wrapper `<div>`:
-
-```cpp
-tag::_fragment(
-    tag::h1("Title").TRACK,
-    tag::h2("Subtitle").TRACK
-).TRACK;
-```
-
-Fragments maintain stable identity just like elements.
-
----
-
-# 🔁 Lists & Loops
-
-Volt includes a built-in `map()` helper:
-
-```cpp
-auto items = std::vector<std::string>{"A", "B", "C"};
-
-return tag::ul(
-    volt::map(items, [](const std::string& s) {
-        return tag::li(s).TRACK;
-    })
-).TRACK;
-```
-
-If you use `attr::key()`, Volt preserves DOM nodes across reordering.
-
----
-
-# 🧪 Conditional Rendering
-
-```cpp
-return isReady
-    ? tag::div("Loaded").TRACK
-    : tag::div("Loading...").TRACK;
-```
-
----
-
-# 🔧 Build Options
-
-## Custom GUID
-
-```bash
-VOLT_GUID='myapp_v1' ./build.sh
-```
-
-## Optimization levels
-
-Inside `build.sh` change `-O0`, `-O2`, or `-O3`.
-
----
-
-# 🐛 Common Issues
-
-### "volt_X is not defined"
-GUID may contain invalid characters.
-
-### Event doesn’t re-render
-You may be mutating data without the framework detecting it.  
-Wrap such updates inside an event handler or explicit `requestRender()`.
-
-### Build fails
-Run:
-
-```bash
-source ~/emsdk/emsdk_env.sh
-```
-
----
-
-# 📚 Resources
-
-- GitHub: https://github.com/vdcoder/volt  
-- Issues: https://github.com/vdcoder/volt/issues  
-- Full documentation: see README.md & ADVANCED.md
-
----
-
-**Version:** 0.2.0  
-**License:** MIT  
-Made with ⚡ by @vdcoder
+Open [http://localhost:8001](http://localhost:8001). For the PowerShell equivalent,
+see [Volt on Windows](WINDOWS.md). The `x` layout keeps UI sources in `src/`,
+assets at the app root, and browser artifacts in `output/`.
+
+## Next steps
+
+- [Volt X+ guide](app-template-x-plus/README.md): creation options, SDK setup,
+  configurations, source mapping, WebSocket example, and troubleshooting.
+- [README](README.md): framework overview and template comparison.
+- [Windows guide](WINDOWS.md): PowerShell setup and the existing script workflow.
+- [Changelog](CHANGELOG.md): current unreleased changes.
+
+Fresh-system validation of X+ is deferred; the documented development-machine
+checks are recorded in [the test notes](tests/README.md).

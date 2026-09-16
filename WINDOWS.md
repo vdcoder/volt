@@ -46,7 +46,7 @@ You'll need to **activate** the environment at the start of every build session:
 
 ---
 
-## Quick Start
+## Script-based quick start (`x` / `raw`)
 
 ### 2 — Clone Volt
 
@@ -66,7 +66,7 @@ The default template is **Volt X** (DSL with Python preprocessor).
 For a raw C++ template (no preprocessor):
 
 ```powershell
-.\volt\framework\user-scripts\create-volt-app.ps1 my-app --Template raw
+.\volt\framework\user-scripts\create-volt-app.ps1 my-app -Template raw
 ```
 
 ### 4 — Build
@@ -109,16 +109,21 @@ PARAMETERS
     -AppName      Name of the new app (required, positional)
     -Guid         VOLT_GUID override (default: same as AppName)
     -OutputDir    Where to create the app (default: <repo>/../<AppName>)
-    -Template     "x" (default) or "raw"
+    -Template     "x" (default), "raw", or "x+"
     -NoGit        Skip git init
 
 EXAMPLES
     .\create-volt-app.ps1 my-app
     .\create-volt-app.ps1 my-app -Template x -Guid my-app-v1
+    .\create-volt-app.ps1 my-app -Template 'x+' -NoGit
     .\create-volt-app.ps1 my-app -OutputDir C:\Projects\my-app -NoGit
 ```
 
-What it does:
+For `x+`, the creator produces a solution, Client/Server projects, isolated Debug
+and Release outputs, and local framework/server dependencies. Its detailed
+setup and file reference is in the [X+ guide](app-template-x-plus/README.md).
+
+For the existing `x` and `raw` layout, it:
 
 - Copies the chosen template (`app-template-x/` or `app-template/`)
 - Substitutes `VOLT_APP_NAME_CAMEL`, `VOLT_APP_NAME_UNDERSCORE`, `VOLT_APP_NAME` tokens
@@ -130,7 +135,9 @@ What it does:
 
 ### `build.ps1`
 
-Generated per-app by `create-volt-app.ps1`. Lives in the app root.
+Generated for the existing script-based layout by `create-volt-app.ps1`.
+X+ instead uses `tools/build-client.cmd` and `tools/build-client.ps1` through VS;
+see [its build guide](app-template-x-plus/README.md).
 
 ```
 SYNOPSIS
@@ -198,8 +205,8 @@ Again, handled automatically — `build.ps1` passes the output path to the prepr
 
 | Limitation | Detail |
 |------------|--------|
-| **No MEMORY64** | `-s MEMORY64=1` triggers a `sizeof(long)` assertion in emscripten's `val.h` on Windows. The Windows build uses the default 32-bit memory model instead. |
-| **`build.sh` not supported** | The bash build script does not run natively on Windows. Use `build.ps1`. (WSL users can still use `build.sh` inside WSL.) |
+| **Memory mode differs by template** | X+ uses MEMORY64 (`-m64`) with the Embind pointer compatibility fix. The existing Windows `build.ps1` remains wasm32. |
+| **Build entry points** | X+ builds through its Visual Studio solution or `tools/build-client.cmd`. The existing Windows script workflow uses `build.ps1`; Unix `build.sh` requires a suitable shell/toolchain. |
 | **ExecutionPolicy** | Some machines require `Set-ExecutionPolicy Bypass -Scope Process` to run `.ps1` scripts. |
 
 ---
@@ -221,14 +228,19 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 ```
 
 ### App loads but shows JS errors
-Make sure you're serving from `output/` (where `volt.js`, `app.js`, `app.wasm`, and `index.html` all live together). Opening `index.html` directly as a `file://` URL will not work due to WASM security restrictions — you must use an HTTP server.
+For `x`, serve `output/`. X+ serves `output/Debug/web/` or `output/Release/web/`
+through its native server. The folder must contain `volt.js`, `app.js`,
+`app.wasm`, and `index.html`. Use HTTP rather than opening HTML with `file://`.
 
 ### Build output directory is stale
-`build.ps1` always regenerates `_generated/` from scratch and overwrites `output/*.js` and `output/*.wasm`. If you see unexpected behavior, delete `output/` and rebuild.
+X+ Clean/Rebuild reconstructs all browser assets from their source copies.
+The existing `x` build regenerates `_generated/` and overwrites compiled output,
+but its creator initially installs `volt.js` into `output/`: preserve that file
+or restore it from `framework/src/volt.js` if manually clearing the old layout.
 
 ---
 
-## Project Layout (Windows)
+## Project layout (`x` on Windows)
 
 After running `create-volt-app.ps1 my-app`:
 

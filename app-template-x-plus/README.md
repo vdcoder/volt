@@ -3,7 +3,76 @@
 Volt X in the browser, with a native Windows Seasocks server in the same solution.
 This template uses normal `.sln` and `.vcxproj` files; no CMake or editor extension.
 
-## Start
+## What ships with X+
+
+- A Visual Studio solution with two C++ projects: **Client** builds the Volt X
+  browser app with Emscripten; **Server** builds a native Windows executable with MSVC.
+- The Volt X starter UI: counter, conditional panel, and a keyed fruit list.
+- Debug and Release configurations, separate web/server outputs, and Build,
+  Rebuild, Clean, and native run/debug settings.
+- The Python DSL preprocessor and existing `#line` source mapping for compiler errors.
+- Local copies of Volt headers, `volt.js`, and pinned Seasocks sources/resources
+  with license notices. Generated apps build independently of the Volt checkout.
+- A loopback HTTP server serving the client output and one text/binary WebSocket
+  echo endpoint at `/ws`.
+
+The SDK and Visual Studio are prerequisites, not bundled dependencies. There is
+no automatic browser launch, live reload, DSL editor extension, or browser WASM
+debugger integration. The starter UI does not connect to `/ws` automatically.
+
+## Get the template and create an app
+
+The template lives in the Volt repository as `app-template-x-plus/`. Use the app
+creator rather than copying that folder by hand: creation also supplies the
+framework and preprocessor, replaces name tokens, and assigns project GUIDs.
+
+From a **Developer PowerShell for Visual Studio 2026** terminal in your projects
+folder, clone Volt (or use your existing checkout containing the X+ template):
+
+```powershell
+git clone https://github.com/vdcoder/volt.git
+```
+
+Install and activate an SDK if needed. This version was tested with 6.0.9:
+
+```powershell
+git clone https://github.com/emscripten-core/emsdk.git
+.\emsdk\emsdk.bat install 6.0.9
+.\emsdk\emsdk.bat activate 6.0.9
+. .\emsdk\emsdk_env.ps1
+```
+
+Create the app and launch Visual Studio from that same terminal so it inherits
+the SDK environment:
+
+```powershell
+.\volt\framework\user-scripts\create-volt-app.ps1 my-app -Template 'x+' -OutputDir .\my-app
+devenv .\my-app\my-app.sln
+```
+
+PowerShell uses **one dash**: `-Template 'x+'`. In Git Bash the equivalent is:
+
+```bash
+./volt/framework/user-scripts/create-volt-app.sh my-app --template 'x+' --output ./my-app
+```
+
+The Bash entry point can generate X+; building and running its native server still
+targets Windows/Visual Studio. Python 3 must be available to either creator.
+
+| Option | PowerShell | Bash | Default |
+|---|---|---|---|
+| Template | `-Template 'x+'` | `--template 'x+'` | `x`; explicitly select `x+` |
+| Destination | `-OutputDir .\my-app` | `--output ./my-app` | Sibling of the Volt repository |
+| Volt instance ID | `-Guid my_app_v1` | `--guid my_app_v1` | App name |
+| Skip Git initialization | `-NoGit` | `--no-git` | Initialize and commit the generated app |
+
+Choose a new destination: creation refuses to overwrite an existing directory.
+App names start with a letter and use letters, digits, `_`, or `-`; the GUID uses
+the same characters without the initial-letter restriction. The GUID identifies
+the Volt instance and is separate from the generated Visual Studio project GUIDs.
+Git initialization requires a configured Git author; use `-NoGit` to skip it.
+
+## Build and run
 
 Install Visual Studio 2026's **Desktop development with C++** workload, including
 MSVC v145 and a Windows SDK. Install and activate Emscripten and have Python 3
@@ -54,6 +123,11 @@ The x64 label selects native server architecture; the browser uses MEMORY64.
 Debug builds use `-O0 -g`, assertions, and Volt logging. Release uses `-O2 -DNDEBUG`.
 Both use C++20, Embind, and the `VoltApp` module expected by VoltBootstrap.
 
+Edit UI code in `client/src/App.x.hpp` and components under `client/src/components/`.
+Place HTML, CSS, and other static assets in `client/public/`. Edit native serving
+and WebSocket behavior in `server/main.cpp`. `app.json` stores the app name and
+the `guid` used on subsequent client builds. Never edit generated output as source.
+
 Every requested Client build preprocesses its source tree and copies public assets
 and `volt.js` into the selected web output. Generated files retain the existing
 `#line` directive pointing to the original source. This maps compiler diagnostics;
@@ -98,4 +172,22 @@ socket.onopen = () => socket.send('Hello from Volt X+!');
 
 The server binds to loopback only. Seasocks compression is disabled; no zlib is
 needed. See `dependencies/seasocks/README.vendor.md` for the pinned revision and
-the MIME/close-handshake patches. `wepoll.c` is compiled separately as C.
+the WASM MIME, close-handshake, and Windows send-buffer fixes. `wepoll.c` is
+compiled separately as C; the C++ sources are included through `seasocks_impl.cpp`.
+
+## Common setup issues
+
+| Symptom | What to check |
+|---|---|
+| `em++ not found` | Launch VS from the activated SDK terminal, set `EMSDK` before starting VS, or use the documented local `.tools/emsdk` layout. An already-running VS does not inherit later terminal changes. |
+| Missing v145 toolset or Windows SDK | Install the Desktop development with C++ workload in VS 2026. |
+| Python unavailable during creation | Activate the SDK first so `EMSDK_PYTHON` is set, or install Python 3 on PATH. |
+| F5 tries to launch HTML | Set **Server** as the startup project. |
+| Server cannot listen | Stop the other process using port 8000, or supply another port. |
+| Server executable cannot be overwritten | Stop its previous run before building. |
+| An older generated app tries to delete `Client.log` | Update its `tools/build-client.ps1` from this template; generated files must be under `client/generated`, below the MSBuild log directory. |
+
+This workflow has been tested on the development machine, including browser
+interactions and both configurations. Fresh-system testing and any resulting
+setup fixes are deferred. This guide describes the current template and will
+be updated as its features evolve.
