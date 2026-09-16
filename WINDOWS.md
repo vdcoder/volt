@@ -14,6 +14,10 @@ with C++ workload (MSVC v145), Python 3, and an activated Emscripten SDK.
 The `x` and `raw` templates keep their existing workflow.
 See [the X+ template guide](app-template-x-plus/README.md) for folder layout,
 SDK discovery, command-line builds, source mapping, and the `/ws` endpoint.
+X+ also provides client/server dependency injection through app-owned `AppDI`
+classes, global `services()` access, and a client `invalidate()` helper for async
+updates. See [application services](app-template-x-plus/README.md#application-services)
+for registration and teardown rules.
 
 Full Windows support for Volt — create apps, build to WebAssembly, and run in any browser, without leaving PowerShell.
 

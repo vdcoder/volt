@@ -30,10 +30,12 @@
     <NMakePreprocessorDefinitions>__EMSCRIPTEN__;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
     <NMakeIncludeSearchPath Condition="'$(EMSDK)' != ''">$(EMSDK)\upstream\emscripten\cache\sysroot\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
     <NMakeAdditionalOptions>/std:c++20 $(NMakeAdditionalOptions)</NMakeAdditionalOptions>
+    <NMakeIncludeSearchPath>$(ProjectDir)..\shared;$(ProjectDir)..\dependencies\volt\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
   </PropertyGroup>
   <ItemGroup>
     <None Include="src\**\*" />
+    <ClInclude Include="..\shared\**\*.hpp" />
     <None Include="public\**\*" />
     <None Include="..\tools\build-client.ps1" />
     <None Include="..\app.json" />

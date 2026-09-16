@@ -177,8 +177,14 @@ Browse [http://127.0.0.1:8000/](http://127.0.0.1:8000/).
 X+ ships the client UI, server, build tools, and local Volt/Seasocks dependencies.
 It uses MEMORY64, preserves compiler source locations with `#line`, and includes
 a WebSocket echo endpoint at `/ws`.
+It also includes a shared standard C++ dependency container, separate client/server
+`AppDI` classes, and global `services()` access. On the client, `invalidate()`
+requests a render frame from anywhere after startup, including async callbacks.
+Each WebAssembly instance owns its own services and runtime.
 See the **[Volt X+ guide](app-template-x-plus/README.md)** for SDK setup, creation
-options, folder layout, configuration outputs, and troubleshooting.
+options, folder layout, configuration outputs, and troubleshooting. The
+[application services guide](app-template-x-plus/README.md#application-services)
+covers registration, access, and teardown.
 
 The following script-based quick starts use the default `x` template.
 

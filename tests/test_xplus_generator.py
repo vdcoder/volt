@@ -18,6 +18,10 @@ class XPlusGeneratorTests(unittest.TestCase):
             second = generator.create_app('second', 'second', Path(temporary) / 'second', True)
             for relative in ('client/src/App.x.hpp', 'client/src/components/Button.x.hpp',
                              'client/public/index.html', 'server/seasocks_impl.cpp',
+                             'shared/DependencyInjection.hpp', 'client/src/AppDI.hpp',
+                             'client/src/services/VoltRuntimeService.hpp',
+                             'client/src/ApplicationServices.hpp', 'server/AppDI.hpp',
+                             'server/ApplicationServices.hpp',
                              'dependencies/volt/include/Volt.hpp', 'dependencies/volt/src/volt.js',
                              'dependencies/seasocks/LICENSE', 'dependencies/seasocks/generated/Embedded.cpp',
                              'tools/preprocesor.py', 'README.md', '.gitignore'):

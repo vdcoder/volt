@@ -48,6 +48,29 @@ Build/run configuration was checked through MSBuild and direct server launches.
 The Visual Studio F5 keyboard action itself was not automated. No browser-side
 WASM debugger integration or Volt X IntelliSense is included.
 
+## Dependency injection checks
+
+From the repository in a VS Developer PowerShell with Emscripten activated:
+
+```powershell
+New-Item -ItemType Directory -Force output/di-tests | Out-Null
+cl /nologo /std:c++17 /EHsc /W4 /Iapp-template-x-plus/shared /Iframework/include tests/test_dependency_injection.cpp /Fe:output/di-tests/native.exe /Fo:output/di-tests/native.obj
+./output/di-tests/native.exe
+em++ tests/test_dependency_injection.cpp -Iapp-template-x-plus/shared -Iframework/include -std=c++17 -m64 -fexceptions -o output/di-tests/unit.js
+node output/di-tests/unit.js
+em++ tests/di-isolation.cpp -Iapp-template-x-plus/shared -Iframework/include -std=c++20 -m64 -fexceptions -lembind -sMODULARIZE=1 -sEXPORT_NAME=VoltApp -o output/di-tests/isolation.js
+node tests/check-di-isolation.cjs output/di-tests/isolation.js
+```
+
+These check null/duplicate/missing-service errors, stable references after a
+rejected replacement, reverse teardown with provider access from a consumer
+destructor, reentrant base release, repeated cleanup, reuse, derived cleanup
+through a base pointer, and reference-based runtime access. The isolation test
+uses the template's actual `services()` and `invalidate()` helpers with test
+runtimes in two MEMORY64 instances and interleaved timers/Promise callbacks.
+Both generated solution configurations and the HTTP/WebSocket smoke checks also
+pass with the DI integration.
+
 ## Deferred validation
 
 Fresh-system testing and any setup fixes it reveals are deferred to a later pass.

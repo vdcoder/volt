@@ -45,6 +45,7 @@ try {
     $compilerArgs = @(
         (Join-Path $work 'src\main.x.cpp'), "@$response", '-std=c++20',
         '-I', (Join-Path $appRoot 'dependencies\volt\include'),
+        '-I', (Join-Path $appRoot 'shared'), '-fexceptions',
         '-o', (Join-Path $web 'app.js'), '-lembind', '--bind',
         '-sWASM=1', '-m64', '-sALLOW_MEMORY_GROWTH=1',
         '-sMODULARIZE=1', '-sEXPORT_NAME=VoltApp', '-sEXPORTED_RUNTIME_METHODS=ccall,cwrap',

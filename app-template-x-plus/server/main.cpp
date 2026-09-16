@@ -1,6 +1,7 @@
 #include <seasocks/PrintfLogger.h>
 #include <seasocks/Server.h>
 #include <seasocks/WebSocket.h>
+#include "ApplicationServices.hpp"
 
 #include <atomic>
 #include <charconv>
@@ -96,6 +97,7 @@ int main(int argc, char* argv[])
     std::setvbuf(stdout, nullptr, _IONBF, 0);
     try {
         const auto options = parseOptions(argc, argv);
+        services().registerDependencies();
         auto logger = std::make_shared<seasocks::PrintfLogger>(seasocks::Logger::Level::Info);
         seasocks::Server server(logger);
         server.addWebSocketHandler("/ws", std::make_shared<EchoHandler>());

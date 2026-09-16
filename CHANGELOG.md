@@ -13,6 +13,12 @@ https://semver.org/spec/v2.0.0.html
 
 ### Added
 
+- Shared standard C++ `voltxp::DependencyInjection` with owned services,
+  duplicate/null rejection, and reverse registration teardown.
+- Separate client/server `AppDI` classes and app-specific `services()` accessors;
+  client runtime service and global `invalidate()` work outside rendering.
+- Client exception handling, shared Visual Studio includes, and native/WASM
+  lifetime and async module-isolation checks.
 - **Volt X+ (`x+`) template** for Windows and Visual Studio 2026: a normal solution
   with an Emscripten client project and a native MSVC Seasocks server project.
 - Debug/Release MEMORY64 client builds, existing `#line` source diagnostics,

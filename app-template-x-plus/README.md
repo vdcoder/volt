@@ -15,6 +15,8 @@ This template uses normal `.sln` and `.vcxproj` files; no CMake or editor extens
   with license notices. Generated apps build independently of the Volt checkout.
 - A loopback HTTP server serving the client output and one text/binary WebSocket
   echo endpoint at `/ws`.
+- A standard C++ dependency container shared by both projects, app-owned `AppDI`
+  classes, and client `services()` / `invalidate()` helpers for async code.
 
 The SDK and Visual Studio are prerequisites, not bundled dependencies. There is
 no automatic browser launch, live reload, DSL editor extension, or browser WASM
@@ -100,11 +102,18 @@ app.json                         App name and VOLT_GUID
 client/
   Client.vcxproj                 Emscripten Makefile project
   src/                          Edit these Volt X sources
+    AppDI.hpp                   Client service registration and teardown
+    ApplicationServices.hpp     App ownership, services(), invalidate()
+    services/VoltRuntimeService.hpp  Non-owning runtime reference
   public/                       index.html, global.css, other static assets
 server/
   Server.vcxproj                 Native MSVC project; depends on Client
   main.cpp                      Static serving and /ws echo handler
   seasocks_impl.cpp              Seasocks C++ unity translation unit
+  AppDI.hpp                     Server service registration and teardown
+  ApplicationServices.hpp       Server services() accessor
+shared/
+  DependencyInjection.hpp        Standard C++17 container in namespace voltxp
 dependencies/
   volt/include/                 Header-only framework
   volt/src/volt.js               Source copy of the browser bootstrap
@@ -122,6 +131,7 @@ intermediate/<Debug|Release>/    Generated C++ and compiler intermediates
 The x64 label selects native server architecture; the browser uses MEMORY64.
 Debug builds use `-O0 -g`, assertions, and Volt logging. Release uses `-O2 -DNDEBUG`.
 Both use C++20, Embind, and the `VoltApp` module expected by VoltBootstrap.
+Client C++ exception handling is enabled for service registration/resolution errors.
 
 Edit UI code in `client/src/App.x.hpp` and components under `client/src/components/`.
 Place HTML, CSS, and other static assets in `client/public/`. Edit native serving
@@ -174,6 +184,83 @@ The server binds to loopback only. Seasocks compression is disabled; no zlib is
 needed. See `dependencies/seasocks/README.vendor.md` for the pinned revision and
 the WASM MIME, close-handshake, and Windows send-buffer fixes. `wepoll.c` is
 compiled separately as C; the C++ sources are included through `seasocks_impl.cpp`.
+
+## Application services
+
+`voltxp` names the X+ utilities: `voltxp::DependencyInjection` is standard C++17
+in `shared/`; `voltxp::VoltRuntimeService` is client-only. Each project owns its
+own `AppDI.hpp` and `ApplicationServices.hpp`. Include `ApplicationServices.hpp`
+where you need the app's global `services()` accessor (or client `invalidate()`).
+`services()` returns **`AppDI&`**, so app-specific methods remain available; it
+can also be passed to code accepting `voltxp::DependencyInjection&`.
+
+`AppDI.hpp` describes which services the app owns and their lifetime order.
+`ApplicationServices.hpp` supplies the instance and access helpers. These are
+app-owned template files; the helpers are not added to the core `volt` namespace
+or to the existing `x` and `raw` templates.
+
+Add services to `AppDI::registerDependencies()`, providers before consumers:
+
+```cpp
+registerDependency<StoreService>(std::make_unique<StoreService>(
+    resolveDependency<voltxp::VoltRuntimeService>()));
+```
+
+Here `StoreService` is your own service, with a constructor taking
+`voltxp::VoltRuntimeService&`; it is not supplied by the template. The runtime
+service is registered first using a non-owning reference to the app's engine.
+The server has its own initially empty registration method and no Volt runtime.
+
+From client code, including an async callback belonging to the module:
+
+```cpp
+auto& store = services().resolveDependency<StoreService>();
+// Update state through your store's API, then request a frame:
+invalidate();
+```
+
+`invalidate()` requests a frame; it does not render synchronously. Multiple
+requests before the next frame are coalesced by Volt. Call it after changing
+state in timers, network responses, or other callbacks outside Volt's event
+handling. Existing Volt DOM event callbacks already invalidate automatically.
+Client services become available during `createVoltEngine()`, before the app's
+constructor and `start()` run. Do not resolve them from static initializers.
+Use the UI thread; this helper does not marshal work from background threads.
+
+One engine/container lives in each Emscripten instance. Separate `VoltApp()`
+factory calls have separate C++ service state. JavaScript callbacks must retain
+their originating Module; browser globals and DOM objects are still shared.
+The template rejects creating a second engine in an existing module instance.
+The render-only `g_pRenderingEngine` is unchanged and is not used by these helpers.
+
+The container owns services, rejects null and duplicate registrations, and throws
+on missing resolution. References remain valid until release. Teardown destroys
+services in reverse registration order; registration during release is rejected.
+It is not a concurrent container: register/release on the owning thread, and
+coordinate any future server workers before teardown.
+
+Each `AppDI` destructor explicitly calls its `releaseDependencies()` override:
+C++ base destructors cannot dispatch to derived cleanup. Put cancellation of
+app-owned timers, subscriptions, and background work in that override, before
+the base call. Cleanup must be non-throwing, safe after partial startup, and safe
+to repeat. Further subclasses must likewise invoke their own cleanup before
+their members are destroyed. Runtime ownership ensures services are destroyed
+before the engine. App destructors must not resolve services after that cleanup.
+
+The browser bootstrap's existing `destroy()` only removes DOM event listeners;
+it does not yet destroy the engine or services. This addition does not introduce
+hot replacement or an unmount API. Do not manually release a running app's
+container while callbacks or UI code still use it.
+
+### Getting these additions in an existing app
+
+New `x+` apps receive these files automatically. Updating the Volt checkout does
+not update generated apps. For an existing app, generate a fresh X+ app beside
+it and compare `shared/`, both `AppDI.hpp` / `ApplicationServices.hpp` pairs,
+the client runtime service, both project files, `tools/build-client.ps1`, and
+the startup code in both `main` files. Preserve your app-specific registrations,
+sources, project GUIDs, and settings. The client build needs the shared include
+path and `-fexceptions`; copying the headers alone is insufficient.
 
 ## Common setup issues
 

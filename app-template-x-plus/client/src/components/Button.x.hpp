@@ -7,7 +7,6 @@ using namespace volt;
 // Button Component - Stateless, reusable button with customizable appearance
 // ============================================================================
 VNodeHandle Button(
-    IRuntime& a_runtime,
     const std::string& label,
     std::function<void(emscripten::val)> onButtonClick,
     const std::string& variant = "primary"

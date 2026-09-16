@@ -42,6 +42,9 @@ are installed separately. F5 debugs the native server; open the browser manually
 | Reusable UI components | `client/src/components/` |
 | HTML, CSS, static assets | `client/public/` |
 | Server and WebSocket handler | `server/main.cpp` |
+| Client/server service registration and teardown | `client/src/AppDI.hpp`, `server/AppDI.hpp` |
+| App service access and client runtime ownership | `client/src/ApplicationServices.hpp`, `server/ApplicationServices.hpp` |
+| Shared standard C++ DI container | `shared/DependencyInjection.hpp` |
 | App GUID | `app.json` |
 | Debug website | `output/Debug/web/` |
 | Release website | `output/Release/web/` |
@@ -50,6 +53,14 @@ are installed separately. F5 debugs the native server; open the browser manually
 Rebuild after edits, then refresh the browser. Stop the server before rebuilding
 its executable. Generated C++ lives under `intermediate/`; edit the original
 sources instead. Compiler errors use the existing `#line` source mapping.
+
+Include your project's `ApplicationServices.hpp` to use `services()`, which
+returns its `AppDI&`. Register services in `AppDI::registerDependencies()`, with
+providers before their consumers. Client code can call global `invalidate()`
+after updating state in an async callback; the runtime service is registered
+before the app mounts. The server has its own container and no Volt runtime.
+See [application services](app-template-x-plus/README.md#application-services)
+for examples and lifetime rules.
 
 ## Volt X — script-based browser app
 

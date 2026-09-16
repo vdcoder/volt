@@ -28,14 +28,12 @@ public:
 
             <div(
                 <(Button(
-                    getRuntime(),
                     "Increment",
                     [this](auto){ counter++; },
                     "primary"
                 ))/>,
 
                 <(Button(
-                    getRuntime(),
                     "Decrement",
                     [this](auto){ counter--; },
                     "secondary"
@@ -51,7 +49,6 @@ public:
             // TOGGLE PANEL
             <h2("Toggle Panel")/>,
             <(Button(
-                getRuntime(),
                 (showPanel ? "Hide Panel" : "Show Panel"),
                 [this](auto){ showPanel = !showPanel; },
                 "primary"
@@ -76,7 +73,6 @@ public:
                     return <li({ key:=(fruit) },
                         <span(fruit)/>,
                         <(Button(
-                            getRuntime(),
                             "Remove",
                             [this, fruit](auto){
                                 // Remove fruit
@@ -90,7 +86,6 @@ public:
             )/>,
 
             <(Button(
-                getRuntime(),
                 "Add Random Fruit",
                 [this](auto){
                     static int id = 0;
