@@ -52,10 +52,31 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="HttpRoutes.hpp" />
+    <ClInclude Include="services\HttpServerService.hpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="sessions\Session.cpp" />
     <ClInclude Include="AppDI.hpp" />
     <ClInclude Include="ApplicationServices.hpp" />
-    <ClInclude Include="..\shared\**\*.hpp" />
+    <ClInclude Include="network\SessionHandler.hpp" />
+    <ClInclude Include="sessions\Session.hpp" />
+    <ClInclude Include="sessions\SessionDI.hpp" />
+    <ClInclude Include="sessions\SessionBase.hpp" />
+    <ClInclude Include="sessions\SessionCloseReason.hpp" />
+    <ClInclude Include="sessions\ISessionRegistry.hpp" />
+    <ClInclude Include="sessions\SessionRegistry.hpp" />
+    <ClInclude Include="sessions\services\SessionWebsocketService.hpp" />
+    <ClInclude Include="..\shared\MemoryWire.hpp"></ClInclude>
+    <ClInclude Include="..\shared\DataConnection.hpp"></ClInclude>
+    <ClInclude Include="..\shared\Talkers.hpp" />
+    <ClInclude Include="..\shared\ActionMessage.hpp" />
+    <ClInclude Include="..\shared\ConnectionHeartbeat.hpp" />
+    <ClInclude Include="..\shared\DataServices.hpp" />
+    <ClInclude Include="..\shared\DependencyInjection.hpp" />
+    <ClInclude Include="..\shared\examples\Student.hpp" />
+    <ClInclude Include="..\shared\MemoryChanges.hpp" />
+    <ClInclude Include="..\shared\MemoryStore.hpp" />
+    <ClInclude Include="..\shared\MemoryViews.hpp" />
     <ClCompile Include="seasocks_impl.cpp" />
     <ClCompile Include="..\dependencies\seasocks\src\main\c\seasocks\win32\wepoll.c" />
     <ClInclude Include="..\dependencies\seasocks\generated\internal\Config.h" />

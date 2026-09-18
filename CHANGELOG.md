@@ -13,6 +13,28 @@ https://semver.org/spec/v2.0.0.html
 
 ### Added
 
+- X+ `HttpServerService` with exact method/path routes and cookie-independent
+  hello/echo endpoints, plus a browser `HttpClientService` using fetch with
+  response headers, HTTP/network error distinction, timeout, cancellation and disposal.
+- HTTP API documentation and native-server/MEMORY64 client checks.
+- App-customizable `Session` derived from `SessionBase`, with startup/close hooks,
+  typed `SessionRegistry<Session>` ownership and a Session infrastructure filter.
+  Startup installs the echo talker; session behavior is separate from DI registration.
+- Binary session envelopes with little-endian uint16 talker IDs, client/server
+  registries, binary heartbeat/takeover controls and a sample echo talker.
+- X+ experimental typed memory store with recyclable generational handles,
+  store-aware field/container views, unified membership without object/list restrictions,
+  and a Student example.
+- X+ Front/Back data services with binary, slot-only change messages over talkers,
+  local generation tracking, reader notifications and clean-slate connection resets.
+  MemoryStore directly invokes a change callback after each mutation; no journal
+  or explicit drain is needed between detection and the configured sender.
+  A five-second/two-second heartbeat watchdog detects overdue pongs.
+  A client counter/server-doubled-value example exercises both directions.
+  Snapshot recovery and action wire encoding remain future work.
+- X+ browser session cookie and `/session` WebSocket connection with bidirectional
+  ping/pong, timeout reconnects, and a replacement notice that stops the old tab
+  reconnecting. The original `/ws` echo endpoint remains available.
 - Shared standard C++ `voltxp::DependencyInjection` with owned services,
   duplicate/null rejection, and reverse registration teardown.
 - Separate client/server `AppDI` classes and app-specific `services()` accessors;

@@ -42,11 +42,16 @@ public:
     }
 
     template<class T>
-    T& resolveDependency() const {
+    T* tryResolveDependency() const noexcept {
         const auto found = m_dependencies.find(std::type_index(typeid(T)));
-        if (found == m_dependencies.end())
-            throw std::runtime_error("Dependency not found");
-        return *static_cast<T*>(found->second.get());
+        return found == m_dependencies.end() ? nullptr : static_cast<T*>(found->second.get());
+    }
+
+    template<class T>
+    T& resolveDependency() const {
+        auto* dependency = tryResolveDependency<T>();
+        if (!dependency) throw std::runtime_error("Dependency not found");
+        return *dependency;
     }
 
     // Derived destructors must call their own override while derived state is

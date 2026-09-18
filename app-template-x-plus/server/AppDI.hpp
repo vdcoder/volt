@@ -1,12 +1,16 @@
 #pragma once
 #include <DependencyInjection.hpp>
+#include "services/HttpServerService.hpp"
+#include "sessions/SessionRegistry.hpp"
+#include "sessions/Session.hpp"
 
 class AppDI : public voltxp::DependencyInjection {
 public:
     ~AppDI() override { releaseDependencies(); }
 
     void registerDependencies() {
-        // Register server services here, dependencies before their consumers.
+        registerDependency<voltxp::HttpServerService>(std::make_unique<voltxp::HttpServerService>());
+        registerDependency<SessionRegistry<Session>>(std::make_unique<SessionRegistry<Session>>());
     }
 
     void releaseDependencies() noexcept override {

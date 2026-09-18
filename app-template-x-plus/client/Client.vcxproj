@@ -35,7 +35,17 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="src\**\*" />
-    <ClInclude Include="..\shared\**\*.hpp" />
+    <ClInclude Include="..\shared\MemoryWire.hpp"></ClInclude>
+    <ClInclude Include="..\shared\DataConnection.hpp"></ClInclude>
+    <ClInclude Include="..\shared\Talkers.hpp" />
+    <ClInclude Include="..\shared\ActionMessage.hpp" />
+    <ClInclude Include="..\shared\ConnectionHeartbeat.hpp" />
+    <ClInclude Include="..\shared\DataServices.hpp" />
+    <ClInclude Include="..\shared\DependencyInjection.hpp" />
+    <ClInclude Include="..\shared\examples\Student.hpp" />
+    <ClInclude Include="..\shared\MemoryChanges.hpp" />
+    <ClInclude Include="..\shared\MemoryStore.hpp" />
+    <ClInclude Include="..\shared\MemoryViews.hpp" />
     <None Include="public\**\*" />
     <None Include="..\tools\build-client.ps1" />
     <None Include="..\app.json" />

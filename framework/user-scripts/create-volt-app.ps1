@@ -36,7 +36,9 @@ param(
     [string]$OutputDir   = "",
     [ValidateSet("x","raw","x+")]
     [string]$Template    = "x",
-    [switch]$NoGit
+    [switch]$NoGit,
+    [Alias('-overwrite')]
+    [switch]$Overwrite
 )
 
 $ErrorActionPreference = "Stop"
@@ -61,6 +63,7 @@ if ($Template -eq 'x+') {
     if ($Guid) { $createArgs += @('--guid', $Guid) }
     if ($OutputDir) { $createArgs += @('--output', $OutputDir) }
     if ($NoGit) { $createArgs += '--no-git' }
+    if ($Overwrite) { $createArgs += '--overwrite' }
     & $python @createArgs
     if ($LASTEXITCODE -ne 0) { throw 'Volt X+ creation failed' }
     return
@@ -99,7 +102,8 @@ Write-Host "=================================================================" -
 Write-Host ""
 
 if (-not (Test-Path $TemplateDir)) { Err "Template not found: $TemplateDir" }
-if (Test-Path $OutputDir)          { Err "Output directory already exists: $OutputDir`nRemove it first or choose a different name." }
+$OutputExisted = Test-Path -LiteralPath $OutputDir
+if ($OutputExisted -and -not $Overwrite) { Err "Output directory already exists: $OutputDir`nRemove it first or choose a different name." }
 
 Info "App name   : $AppName"
 Info "GUID       : $Guid"
@@ -113,7 +117,8 @@ Write-Host ""
 #  1. Copy template
 # ---------------------------------------------------------------------------
 Info "Copying template..."
-Copy-Item -Path $TemplateDir -Destination $OutputDir -Recurse
+New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+Get-ChildItem -LiteralPath $TemplateDir -Force | Copy-Item -Destination $OutputDir -Recurse -Force
 Ok "Template copied"
 
 # ---------------------------------------------------------------------------
@@ -165,7 +170,10 @@ foreach ($rel in @($AppHeaderFile, $MainCppFile)) {
 }
 
 # Also substitute in components directory
-$ComponentFiles = Get-ChildItem -Path (Join-Path $OutputDir "src") -Recurse -File -ErrorAction SilentlyContinue
+$TemplateSrc = Join-Path $TemplateDir 'src'
+$ComponentFiles = Get-ChildItem -LiteralPath $TemplateSrc -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
+    Get-Item -LiteralPath (Join-Path (Join-Path $OutputDir 'src') $_.FullName.Substring($TemplateSrc.Length + 1))
+}
 foreach ($f in $ComponentFiles) {
     if ($f.Name -ne ($AppHeaderFile | Split-Path -Leaf) -and $f.Name -ne ($MainCppFile | Split-Path -Leaf)) {
         $content = Get-Content $f.FullName -Raw -Encoding UTF8
@@ -229,7 +237,7 @@ Ok "build.ps1 written"
 # ---------------------------------------------------------------------------
 #  7. Optional git init
 # ---------------------------------------------------------------------------
-if (-not $NoGit) {
+if (-not $NoGit -and -not $OutputExisted) {
     Info "Initialising git repository..."
     Push-Location $OutputDir
     git init -q

@@ -12,14 +12,46 @@ spec.loader.exec_module(generator)
 
 
 class XPlusGeneratorTests(unittest.TestCase):
+    def test_overwrite_updates_generated_files_preserving_extras_and_project_ids(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            app = generator.create_app('refresh', 'refresh', Path(temporary) / 'app', True)
+            project = app / 'client/Client.vcxproj'
+            before = ET.parse(project).findtext('.//{*}ProjectGuid')
+            (app / 'client/src/custom.hpp').write_text('VOLT_APP_NAME stays untouched')
+            (app / 'client/src/App.x.hpp').write_text('old app')
+            (app / '.git').mkdir()
+            (app / '.git/sentinel').write_text('keep')
+            generator.create_app('refresh', 'refresh', app, False, overwrite=True)
+            self.assertNotEqual((app / 'client/src/App.x.hpp').read_text(), 'old app')
+            self.assertEqual((app / 'client/src/custom.hpp').read_text(), 'VOLT_APP_NAME stays untouched')
+            self.assertEqual((app / '.git/sentinel').read_text(), 'keep')
+            self.assertEqual(ET.parse(project).findtext('.//{*}ProjectGuid'), before)
+            self.assertIn(before, (app / 'refresh.sln').read_text())
+
     def test_self_contained_app_and_unique_project_ids(self):
         with tempfile.TemporaryDirectory() as temporary:
             first = generator.create_app('my-app', 'test_v1', Path(temporary) / 'app with spaces', True)
             second = generator.create_app('second', 'second', Path(temporary) / 'second', True)
             for relative in ('client/src/App.x.hpp', 'client/src/components/Button.x.hpp',
-                             'client/public/index.html', 'server/seasocks_impl.cpp',
+                             'client/public/index.html', 'client/public/session.js', 'client/public/http.js',
+                             'client/src/services/HttpClientService.hpp',
+                             'HTTP.md', 'server/HttpRoutes.hpp', 'server/services/HttpServerService.hpp',
+                             'server/seasocks_impl.cpp', 'server/network/SessionHandler.hpp',
+                             'server/sessions/Session.hpp', 'server/sessions/SessionDI.hpp',
+                             'server/sessions/SessionBase.hpp',
+                             'server/sessions/SessionCloseReason.hpp',
+                             'server/sessions/Session.cpp',
+                             'server/sessions/ISessionRegistry.hpp',
+                             'server/sessions/SessionRegistry.hpp',
+                             'server/sessions/services/SessionWebsocketService.hpp',
                              'shared/DependencyInjection.hpp', 'client/src/AppDI.hpp',
+                             'shared/ActionMessage.hpp',
+                             'shared/Talkers.hpp',
+                             'shared/MemoryChanges.hpp', 'shared/MemoryStore.hpp', 'shared/MemoryViews.hpp',
+                             'shared/examples/Student.hpp', 'MEMORY-STORE.md',
+                             'shared/DataServices.hpp', 'shared/DataConnection.hpp', 'shared/MemoryWire.hpp', 'shared/ConnectionHeartbeat.hpp', 'DATA-SERVICES.md',
                              'client/src/services/VoltRuntimeService.hpp',
+                             'client/src/services/ClientWebsocketService.hpp',
                              'client/src/ApplicationServices.hpp', 'server/AppDI.hpp',
                              'server/ApplicationServices.hpp',
                              'dependencies/volt/include/Volt.hpp', 'dependencies/volt/src/volt.js',

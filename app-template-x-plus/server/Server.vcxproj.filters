@@ -1,12 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="Session infrastructure" />
+    <Filter Include="Shared">
+      <UniqueIdentifier>{CC2AC936-51A1-4211-92F3-0FAC028F33C8}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Seasocks support">
       <UniqueIdentifier>{FF46B953-7A50-44F2-909F-304CA6D5F540}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\shared\MemoryWire.hpp"><Filter>Shared</Filter></ClInclude>
+    <ClInclude Include="..\shared\DataConnection.hpp"><Filter>Shared</Filter></ClInclude>
+    <ClInclude Include="..\shared\Talkers.hpp">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\ActionMessage.hpp">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\ConnectionHeartbeat.hpp">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\DataServices.hpp">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\DependencyInjection.hpp">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\examples\Student.hpp">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\MemoryChanges.hpp">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\MemoryStore.hpp">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\MemoryViews.hpp">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="sessions\SessionBase.hpp"><Filter>Session infrastructure</Filter></ClInclude>
+    <ClInclude Include="network\SessionHandler.hpp"><Filter>Session infrastructure</Filter></ClInclude>
+    <ClInclude Include="sessions\SessionCloseReason.hpp"><Filter>Session infrastructure</Filter></ClInclude>
+    <ClInclude Include="sessions\ISessionRegistry.hpp"><Filter>Session infrastructure</Filter></ClInclude>
+    <ClInclude Include="sessions\SessionRegistry.hpp"><Filter>Session infrastructure</Filter></ClInclude>
+    <ClInclude Include="sessions\services\SessionWebsocketService.hpp"><Filter>Session infrastructure</Filter></ClInclude>
+    <ClInclude Include="sessions\Session.hpp" />
+    <ClInclude Include="sessions\SessionDI.hpp" />
+    <ClInclude Include="HttpRoutes.hpp" />
+    <ClInclude Include="services\HttpServerService.hpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="sessions\Session.cpp" />
     <ClCompile Include="seasocks_impl.cpp" />
     <ClCompile Include="..\dependencies\seasocks\src\main\c\seasocks\win32\wepoll.c">
       <Filter>Seasocks support</Filter>

@@ -177,6 +177,11 @@ Browse [http://127.0.0.1:8000/](http://127.0.0.1:8000/).
 X+ ships the client UI, server, build tools, and local Volt/Seasocks dependencies.
 It uses MEMORY64, preserves compiler source locations with `#line`, and includes
 a WebSocket echo endpoint at `/ws`.
+Communications v1 adds cookie-based sessions, binary talkers, and Front/Back memory
+streams that reset on reconnect. It also includes independent HTTP server routes
+and a browser HTTP client with timeout and cancellation support. See the
+[data services](app-template-x-plus/DATA-SERVICES.md) and
+[HTTP services](app-template-x-plus/HTTP.md) guides for examples and current limits.
 It also includes a shared standard C++ dependency container, separate client/server
 `AppDI` classes, and global `services()` access. On the client, `invalidate()`
 requests a render frame from anywhere after startup, including async callbacks.

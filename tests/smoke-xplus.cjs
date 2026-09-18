@@ -38,6 +38,7 @@ async function main() {
       ['/', 'index.html', 'text/html'],
       ['/app.js', 'app.js', 'text/javascript'],
       ['/volt.js', 'volt.js', 'text/javascript'],
+      ['/session.js', 'session.js', 'text/javascript'],
       ['/global.css', 'global.css', 'text/css'],
       ['/app.wasm', 'app.wasm', 'application/wasm'],
     ]) {

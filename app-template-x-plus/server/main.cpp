@@ -2,6 +2,8 @@
 #include <seasocks/Server.h>
 #include <seasocks/WebSocket.h>
 #include "ApplicationServices.hpp"
+#include "network/SessionHandler.hpp"
+#include "HttpRoutes.hpp"
 
 #include <atomic>
 #include <charconv>
@@ -100,7 +102,12 @@ int main(int argc, char* argv[])
         services().registerDependencies();
         auto logger = std::make_shared<seasocks::PrintfLogger>(seasocks::Logger::Level::Info);
         seasocks::Server server(logger);
+        auto& http = services().resolveDependency<voltxp::HttpServerService>();
+        registerHttpRoutes(http);
+        server.addPageHandler(http.handler());
         server.addWebSocketHandler("/ws", std::make_shared<EchoHandler>());
+        auto sessions = std::make_shared<SessionHandler>(services().resolveDependency<SessionRegistry<Session>>());
+        server.addWebSocketHandler("/session", sessions);
         server.setStaticPath(options.staticRoot.string().c_str());
         if (!server.startListening(INADDR_LOOPBACK, options.port)) {
             std::cerr << "Cannot listen on port " << options.port << ". Is another server running?\n";
@@ -110,6 +117,7 @@ int main(int argc, char* argv[])
         std::cout << "Serving " << options.staticRoot << "\nHTTP: http://127.0.0.1:" << options.port
                   << "/\nWebSocket echo: ws://127.0.0.1:" << options.port << "/ws\nCtrl+C to stop.\n";
         while (!stopping.load()) {
+            sessions->poll();
             const auto result = server.poll(100);
             if (result == seasocks::Server::PollResult::Error)
                 return 1;

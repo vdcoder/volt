@@ -15,12 +15,21 @@ This template uses normal `.sln` and `.vcxproj` files; no CMake or editor extens
   with license notices. Generated apps build independently of the Volt checkout.
 - A loopback HTTP server serving the client output and one text/binary WebSocket
   echo endpoint at `/ws`.
+- An automatic cookie-based session connection at `/session`, with five-second
+  pings, two-second pong deadlines, reconnects and single-tab takeover. The DI-owned
+  `ClientWebsocketService` wraps JavaScript through Emscripten and drives the
+  connection status shown in the starter UI.
+- Binary session messages with a uint16 talker ID, symmetric C++ handler registries,
+  reserved connection-control talker zero and a server echo example on talker one.
 - A standard C++ dependency container shared by both projects, app-owned `AppDI`
   classes, and client `services()` / `invalidate()` helpers for async code.
+- A first-pass [typed memory store](MEMORY-STORE.md) with reusable generational
+  handles, store-aware field/container views, and a compositional Student example.
 
 The SDK and Visual Studio are prerequisites, not bundled dependencies. There is
 no automatic browser launch, live reload, DSL editor extension, or browser WASM
-debugger integration. The starter UI does not connect to `/ws` automatically.
+debugger integration. The browser automatically connects to `/session`;
+`/ws` remains an echo test endpoint.
 
 ## Get the template and create an app
 
@@ -172,7 +181,11 @@ independent of the working directory. Override the folder and port with:
 output\Debug\server\Server.exe "output\Debug\web" 8080
 ```
 
-The single WebSocket endpoint echoes text and binary data. On the served page:
+The `/session` endpoint connects automatically using a session cookie and runs
+ping/pong. A replacement tab sends the old tab into a stopped state through the
+server's `replaced` message. See [session behavior](DATA-SERVICES.md#session-connection).
+
+The separate `/ws` endpoint echoes text and binary data. On the served page:
 
 ```js
 const socket = new WebSocket(`ws://${location.host}/ws`);
@@ -261,6 +274,22 @@ the client runtime service, both project files, `tools/build-client.ps1`, and
 the startup code in both `main` files. Preserve your app-specific registrations,
 sources, project GUIDs, and settings. The client build needs the shared include
 path and `-fexceptions`; copying the headers alone is insufficient.
+
+## Experimental Front/Back data services
+
+See [Front and Back data services](DATA-SERVICES.md) for ordered, fire-and-forget
+replication over the [handle-based memory store](MEMORY-STORE.md), with no data
+versions, ACKs or network batching. Binary talkers carry slot-only references;
+each store tracks its own local generations. Disconnects reset both stores, and
+new connections start empty. A watchdog uses five-second pings and a two-second
+pong deadline. Try the Live shared data counter: the server publishes twice the
+client value through Back data. Snapshot recovery remains future work.
+
+## HTTP services
+
+The template includes cookie-independent server routes and a browser fetch service.
+Try **Call hello API** or `POST /api/echo`. See [HTTP services](HTTP.md) for route
+registration, request callbacks, timeouts, cancellation, and browser CORS boundaries.
 
 ## Common setup issues
 
