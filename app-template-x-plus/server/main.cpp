@@ -3,7 +3,6 @@
 #include <seasocks/WebSocket.h>
 #include "ApplicationServices.hpp"
 #include "network/SessionHandler.hpp"
-#include "HttpRoutes.hpp"
 
 #include <atomic>
 #include <charconv>
@@ -103,7 +102,6 @@ int main(int argc, char* argv[])
         auto logger = std::make_shared<seasocks::PrintfLogger>(seasocks::Logger::Level::Info);
         seasocks::Server server(logger);
         auto& http = services().resolveDependency<voltxp::HttpServerService>();
-        registerHttpRoutes(http);
         server.addPageHandler(http.handler());
         server.addWebSocketHandler("/ws", std::make_shared<EchoHandler>());
         auto sessions = std::make_shared<SessionHandler>(services().resolveDependency<SessionRegistry<Session>>());

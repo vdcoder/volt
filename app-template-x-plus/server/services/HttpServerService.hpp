@@ -8,6 +8,7 @@
 #include <map>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 namespace voltxp {
 // Synchronous handlers run on the Seasocks event loop. Request references are
@@ -70,6 +71,51 @@ private:
     };
     std::shared_ptr<Router> m_router = std::make_shared<Router>();
 public:
+    // Move-only ownership of a controller's routes. Keep this as a DI service member.
+    class HttpController {
+        friend class HttpServerService;
+        struct Registration {
+            std::shared_ptr<Router> router;
+            std::vector<std::pair<Method, std::string>> keys;
+            ~Registration() { for (const auto& key : keys) router->routes.erase(key); }
+        };
+        std::unique_ptr<Registration> m_registration;
+        std::string m_prefix;
+        HttpController(std::shared_ptr<Router> router, std::string prefix)
+            : m_registration(std::make_unique<Registration>()), m_prefix(std::move(prefix)) {
+            m_registration->router = std::move(router);
+        }
+    public:
+        HttpController(const HttpController&) = delete;
+        HttpController& operator=(const HttpController&) = delete;
+        HttpController(HttpController&&) noexcept = default;
+        HttpController& operator=(HttpController&&) noexcept = default;
+        void route(Method method, std::string path, Handler handler) {
+            if (!m_registration) throw std::logic_error("Controller has been moved");
+            if (!path.empty() && path.front() == '/') path.erase(0, 1);
+            auto fullPath = m_prefix + (path.empty() ? "" : "/" + path);
+            if (fullPath.empty()) fullPath = "/";
+            validateRoute(method, fullPath, handler);
+            auto key = std::make_pair(method, std::move(fullPath));
+            auto& registration = *m_registration;
+            registration.keys.push_back(key);
+            try {
+                if (!registration.router->routes.emplace(key, std::move(handler)).second)
+                    throw std::logic_error("HTTP route already registered");
+            } catch (...) { registration.keys.pop_back(); throw; }
+        }
+        void get(std::string path, Handler handler) { route(Method::Get, std::move(path), std::move(handler)); }
+        void post(std::string path, Handler handler) { route(Method::Post, std::move(path), std::move(handler)); }
+        void put(std::string path, Handler handler) { route(Method::Put, std::move(path), std::move(handler)); }
+        void remove(std::string path, Handler handler) { route(Method::Delete, std::move(path), std::move(handler)); }
+        void head(std::string path, Handler handler) { route(Method::Head, std::move(path), std::move(handler)); }
+        void options(std::string path, Handler handler) { route(Method::Options, std::move(path), std::move(handler)); }
+    };
+    HttpController controller(std::string prefix) {
+        validateRoute(Method::Get, prefix, [](const seasocks::Request&) { return seasocks::Response::unhandled(); });
+        while (!prefix.empty() && prefix.back() == '/') prefix.pop_back();
+        return HttpController(m_router, std::move(prefix));
+    }
     static std::shared_ptr<seasocks::Response> reply(seasocks::ResponseCode status, std::string body,
             std::string contentType = "text/plain", std::map<std::string, std::string> headers = {}) {
         for (const auto& header : headers) {
@@ -84,12 +130,17 @@ public:
         return std::make_shared<Reply>(status, std::move(body), std::move(contentType), std::move(headers));
     }
     void route(Method method, std::string path, Handler handler) {
-        if (method == Method::Invalid || method == Method::WebSocket || path.empty() ||
-            path.front() != '/' || path.find_first_of("?#") != std::string::npos || !handler)
-            throw std::invalid_argument("Invalid HTTP route");
+        validateRoute(method, path, handler);
         if (!m_router->routes.emplace(std::make_pair(method, std::move(path)), std::move(handler)).second)
             throw std::logic_error("HTTP route already registered");
     }
     std::shared_ptr<seasocks::PageHandler> handler() const { return m_router; }
+private:
+    static void validateRoute(Method method, const std::string& path, const Handler& handler) {
+        if (method == Method::Invalid || method == Method::WebSocket || path.empty() ||
+            path.front() != '/' || path.find_first_of("?#") != std::string::npos || !handler)
+            throw std::invalid_argument("Invalid HTTP route");
+    }
 };
+using HttpController = HttpServerService::HttpController;
 } // namespace voltxp

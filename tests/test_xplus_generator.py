@@ -35,7 +35,7 @@ class XPlusGeneratorTests(unittest.TestCase):
             for relative in ('client/src/App.x.hpp', 'client/src/components/Button.x.hpp',
                              'client/public/index.html', 'client/public/session.js', 'client/public/http.js',
                              'client/src/services/HttpClientService.hpp',
-                             'HTTP.md', 'server/HttpRoutes.hpp', 'server/services/HttpServerService.hpp',
+                             'HTTP.md', 'server/controllers/ExampleController.hpp', 'server/services/HttpServerService.hpp',
                              'server/seasocks_impl.cpp', 'server/network/SessionHandler.hpp',
                              'server/sessions/Session.hpp', 'server/sessions/SessionDI.hpp',
                              'server/sessions/SessionBase.hpp',

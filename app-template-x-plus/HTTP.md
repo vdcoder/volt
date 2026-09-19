@@ -6,15 +6,40 @@ handlers and callers choose the body format. Native outbound HTTP is deferred.
 
 ## Server routes
 
-Register application endpoints in `server/HttpRoutes.hpp`. `main.cpp` calls this
-once after DI registration and attaches the service's handler to Seasocks.
+Each application controller is a DI service, registered after its providers in
+`server/AppDI.hpp`. The template's `controllers/ExampleController.hpp` owns hello
+and echo. `main.cpp` only attaches the HTTP service to Seasocks.
 
 ```cpp
-http.route(voltxp::HttpServerService::Method::Get, "/api/hello",
-    [](const seasocks::Request& request) {
-        return seasocks::Response::jsonResponse(R"({"message":"hello"})");
-    });
+class StudentsController {
+    voltxp::HttpController m_routes;
+public:
+    StudentsController(voltxp::HttpServerService& http)
+        : m_routes(http.controller("/api/students")) {
+        m_routes.get("/", [](const seasocks::Request&) {
+            return voltxp::HttpServerService::reply(
+                seasocks::ResponseCode::Ok, "[]", "application/json");
+        });
+    }
+};
+// In AppDI::registerDependencies, after HttpServerService:
+registerDependency<StudentsController>(std::make_unique<StudentsController>(
+    resolveDependency<voltxp::HttpServerService>()));
 ```
+
+`http.controller(prefix)` returns a move-only route owner. Keep it as a member;
+a temporary/local owner unregisters its routes when it leaves scope. Prefix
+trailing slashes are trimmed; `"/"` or `""` as the local route maps to the prefix
+itself. `"child"` and `"/child"` both map beneath it. A prefix of `"/"` represents
+the server root. Request paths themselves remain exact (no redirect or decoding).
+
+Controllers provide `get`, `post`, `put`, `remove` (HTTP DELETE), `head`, `options`,
+and `route(Method, path, handler)`. Destroying a controller removes only its own
+routes, including when its constructor fails partway through registration. Reverse
+DI teardown removes controllers before their providers. Callbacks may capture
+`this`; declare the route owner after callback-used members so it is destroyed
+first, and do not destroy the controller/release DI from inside an active handler.
+The lower-level service `route(...)` remains available for service-lifetime routes.
 
 Paths match exactly, excluding the query string. Read the original URI/query with
 `request.getRequestUri()`, headers with `getHeader`, and raw body bytes with

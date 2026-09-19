@@ -52,7 +52,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="HttpRoutes.hpp" />
+    <ClInclude Include="controllers\ExampleController.hpp" />
     <ClInclude Include="services\HttpServerService.hpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="sessions\Session.cpp" />

@@ -1,6 +1,7 @@
 #pragma once
 #include <DependencyInjection.hpp>
 #include "services/HttpServerService.hpp"
+#include "controllers/ExampleController.hpp"
 #include "sessions/SessionRegistry.hpp"
 #include "sessions/Session.hpp"
 
@@ -11,6 +12,8 @@ public:
     void registerDependencies() {
         registerDependency<voltxp::HttpServerService>(std::make_unique<voltxp::HttpServerService>());
         registerDependency<SessionRegistry<Session>>(std::make_unique<SessionRegistry<Session>>());
+        registerDependency<ExampleController>(std::make_unique<ExampleController>(
+            resolveDependency<voltxp::HttpServerService>()));
     }
 
     void releaseDependencies() noexcept override {

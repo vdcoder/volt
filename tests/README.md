@@ -189,3 +189,17 @@ node tests/check-http-client.cjs output/http-client.js
 
 It verifies method/header/body forwarding, response headers, module isolation, HTTP
 errors, network errors, timeout, cancellation, late completion, and disposal.
+
+## HTTP controller ownership
+
+After building a generated Debug server, run from a VS Developer PowerShell
+(replace `../your-app` with that app's directory):
+
+```powershell
+cl /nologo /std:c++17 /EHsc /W4 /MDd /Iapp-template-x-plus/shared /I../your-app/dependencies/seasocks/src/main/c tests/test_http_controller.cpp ../your-app/intermediate/Debug/server/seasocks_impl.obj ../your-app/intermediate/Debug/server/wepoll.obj /Fe:output/http-controller.exe /Fo:output/http-controller.obj /link ws2_32.lib
+./output/http-controller.exe
+```
+
+Checks cover prefix joining, root routes, duplicate registration, constructor-failure
+cleanup, moves, generic handler errors, and removing routes during DI teardown.
+The live `test_http.py` checks the template's DI-owned ExampleController endpoints.

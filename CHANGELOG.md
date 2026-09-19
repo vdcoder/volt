@@ -13,6 +13,8 @@ https://semver.org/spec/v2.0.0.html
 
 ### Added
 
+- DI-owned HTTP controllers via `http.controller(prefix)`, with method helpers
+  and automatic route removal on controller destruction or failed construction.
 - X+ `HttpServerService` with exact method/path routes and cookie-independent
   hello/echo endpoints, plus a browser `HttpClientService` using fetch with
   response headers, HTTP/network error distinction, timeout, cancellation and disposal.
