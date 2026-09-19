@@ -19,6 +19,10 @@ Local modifications in Connection.cpp:
 - Reply with an empty WebSocket Close frame before closing TCP on a peer Close;
   upstream immediately shut down TCP, causing modern clients to report an error.
 
+Local modifications in Server.cpp / Server.h:
+- `Server::listeningPort()` reports the actual bound IPv4 port, allowing Desktop to
+  start a server on OS-assigned port 0 without a free-port reservation race.
+
 generated/internal/Config.h corresponds to upstream Config.h.in
 with version 1.4.6 and deflateEnabled=false. generated/Embedded.cpp was generated
 with scripts/gen_embedded.py from the seven files listed in src/main/web/CMakeLists.txt.

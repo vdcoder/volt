@@ -5,8 +5,9 @@ This template uses normal `.sln` and `.vcxproj` files; no CMake or editor extens
 
 ## What ships with X+
 
-- A Visual Studio solution with two C++ projects: **Client** builds the Volt X
-  browser app with Emscripten; **Server** builds a native Windows executable with MSVC.
+- A Visual Studio solution with three C++ projects: **Client** builds the Volt X
+  browser app with Emscripten; **Server** builds a native Windows executable with MSVC;
+  **[Desktop](DESKTOP.md)** hosts the client in an Edge WebView2 window with its own hidden server.
 - The Volt X starter UI: counter, conditional panel, and a keyed fruit list.
 - Debug and Release configurations, separate web/server outputs, and Build,
   Rebuild, Clean, and native run/debug settings.
@@ -26,8 +27,8 @@ This template uses normal `.sln` and `.vcxproj` files; no CMake or editor extens
 - A first-pass [typed memory store](MEMORY-STORE.md) with reusable generational
   handles, store-aware field/container views, and a compositional Student example.
 
-The SDK and Visual Studio are prerequisites, not bundled dependencies. There is
-no automatic browser launch, live reload, DSL editor extension, or browser WASM
+The Emscripten SDK and Visual Studio are prerequisites, not bundled dependencies. There is
+no live reload, DSL editor extension, or browser WASM
 debugger integration. The browser automatically connects to `/session`;
 `/ws` remains an echo test endpoint.
 
@@ -96,6 +97,9 @@ Open http://127.0.0.1:8000/. Ctrl+C stops the console server; stop it before reb
 F5 debugs the Windows server, not the browser's WebAssembly. The browser is opened
 manually; the same URL works for both configurations.
 
+For a Windows 11 desktop window, set **Desktop** as startup project and press F5.
+Its first build restores the WebView2 SDK from NuGet; see [Desktop setup and distribution](DESKTOP.md).
+
 Tested with Emscripten 6.0.9; the build uses `-m64` for MEMORY64 and its default
 BigInt integration. Use a browser with WebAssembly memory64 support.
 
@@ -121,6 +125,10 @@ server/
   seasocks_impl.cpp              Seasocks C++ unity translation unit
   AppDI.hpp                     Server service registration and teardown
   ApplicationServices.hpp       Server services() accessor
+desktop/
+  Desktop.vcxproj                Native WebView2 host; depends on Server
+  main.cpp                      Window and WebView2 setup
+  DesktopServer.hpp             Hidden server process ownership
 shared/
   DependencyInjection.hpp        Standard C++17 container in namespace voltxp
 dependencies/
@@ -131,9 +139,11 @@ tools/
   build-client.cmd              SDK discovery and PowerShell entry point
   build-client.ps1              Preprocess, compile, copy browser assets
   preprocesor.py                Copied from the Volt X preprocessor
+  restore-webview2.ps1           Restore the pinned WebView2 SDK on first build
 output/<Debug|Release>/
   web/                          Complete static website
   server/Server.exe              Native server (outside the served folder)
+  desktop/Desktop.exe            Desktop entry point (outside the served folder)
 intermediate/<Debug|Release>/    Generated C++ and compiler intermediates
 ```
 

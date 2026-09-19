@@ -203,3 +203,20 @@ cl /nologo /std:c++17 /EHsc /W4 /MDd /Iapp-template-x-plus/shared /I../your-app/
 Checks cover prefix joining, root routes, duplicate registration, constructor-failure
 cleanup, moves, generic handler errors, and removing routes during DI teardown.
 The live `test_http.py` checks the template's DI-owned ExampleController endpoints.
+
+## Desktop host
+
+On Windows 11 with the WebView2 Evergreen Runtime installed, build all three
+projects in a generated starter app, then run:
+
+```powershell
+python tests/test_desktop.py ../your-app/output/Debug/desktop/Desktop.exe
+python tests/test_desktop.py ../your-app/output/Release/desktop/Desktop.exe
+```
+
+Runs actual WebView2 instances hidden and verifies MEMORY64 rendering, the HTTP
+hello action, the Front/Back data round trip, independent concurrent servers,
+normal shutdown, host termination cleanup, unexpected server exit, and missing
+server/client artifacts. The test
+uses Desktop's opt-in `--smoke-test <report-file>` mode and the unchanged starter UI.
+Browser profiles/logs use the same local app-data directory as normal Desktop runs.

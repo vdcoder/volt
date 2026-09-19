@@ -6,12 +6,18 @@ Project("{BC8A1FFA-BEE3-4634-8014-F334798102B3}") = "Server", "server\Server.vcx
 EndProject
 Project("{BC8A1FFA-BEE3-4634-8014-F334798102B3}") = "Client", "client\Client.vcxproj", "{VOLT_CLIENT_PROJECT_GUID}"
 EndProject
+Project("{BC8A1FFA-BEE3-4634-8014-F334798102B3}") = "Desktop", "desktop\Desktop.vcxproj", "{VOLT_DESKTOP_PROJECT_GUID}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{VOLT_DESKTOP_PROJECT_GUID}.Debug|x64.ActiveCfg = Debug|x64
+		{VOLT_DESKTOP_PROJECT_GUID}.Debug|x64.Build.0 = Debug|x64
+		{VOLT_DESKTOP_PROJECT_GUID}.Release|x64.ActiveCfg = Release|x64
+		{VOLT_DESKTOP_PROJECT_GUID}.Release|x64.Build.0 = Release|x64
 		{VOLT_SERVER_PROJECT_GUID}.Debug|x64.ActiveCfg = Debug|x64
 		{VOLT_SERVER_PROJECT_GUID}.Debug|x64.Build.0 = Debug|x64
 		{VOLT_SERVER_PROJECT_GUID}.Release|x64.ActiveCfg = Release|x64

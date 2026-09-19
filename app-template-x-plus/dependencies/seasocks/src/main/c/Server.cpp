@@ -293,6 +293,14 @@ void Server::terminate() {
 #endif
 }
 
+int Server::listeningPort() const {
+    sockaddr_in address{};
+    socklen_t length = sizeof(address);
+    if (getsockname(_listenSock, reinterpret_cast<sockaddr*>(&address), &length) != 0)
+        return 0;
+    return ntohs(address.sin_port);
+}
+
 bool Server::startListening(int port) {
     return startListening(INADDR_ANY, port);
 }

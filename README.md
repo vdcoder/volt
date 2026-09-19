@@ -142,7 +142,7 @@ Run one, two, or a hundred applications on the same page, each isolated by a GUI
 - `create-volt-app.sh` — instant project scaffolding (Linux / macOS)  
 - `create-volt-app.ps1` — native Windows PowerShell scaffolding  
 - Choose **Raw C++** or **Volt X** template
-- Or choose **[Volt X+](app-template-x-plus/README.md)** (`-Template 'x+'`) for a Visual Studio 2026 solution, Debug/Release browser builds, and a native Windows HTTP/WebSocket server.
+- Or choose **[Volt X+](app-template-x-plus/README.md)** (`-Template 'x+'`) for a Visual Studio 2026 solution, Debug/Release browser builds, a native Windows HTTP/WebSocket server, and an optional WebView2 Desktop host.
 - Simple Python preprocessor
 - Clear, debuggable output
 - Clean project layout
@@ -158,7 +158,7 @@ Run one, two, or a hundred applications on the same page, each isolated by a GUI
 |---|---|---|
 | `x` (default) | Volt X DSL client and Python preprocessor | Script build; serve the browser output |
 | `raw` | Plain C++ client sources without the DSL preprocessing step | Script-based starter |
-| `x+` | Volt X client, native Seasocks HTTP/WebSocket server, and a Visual Studio solution | Windows / Visual Studio 2026; Debug and Release |
+| `x+` | Volt X client, native Seasocks HTTP/WebSocket server, WebView2 Desktop host, and a Visual Studio solution | Windows / Visual Studio 2026; Debug and Release |
 
 ### Volt X+ with Visual Studio 2026
 
@@ -172,6 +172,8 @@ git clone https://github.com/vdcoder/volt.git
 
 Open `my-app/my-app.sln` in Visual Studio with the SDK environment available.
 Select Debug or Release, build with **Ctrl+Shift+B**, and run **Server** with **F5**.
+Or set **Desktop** as the startup project for a Windows 11 window with its own hidden server;
+see [Desktop setup](app-template-x-plus/DESKTOP.md).
 Browse [http://127.0.0.1:8000/](http://127.0.0.1:8000/).
 
 X+ ships the client UI, server, build tools, and local Volt/Seasocks dependencies.

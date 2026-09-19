@@ -91,6 +91,9 @@ public:
     // Returns true if all was ok.
     bool startListening(int port);
 
+    // Actual IPv4 port, including the OS-assigned port when listening on port 0.
+    int listeningPort() const;
+
     // Starts listening on a unix domain socket.
     // Returns true if all was ok.
     bool startListeningUnix(const char* socketPath);

@@ -17,6 +17,7 @@ class XPlusGeneratorTests(unittest.TestCase):
             app = generator.create_app('refresh', 'refresh', Path(temporary) / 'app', True)
             project = app / 'client/Client.vcxproj'
             before = ET.parse(project).findtext('.//{*}ProjectGuid')
+            desktop_before = ET.parse(app / 'desktop/Desktop.vcxproj').findtext('.//{*}ProjectGuid')
             (app / 'client/src/custom.hpp').write_text('VOLT_APP_NAME stays untouched')
             (app / 'client/src/App.x.hpp').write_text('old app')
             (app / '.git').mkdir()
@@ -27,6 +28,7 @@ class XPlusGeneratorTests(unittest.TestCase):
             self.assertEqual((app / '.git/sentinel').read_text(), 'keep')
             self.assertEqual(ET.parse(project).findtext('.//{*}ProjectGuid'), before)
             self.assertIn(before, (app / 'refresh.sln').read_text())
+            self.assertEqual(ET.parse(app / 'desktop/Desktop.vcxproj').findtext('.//{*}ProjectGuid'), desktop_before)
 
     def test_self_contained_app_and_unique_project_ids(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -35,7 +37,8 @@ class XPlusGeneratorTests(unittest.TestCase):
             for relative in ('client/src/App.x.hpp', 'client/src/components/Button.x.hpp',
                              'client/public/index.html', 'client/public/session.js', 'client/public/http.js',
                              'client/src/services/HttpClientService.hpp',
-                             'HTTP.md', 'server/controllers/ExampleController.hpp', 'server/services/HttpServerService.hpp',
+                             'desktop/main.cpp', 'desktop/DesktopServer.hpp', 'desktop/Desktop.vcxproj',
+                             'tools/restore-webview2.ps1', 'DESKTOP.md', 'HTTP.md', 'server/controllers/ExampleController.hpp', 'server/services/HttpServerService.hpp',
                              'server/seasocks_impl.cpp', 'server/network/SessionHandler.hpp',
                              'server/sessions/Session.hpp', 'server/sessions/SessionDI.hpp',
                              'server/sessions/SessionBase.hpp',
@@ -68,13 +71,18 @@ class XPlusGeneratorTests(unittest.TestCase):
                 server = ET.parse(app / 'server/Server.vcxproj')
                 client_id = client.find('.//m:ProjectGuid', ns).text
                 server_id = server.find('.//m:ProjectGuid', ns).text
+                desktop = ET.parse(app / 'desktop/Desktop.vcxproj')
+                desktop_id = desktop.find('.//m:ProjectGuid', ns).text
+                self.assertEqual(desktop.find('.//m:ProjectReference/m:Project', ns).text, server_id)
                 self.assertEqual(server.find('.//m:ProjectReference/m:Project', ns).text, client_id)
                 solution = next(app.glob('*.sln')).read_text()
                 self.assertIn(client_id, solution)
                 self.assertIn(server_id, solution)
                 self.assertNotIn('VOLT_', solution)
-                ids.extend((client_id, server_id))
-            self.assertEqual(len(set(ids)), 4)
+                self.assertIn(desktop_id, solution)
+                self.assertNotIn("VOLT_", (app / "desktop/main.cpp").read_text())
+                ids.extend((client_id, server_id, desktop_id))
+            self.assertEqual(len(set(ids)), 6)
 
     def test_existing_destination_and_invalid_names_are_rejected(self):
         with tempfile.TemporaryDirectory() as temporary:

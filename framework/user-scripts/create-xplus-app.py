@@ -32,6 +32,7 @@ def create_app(name, guid, destination, no_git, overwrite=False):
         return str(uuid.uuid4()).upper()
     client_guid = project_guid('client/Client.vcxproj')
     server_guid = project_guid('server/Server.vcxproj')
+    desktop_guid = project_guid('desktop/Desktop.vcxproj')
     shutil.copytree(template, destination, dirs_exist_ok=overwrite)
     shutil.copytree(repo / 'framework/include', destination / 'dependencies/volt/include', dirs_exist_ok=overwrite)
     shutil.copytree(repo / 'framework/src', destination / 'dependencies/volt/src', dirs_exist_ok=overwrite)
@@ -42,10 +43,12 @@ def create_app(name, guid, destination, no_git, overwrite=False):
         'VOLT_APP_NAME': name,
         'VOLT_CLIENT_PROJECT_GUID': client_guid,
         'VOLT_SERVER_PROJECT_GUID': server_guid,
+        'VOLT_DESKTOP_PROJECT_GUID': desktop_guid,
     }
     # Only our template files are substituted, never dependency sources/binaries.
     files = [destination / file.relative_to(template) for file in (template / 'client').rglob('*')]
     files += [destination / file.relative_to(template) for file in (template / 'server').glob('*.vcxproj')]
+    files += [destination / file.relative_to(template) for file in (template / 'desktop').rglob('*')]
     files += [destination / 'VOLT_APP_NAME.sln']
     for file in files:
         if not file.is_file() or file.suffix not in ('.cpp', '.hpp', '.h', '.c', '.vcxproj', '.sln', '.html'):
@@ -63,7 +66,7 @@ def create_app(name, guid, destination, no_git, overwrite=False):
             subprocess.run(['git', *args], cwd=destination, check=True)
     print(f'Created Volt X+: {destination}')
     print(f'Open {name}.sln in Visual Studio 2026. Build with Ctrl+Shift+B; run Server with F5.')
-    print('Browse http://127.0.0.1:8000/ (WebSocket echo: /ws).')
+    print('Browse http://127.0.0.1:8000/ (WebSocket echo: /ws), or set Desktop as startup project for a native window.')
     return destination
 
 

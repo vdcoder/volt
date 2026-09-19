@@ -20,6 +20,8 @@ namespace fs = std::filesystem;
 struct Options {
     fs::path staticRoot;
     int port = 8000;
+    HANDLE readyPipe = nullptr;
+    HANDLE stopEvent = nullptr;
 };
 
 fs::path defaultStaticRoot()
@@ -46,12 +48,27 @@ int parsePort(std::string_view value)
 
 Options parseOptions(int argc, char* argv[])
 {
-    if (argc > 3)
+    const bool desktop = argc == 4 && std::string_view(argv[1]) == "--desktop";
+    if (!desktop && argc > 3)
         throw std::runtime_error("Usage: Server.exe [static-folder] [port]");
 
     Options options;
-    options.staticRoot = fs::absolute(argc > 1 ? fs::path(argv[1]) : defaultStaticRoot());
-    if (argc > 2)
+    options.staticRoot = fs::absolute(!desktop && argc > 1 ? fs::path(argv[1]) : defaultStaticRoot());
+    if (desktop) {
+        auto handle = [](std::string_view value) {
+            uintptr_t number = 0;
+            auto parsed = std::from_chars(value.data(), value.data() + value.size(), number);
+            DWORD flags = 0;
+            auto result = reinterpret_cast<HANDLE>(number);
+            if (parsed.ec != std::errc{} || parsed.ptr != value.data() + value.size()
+                || !number || !GetHandleInformation(result, &flags))
+                throw std::runtime_error("Invalid desktop control handle");
+            return result;
+        };
+        options.port = 0;
+        options.readyPipe = handle(argv[2]);
+        options.stopEvent = handle(argv[3]);
+    } else if (argc > 2)
         options.port = parsePort(argv[2]);
     if (!fs::is_regular_file(options.staticRoot / "index.html"))
         throw std::runtime_error("Static folder has no index.html. Build Client first: "
@@ -112,9 +129,17 @@ int main(int argc, char* argv[])
             return 1;
         }
         SetConsoleCtrlHandler(consoleControl, TRUE);
-        std::cout << "Serving " << options.staticRoot << "\nHTTP: http://127.0.0.1:" << options.port
-                  << "/\nWebSocket echo: ws://127.0.0.1:" << options.port << "/ws\nCtrl+C to stop.\n";
-        while (!stopping.load()) {
+        const auto port = static_cast<uint16_t>(server.listeningPort());
+        if (options.readyPipe) {
+            DWORD written = 0;
+            const bool ready = port && WriteFile(options.readyPipe, &port, sizeof(port), &written, nullptr)
+                && written == sizeof(port);
+            CloseHandle(options.readyPipe);
+            if (!ready) throw std::runtime_error("Cannot notify Desktop that server is ready");
+        }
+        std::cout << "Serving " << options.staticRoot << "\nHTTP: http://127.0.0.1:" << port
+                  << "/\nWebSocket echo: ws://127.0.0.1:" << port << "/ws\nCtrl+C to stop.\n";
+        while (!stopping.load() && (!options.stopEvent || WaitForSingleObject(options.stopEvent, 0) == WAIT_TIMEOUT)) {
             sessions->poll();
             const auto result = server.poll(100);
             if (result == seasocks::Server::PollResult::Error)
@@ -123,6 +148,7 @@ int main(int argc, char* argv[])
                 break;
         }
         SetConsoleCtrlHandler(consoleControl, FALSE);
+        if (options.stopEvent) CloseHandle(options.stopEvent);
         return 0;
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';
