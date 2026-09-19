@@ -13,6 +13,12 @@ https://semver.org/spec/v2.0.0.html
 
 ### Added
 
+- Windows 11 x64 X+ Desktop project: a WebView2 window, hidden owned Server,
+  OS-assigned loopback port reported through a pipe, and shutdown/crash cleanup.
+  Includes Debug/Release configuration, pinned WebView2 SDK restore, app-generator
+  integration, documentation, and real WebView2 integration tests.
+  Fresh-system setup and distribution testing remain pending.
+
 - DI-owned HTTP controllers via `http.controller(prefix)`, with method helpers
   and automatic route removal on controller destruction or failed construction.
 - X+ `HttpServerService` with exact method/path routes and cookie-independent

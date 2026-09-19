@@ -22,15 +22,22 @@ using [Microsoft's WebView2 distribution guidance](https://learn.microsoft.com/e
 The SDK is a build dependency; it does not install the browser runtime. The loader
 is linked statically, so there is no separate WebView2Loader.dll to copy.
 
-Debug enables browser context menus and developer tools (F12); Release disables
-them. F5 debugs Desktop's native host; attach separately to Server for server-side
+Debug enables browser context menus and developer tools (F12 or Ctrl+Shift+I);
+Release disables them. F5 debugs Desktop's native host; attach separately to Server for server-side
 breakpoints. This does not add Visual Studio debugging of browser WebAssembly.
+
+To debug the hidden server while Desktop is running, use **Debug → Attach to
+Process…**, select its **Server.exe**, and choose Native debugging. Attaching
+after launch misses early server startup. Pausing either event loop can trigger
+the current heartbeat timeout and reconnect/reset behavior; there is no automatic
+child-process debugger attachment or debugger-specific heartbeat exemption.
 
 ## Lifetime and files
 
 Each window starts its own loopback server on an OS-assigned port, receives its
-readiness notification, then navigates to that port. It can run alongside the normal
-Server on port 8000. Each Desktop window has independent in-memory server data.
+readiness notification through an inherited anonymous pipe, then navigates to
+that port. The pipe carries the port as a two-byte integer; no port text file is
+used. It can run alongside the normal Server on port 8000. Each Desktop window has independent in-memory server data.
 The ordinary Server startup project and command line still work as before.
 
 An inherited event requests normal server shutdown. After a short grace period,
@@ -55,3 +62,9 @@ port, and result to the report, then exits. It is for testing the unmodified sta
 normal launches do not inspect or manipulate the app's UI.
 Tests use a separate `test-profile` in the app-data directory and disable browser
 background throttling so that a hidden test window can render the client reliably.
+
+## Validation status
+
+Debug and Release builds, embedded-client HTTP/data exchanges, concurrent instances,
+and process cleanup have been tested on the development machine. Fresh-system
+installation, prerequisite discovery, and distribution testing remain pending.

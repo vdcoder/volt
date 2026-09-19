@@ -30,7 +30,8 @@ inside the dedicated `client/generated` subtree, leaving IDE logs untouched.
 - PowerShell and Git Bash creation entry points both generate X+ successfully.
 - Generator tests check standalone dependency copies, unique/matching project
   GUIDs, names, output paths with spaces, and refusal to overwrite an existing app.
-- Debug and Release build both projects successfully with MEMORY64 (`-m64`).
+- Debug and Release built the original Client and Server projects successfully
+  with MEMORY64 (`-m64`); Desktop validation is recorded below.
 - HTTP bytes match all browser artifacts, including the 3.6 MB Debug WASM;
   correct WASM MIME type, 404 responses, text/binary WebSocket echoes and clean close.
 - Debug Clean leaves Release intact. Rebuild restores HTML, CSS, bootstrap JS,
@@ -204,7 +205,7 @@ Checks cover prefix joining, root routes, duplicate registration, constructor-fa
 cleanup, moves, generic handler errors, and removing routes during DI teardown.
 The live `test_http.py` checks the template's DI-owned ExampleController endpoints.
 
-## Desktop host
+## Desktop host — verified September 19, 2026
 
 On Windows 11 with the WebView2 Evergreen Runtime installed, build all three
 projects in a generated starter app, then run:
@@ -220,3 +221,6 @@ normal shutdown, host termination cleanup, unexpected server exit, and missing
 server/client artifacts. The test
 uses Desktop's opt-in `--smoke-test <report-file>` mode and the unchanged starter UI.
 Browser profiles/logs use the same local app-data directory as normal Desktop runs.
+
+These checks passed on the development machine. Fresh-system setup and distribution
+testing remain pending; generated-app tests do not substitute for that validation.

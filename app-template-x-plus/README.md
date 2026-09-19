@@ -9,7 +9,7 @@ This template uses normal `.sln` and `.vcxproj` files; no CMake or editor extens
   browser app with Emscripten; **Server** builds a native Windows executable with MSVC;
   **[Desktop](DESKTOP.md)** hosts the client in an Edge WebView2 window with its own hidden server.
 - The Volt X starter UI: counter, conditional panel, and a keyed fruit list.
-- Debug and Release configurations, separate web/server outputs, and Build,
+- Debug and Release configurations, separate web/server/desktop outputs, and Build,
   Rebuild, Clean, and native run/debug settings.
 - The Python DSL preprocessor and existing `#line` source mapping for compiler errors.
 - Local copies of Volt headers, `volt.js`, and pinned Seasocks sources/resources
@@ -22,7 +22,7 @@ This template uses normal `.sln` and `.vcxproj` files; no CMake or editor extens
   connection status shown in the starter UI.
 - Binary session messages with a uint16 talker ID, symmetric C++ handler registries,
   reserved connection-control talker zero and a server echo example on talker one.
-- A standard C++ dependency container shared by both projects, app-owned `AppDI`
+- A standard C++ dependency container shared by Client and Server, app-owned `AppDI`
   classes, and client `services()` / `invalidate()` helpers for async code.
 - A first-pass [typed memory store](MEMORY-STORE.md) with reusable generational
   handles, store-aware field/container views, and a compositional Student example.
@@ -78,7 +78,7 @@ targets Windows/Visual Studio. Python 3 must be available to either creator.
 | Volt instance ID | `-Guid my_app_v1` | `--guid my_app_v1` | App name |
 | Skip Git initialization | `-NoGit` | `--no-git` | Initialize and commit the generated app |
 
-Choose a new destination: creation refuses to overwrite an existing directory.
+Choose a new destination: by default, creation refuses to overwrite an existing directory.
 App names start with a letter and use letters, digits, `_`, or `-`; the GUID uses
 the same characters without the initial-letter restriction. The GUID identifies
 the Volt instance and is separate from the generated Visual Studio project GUIDs.
@@ -98,14 +98,16 @@ F5 debugs the Windows server, not the browser's WebAssembly. The browser is open
 manually; the same URL works for both configurations.
 
 For a Windows 11 desktop window, set **Desktop** as startup project and press F5.
-Its first build restores the WebView2 SDK from NuGet; see [Desktop setup and distribution](DESKTOP.md).
+The solution build includes Desktop and restores its WebView2 SDK from NuGet
+on first build; see [Desktop setup and distribution](DESKTOP.md).
 
 Tested with Emscripten 6.0.9; the build uses `-m64` for MEMORY64 and its default
 BigInt integration. Use a browser with WebAssembly memory64 support.
 
-SDK discovery checks `EMSDK`, then `em++` on PATH, then `.tools/emsdk` in this app
+Emscripten discovery checks `EMSDK`, then `em++` on PATH, then `.tools/emsdk` in this app
 or its parent directory. The SDK must already be installed and activated. No
-SDK is downloaded by Build. Restart Visual Studio after changing its environment.
+Emscripten SDK is downloaded by Build; Desktop restores its separate WebView2 SDK.
+Restart Visual Studio after changing its environment.
 
 ## Files
 
@@ -147,14 +149,15 @@ output/<Debug|Release>/
 intermediate/<Debug|Release>/    Generated C++ and compiler intermediates
 ```
 
-The x64 label selects native server architecture; the browser uses MEMORY64.
-Debug builds use `-O0 -g`, assertions, and Volt logging. Release uses `-O2 -DNDEBUG`.
+The x64 label selects the native Server and Desktop architecture; the browser uses MEMORY64.
+Client Debug builds use `-O0 -g`, assertions, and Volt logging. Client Release
+uses `-O2 -DNDEBUG`.
 Both use C++20, Embind, and the `VoltApp` module expected by VoltBootstrap.
 Client C++ exception handling is enabled for service registration/resolution errors.
 
 Edit UI code in `client/src/App.x.hpp` and components under `client/src/components/`.
-Place HTML, CSS, and other static assets in `client/public/`. Edit native serving
-and WebSocket behavior in `server/main.cpp`. `app.json` stores the app name and
+Place HTML, CSS, and other static assets in `client/public/`. Edit server wiring in `server/main.cpp`, HTTP routes in `server/controllers/`,
+and per-session behavior in `server/sessions/Session.cpp`. `app.json` stores the app name and
 the `guid` used on subsequent client builds. Never edit generated output as source.
 
 Every requested Client build preprocesses its source tree and copies public assets
@@ -211,8 +214,8 @@ compiled separately as C; the C++ sources are included through `seasocks_impl.cp
 ## Application services
 
 `voltxp` names the X+ utilities: `voltxp::DependencyInjection` is standard C++17
-in `shared/`; `voltxp::VoltRuntimeService` is client-only. Each project owns its
-own `AppDI.hpp` and `ApplicationServices.hpp`. Include `ApplicationServices.hpp`
+in `shared/`; `voltxp::VoltRuntimeService` is client-only. Client and Server each have
+their own `AppDI.hpp` and `ApplicationServices.hpp`. Include `ApplicationServices.hpp`
 where you need the app's global `services()` accessor (or client `invalidate()`).
 `services()` returns **`AppDI&`**, so app-specific methods remain available; it
 can also be passed to code accepting `voltxp::DependencyInjection&`.
@@ -232,7 +235,9 @@ registerDependency<StoreService>(std::make_unique<StoreService>(
 Here `StoreService` is your own service, with a constructor taking
 `voltxp::VoltRuntimeService&`; it is not supplied by the template. The runtime
 service is registered first using a non-owning reference to the app's engine.
-The server has its own initially empty registration method and no Volt runtime.
+Server registers `HttpServerService`, `SessionRegistry<Session>`, and
+`ExampleController`; it has no Volt runtime. Desktop hosts the processes and
+browser window and does not have a separate application DI container.
 
 From client code, including an async callback belonging to the module:
 
@@ -279,9 +284,9 @@ container while callbacks or UI code still use it.
 
 New `x+` apps receive these files automatically. Updating the Volt checkout does
 not update generated apps. For an existing app, generate a fresh X+ app beside
-it and compare `shared/`, both `AppDI.hpp` / `ApplicationServices.hpp` pairs,
-the client runtime service, both project files, `tools/build-client.ps1`, and
-the startup code in both `main` files. Preserve your app-specific registrations,
+it and compare the solution, all three project files, `client/`, `server/`,
+`desktop/`, `shared/`, `tools/`, and dependency changes. Include the Seasocks
+`listeningPort()` addition when adopting Desktop. Preserve your app-specific registrations,
 sources, project GUIDs, and settings. The client build needs the shared include
 path and `-fexceptions`; copying the headers alone is insufficient.
 
@@ -308,9 +313,11 @@ registration, request callbacks, timeouts, cancellation, and browser CORS bounda
 | `em++ not found` | Launch VS from the activated SDK terminal, set `EMSDK` before starting VS, or use the documented local `.tools/emsdk` layout. An already-running VS does not inherit later terminal changes. |
 | Missing v145 toolset or Windows SDK | Install the Desktop development with C++ workload in VS 2026. |
 | Python unavailable during creation | Activate the SDK first so `EMSDK_PYTHON` is set, or install Python 3 on PATH. |
-| F5 tries to launch HTML | Set **Server** as the startup project. |
+| F5 tries to launch HTML | Set **Server** for a console server or **Desktop** for the embedded browser window as the startup project. |
 | Server cannot listen | Stop the other process using port 8000, or supply another port. |
-| Server executable cannot be overwritten | Stop its previous run before building. |
+| Server executable cannot be overwritten | Stop its previous run, including any Desktop instance that owns it, before building. |
+| WebView2 SDK restore fails | The first Desktop build needs access to NuGet. Check connectivity; the SDK cache is `.tools/webview2/`. |
+| Desktop cannot create WebView2 | Check the Evergreen Runtime and the error/log information described in [Desktop setup](DESKTOP.md). |
 | An older generated app tries to delete `Client.log` | Update its `tools/build-client.ps1` from this template; generated files must be under `client/generated`, below the MSBuild log directory. |
 
 This workflow has been tested on the development machine, including browser

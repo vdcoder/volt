@@ -14,7 +14,7 @@ replication and clean-slate connection resets are described in
 using namespace voltxp;
 using namespace voltxp::examples;
 
-auto& store = authoringMemoryStore();
+MemoryStore store;                  // standalone local example, not a connected service
 auto serviceRoot = store.createRoot();
 auto studentListHandle = store.createContainer(serviceRoot);
 StudentList students(store, studentListHandle);
@@ -115,7 +115,8 @@ already-bound fields. Reads remain available. This moves enforcement from templa
 types to runtime checks, so callers can accept `const Student&` from either store.
 The explicit `apply` and `restore` replication operations can update a read-only
 store without generating outgoing changes. `apply` rejects author stores;
-`restore` also supports resetting an author to the server's accepted reconnect state.
+`restore` is a legacy in-memory helper that also accepts author stores. The live
+protocol never uses it for reconnect recovery; it resets to empty stores instead.
 
 Stores must outlive all views pointing to them. They are non-copyable/non-movable
 and root deletion retains generation history. Replica snapshot restoration replaces
@@ -132,9 +133,15 @@ several `Field<T>` members.
 The chosen server ownership model is one Front/Back store pair per session,
 including server-authored Back data. The session owns its stores and change handlers;
 its connection supplies network context. No root-routing metadata is needed
-inside slots or change records. Session/network integration remains future work.
+inside slots or change records. `DataConnection` supplies this integration over
+the session's Front/Back binary talkers.
 
-`destroyRoot(handle)` is explicitly a caller-owned root operation. It validates
+The examples above use standalone stores and caller-created roots. Connected
+Front/Back services initialize container slot zero and expose it through
+`store.root()`. Add your containers beneath that root; do not create or destroy
+service roots over the wire. Rebind views after a connection reset.
+
+`destroyRoot(handle)` is explicitly a caller-owned root operation for standalone storage. It validates
 that the handle is live, but cannot prove that it is a root: the store retains
 no ancestry metadata or root registry. Calling it on a nested container would
 leave a dangling membership in its owner. Use `removeItem(parent, child)` for
@@ -167,7 +174,7 @@ Install another handler, or `{}` to remove it, outside callback execution.
 
 Callbacks run on the owning thread and may read the store, but must not mutate it,
 restore it, or replace its handler during notification. Exceptions propagate;
-the mutation remains committed. Transport failures require disconnect/resync,
+the mutation remains committed. Transport failures require disconnect and a clean-slate connection,
 not local rollback or retry. The callback receives its record by value and may
 move it into a serializer; references must not outlive the callback argument.
 

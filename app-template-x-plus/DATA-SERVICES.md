@@ -157,7 +157,8 @@ server/
   network/SessionHandler.hpp        Seasocks/cookie/takeover adapter
   sessions/
     SessionRegistry.hpp             finds or creates sessions by cookie ID
-    Session.hpp                     stable identity and per-session DI
+    SessionBase.hpp                 stable identity and per-session DI
+    Session.hpp                     app-defined session and lifecycle overrides
     SessionDI.hpp                   register application services here
     Session.cpp                     app-specific startup and close hooks
     services/SessionWebsocketService.hpp
@@ -228,7 +229,8 @@ returning; launching async work does not preserve its completion order.
 `Session::onStarted()` registers talker 1 as a small binary echo example. A client wishing to
 use it registers its own handler at ID 1 and sends arbitrary bytes there. Replace
 that example registration as the application grows. The independent `/ws` echo
-endpoint remains unchanged. Front/Back change serialization is still future work.
+endpoint remains unchanged. Front/Back change serialization uses `MemoryWire.hpp`
+and talkers 2 and 3, as described above.
 
 In the browser, `binaryType = 'arraybuffer'` avoids asynchronous Blob conversion.
 JavaScript handles talker-zero controls; other payloads go through the module's
