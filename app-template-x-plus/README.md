@@ -62,6 +62,14 @@ the SDK environment:
 devenv .\my-app\my-app.sln
 ```
 
+If the SDK is not on PATH or in one of the [local folders](#emscripten-sdk) Volt checks,
+pass it explicitly during app creation. The path is saved in the app, so Visual Studio
+builds find the SDK however Visual Studio was started:
+
+```powershell
+.\volt\framework\user-scripts\create-volt-app.ps1 my-app -Template 'x+' -OutputDir .\my-app -EmsdkPath .\emsdk
+```
+
 PowerShell uses **one dash**: `-Template 'x+'`. In Git Bash the equivalent is:
 
 ```bash
@@ -77,6 +85,7 @@ targets Windows/Visual Studio. Python 3 must be available to either creator.
 | Destination | `-OutputDir .\my-app` | `--output ./my-app` | Sibling of the Volt repository |
 | Volt instance ID | `-Guid my_app_v1` | `--guid my_app_v1` | App name |
 | Skip Git initialization | `-NoGit` | `--no-git` | Initialize and commit the generated app |
+| Emscripten SDK folder | `-EmsdkPath 'C:\path\to\emsdk'` | `--emsdk-path '/c/path/to/emsdk'` | Not saved; found at build time (see [Emscripten SDK](#emscripten-sdk)) |
 
 Choose a new destination: by default, creation refuses to overwrite an existing directory.
 App names start with a letter and use letters, digits, `_`, or `-`; the GUID uses
@@ -104,10 +113,32 @@ on first build; see [Desktop setup and distribution](DESKTOP.md).
 Tested with Emscripten 6.0.9; the build uses `-m64` for MEMORY64 and its default
 BigInt integration. Use a browser with WebAssembly memory64 support.
 
-Emscripten discovery checks `EMSDK`, then `em++` on PATH, then `.tools/emsdk` in this app
-or its parent directory. The SDK must already be installed and activated. No
+### Emscripten SDK
+
+`tools/build-client.cmd` looks for the SDK in this order and uses the first match:
+
+1. `emsdk-path.txt` in the app folder, written by `-EmsdkPath` / `--emsdk-path`.
+2. The `EMSDK` environment variable.
+3. `em++` already on PATH.
+4. `.tools/emsdk` in the app or its parent folder, or an `emsdk` folder beside the app.
+
+If none is found, the build stops with an error listing what it checked.
+Visual Studio only sees the environment it was started with: activating the SDK
+in a terminal after Visual Studio is open does not reach it. Option 1 avoids this,
+so it is the most reliable choice for IDE builds. With options 2 and 3, restart
+Visual Studio after changing its environment.
+
+`emsdk-path.txt` holds one line: the emsdk folder that contains `emsdk_env.bat`,
+for example `C:\emsdk`. A relative path is resolved from the app folder. The file is
+machine-specific, so the generated `.gitignore` excludes it. To add or change it
+later, edit the file or create it yourself:
+
+```powershell
+Set-Content -LiteralPath .\my-app\emsdk-path.txt -Value 'C:\path\to\emsdk'
+```
+
+The SDK must already be installed and activated once with `emsdk activate`. No
 Emscripten SDK is downloaded by Build; Desktop restores its separate WebView2 SDK.
-Restart Visual Studio after changing its environment.
 
 ## Files
 
@@ -310,7 +341,9 @@ registration, request callbacks, timeouts, cancellation, and browser CORS bounda
 
 | Symptom | What to check |
 |---|---|
-| `em++ not found` | Launch VS from the activated SDK terminal, set `EMSDK` before starting VS, or use the documented local `.tools/emsdk` layout. An already-running VS does not inherit later terminal changes. |
+| `Emscripten SDK not found` or `em++ not found` (MSB3073) | Save the SDK folder in the app's `emsdk-path.txt` (or recreate the app with `-EmsdkPath` / `--emsdk-path`). Otherwise launch VS from the activated SDK terminal, set `EMSDK` before starting VS, or use a [local SDK folder](#emscripten-sdk). An already-running VS does not inherit later terminal changes. |
+| `emsdk-path.txt names ..., which has no emsdk_env.bat` | The saved SDK folder moved or was deleted. Fix the path in `emsdk-path.txt`, or delete the file to fall back to `EMSDK`, PATH and local folders. |
+| `has no active version, so em++ is still not on PATH` | Run `emsdk activate <version>` once in that SDK folder. |
 | Missing v145 toolset or Windows SDK | Install the Desktop development with C++ workload in VS 2026. |
 | Python unavailable during creation | Activate the SDK first so `EMSDK_PYTHON` is set, or install Python 3 on PATH. |
 | F5 tries to launch HTML | Set **Server** for a console server or **Desktop** for the embedded browser window as the startup project. |

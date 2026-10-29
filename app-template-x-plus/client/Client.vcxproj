@@ -28,7 +28,11 @@
     <NMakeCleanCommandLine>call &quot;$(ProjectDir)..\tools\build-client.cmd&quot; clean $(Configuration)</NMakeCleanCommandLine>
     <NMakeOutput>$(OutDir)index.html</NMakeOutput>
     <NMakePreprocessorDefinitions>__EMSCRIPTEN__;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
-    <NMakeIncludeSearchPath Condition="'$(EMSDK)' != ''">$(EMSDK)\upstream\emscripten\cache\sysroot\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <!-- IntelliSense only; tools\build-client.cmd resolves the SDK for builds. -->
+    <VoltEmsdkPathFile>$(ProjectDir)..\emsdk-path.txt</VoltEmsdkPathFile>
+    <VoltEmsdk Condition="Exists('$(VoltEmsdkPathFile)')">$([System.IO.File]::ReadAllText('$(VoltEmsdkPathFile)').Trim())</VoltEmsdk>
+    <VoltEmsdk Condition="'$(VoltEmsdk)' == ''">$(EMSDK)</VoltEmsdk>
+    <NMakeIncludeSearchPath Condition="'$(VoltEmsdk)' != ''">$(VoltEmsdk)\upstream\emscripten\cache\sysroot\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
     <NMakeAdditionalOptions>/std:c++20 $(NMakeAdditionalOptions)</NMakeAdditionalOptions>
     <NMakeIncludeSearchPath>$(ProjectDir)..\shared;$(ProjectDir)..\dependencies\volt\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>

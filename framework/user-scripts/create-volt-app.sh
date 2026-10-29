@@ -55,13 +55,19 @@ Options:
                              x        -> app-template-x
                              x+       -> app-template-x-plus (Windows / VS 2026)
     --no-git               Don't initialize git repository
+    --emsdk-path <dir>     Emscripten SDK folder, absolute or relative, saved in
+                           the app's emsdk-path.txt so builds find it without an
+                           activated shell. Must contain emsdk_env.sh (raw, x)
+                           or emsdk_env.bat (x+).
     --help, -h             Show this help message
 
 Examples:
     ./create-volt-app.sh my-awesome-app
     ./create-volt-app.sh my-app --guid "myapp_v1"
-    ./create-volt-app.sh my-app --template default
+    ./create-volt-app.sh my-app --template raw
     ./create-volt-app.sh my-app --output ~/projects/my-app
+    ./create-volt-app.sh my-app --emsdk-path ~/emsdk
+    ./create-volt-app.sh my-app --template 'x+' --emsdk-path '/c/path/to/emsdk'
 
 EOF
 }
@@ -71,6 +77,7 @@ APP_NAME=""
 APP_GUID=""
 OUTPUT_DIR=""
 INIT_GIT=true
+EMSDK_PATH=""
 # default to X template now
 TEMPLATE_VARIANT="x"
 
@@ -91,6 +98,14 @@ while [[ $# -gt 0 ]]; do
         --no-git)
             INIT_GIT=false
             shift
+            ;;
+        --emsdk-path)
+            if [ $# -lt 2 ] || [ -z "$2" ]; then
+                print_error "--emsdk-path needs the Emscripten SDK folder"
+                exit 1
+            fi
+            EMSDK_PATH="$2"
+            shift 2
             ;;
         --help|-h)
             show_usage
@@ -125,6 +140,22 @@ if [ -z "$OUTPUT_DIR" ]; then
     OUTPUT_DIR="$SCRIPT_DIR/../../../$APP_NAME"
 fi
 
+# Check --emsdk-path before creating anything. Only the path is saved; nothing is installed.
+# x+ builds on Windows through emsdk_env.bat; the raw and x build.sh use emsdk_env.sh.
+EMSDK_SAVED=""
+if [ -n "$EMSDK_PATH" ]; then
+    if [ "$TEMPLATE_VARIANT" = "x+" ]; then EMSDK_MARKER="emsdk_env.bat"; else EMSDK_MARKER="emsdk_env.sh"; fi
+    EMSDK_SAVED="$(CDPATH='' cd -- "$EMSDK_PATH" 2>/dev/null && pwd || true)"
+    if [ -z "$EMSDK_SAVED" ] || [ ! -f "$EMSDK_SAVED/$EMSDK_MARKER" ]; then
+        print_error "--emsdk-path must name the emsdk folder that contains $EMSDK_MARKER: $EMSDK_PATH"
+        exit 1
+    fi
+    # Git Bash: save a Windows path so cmd, PowerShell and Visual Studio can use it too.
+    if command -v cygpath > /dev/null 2>&1; then
+        EMSDK_SAVED="$(cygpath -w "$EMSDK_SAVED")"
+    fi
+fi
+
 # Resolve template directory and template-specific filenames
 if [ "$TEMPLATE_VARIANT" = "x+" ]; then
     PYTHON="${EMSDK_PYTHON:-}"
@@ -139,6 +170,7 @@ if [ "$TEMPLATE_VARIANT" = "x+" ]; then
     if [ -z "$PYTHON" ]; then print_error "Python 3 is required to create x+ apps"; exit 1; fi
     CREATE_ARGS=("$SCRIPT_DIR/create-xplus-app.py" "$APP_NAME" --guid "$APP_GUID" --output "$OUTPUT_DIR")
     if [ "$INIT_GIT" = false ]; then CREATE_ARGS+=(--no-git); fi
+    if [ -n "$EMSDK_SAVED" ]; then CREATE_ARGS+=(--emsdk-path "$EMSDK_SAVED"); fi
     exec "$PYTHON" "${CREATE_ARGS[@]}"
 fi
 
@@ -184,6 +216,7 @@ print_info "App Name: $APP_NAME"
 print_info "GUID: $APP_GUID"
 print_info "Template: $TEMPLATE_LABEL"
 print_info "Output Directory: $OUTPUT_DIR"
+if [ -n "$EMSDK_SAVED" ]; then print_info "Emscripten SDK: $EMSDK_SAVED"; fi
 echo ""
 
 # Copy template
@@ -191,6 +224,12 @@ print_info "Copying template files..."
 cp -r "$TEMPLATE_DIR" "$OUTPUT_DIR"
 cp -r "$SCRIPT_DIR/../../framework/src/"*.js "$OUTPUT_DIR/output"
 print_success "Template copied"
+
+if [ -n "$EMSDK_SAVED" ]; then
+    # build.sh reads this file; it is listed in the app's .gitignore.
+    printf '%s\n' "$EMSDK_SAVED" > "$OUTPUT_DIR/emsdk-path.txt"
+    print_success "Emscripten SDK path saved -> emsdk-path.txt"
+fi
 
 # Copy framework
 print_info "Copying framework files..."
@@ -272,7 +311,11 @@ echo ""
 print_info "Next steps:"
 echo ""
 echo "  cd $OUTPUT_DIR"
-echo "  ./build.sh              # Build the app"
+if [ -n "$EMSDK_SAVED" ]; then
+    echo "  ./build.sh              # Build the app (uses the SDK in emsdk-path.txt)"
+else
+    echo "  ./build.sh              # Build the app"
+fi
 echo "  cd output"
 echo "  python3 -m http.server 8001"
 echo "  # Open http://localhost:8001"

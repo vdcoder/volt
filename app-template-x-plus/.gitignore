@@ -5,3 +5,5 @@ intermediate/
 *.user
 __pycache__/
 *.pyc
+# Machine-specific Emscripten SDK folder (create-volt-app -EmsdkPath)
+emsdk-path.txt

@@ -24,6 +24,22 @@ The locked-log check holds a file exclusively open in the client's IntDir while
 Build, Rebuild, Clean, and a subsequent Build run. Generated files must remain
 inside the dedicated `client/generated` subtree, leaving IDE logs untouched.
 
+## Emscripten SDK path option
+
+`test_xplus_generator.py` covers `--emsdk-path` for X+: paths with spaces, relative
+paths saved as absolute, refresh with and without the option, the `.gitignore` entry,
+and invalid folders rejected before anything is created.
+
+Still to verify on Windows (raw, x and x+; through `tools\build-client.cmd` directly
+and through a Visual Studio build for x+):
+
+1. Created with `-EmsdkPath`, Visual Studio started normally (no SDK in its environment).
+2. Created without it, `EMSDK` set.
+3. Created without it, `em++` on PATH.
+4. An invalid `-EmsdkPath` gives a clear error and creates nothing.
+
+The Bash creator and `build.sh` lookup order were checked on Linux with a stub SDK.
+
 ## Verified September 16, 2026
 
 - Visual Studio 2026 18.10.1, MSVC v145, Emscripten 6.0.9, Node 24.19.0.

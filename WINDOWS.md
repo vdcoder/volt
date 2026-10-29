@@ -19,6 +19,16 @@ classes, global `services()` access, and a client `invalidate()` helper for asyn
 updates. See [application services](app-template-x-plus/README.md#application-services)
 for registration and teardown rules.
 
+If EMSDK is not on PATH or in the default local layout, pass it explicitly during
+app creation. The value is saved in the app's `emsdk-path.txt` and used by the
+build scripts of every template (`raw`, `x`, `x+`), including Visual Studio builds:
+
+```powershell
+.\volt\framework\user-scripts\create-volt-app.ps1 my-app -Template 'x+' -EmsdkPath 'C:\path\to\emsdk'
+```
+
+The Git Bash equivalent is `--emsdk-path '/c/path/to/emsdk'`.
+
 Full Windows support for Volt — create apps, build to WebAssembly, and run in any browser, without leaving PowerShell.
 
 ---
@@ -115,13 +125,20 @@ PARAMETERS
     -OutputDir    Where to create the app (default: <repo>/../<AppName>)
     -Template     "x" (default), "raw", or "x+"
     -NoGit        Skip git init
+    -EmsdkPath    Emscripten SDK folder (must contain emsdk_env.bat), absolute
+                  or relative to the current directory. Saved in the app's
+                  emsdk-path.txt for its build scripts. Default: not saved.
 
 EXAMPLES
     .\create-volt-app.ps1 my-app
     .\create-volt-app.ps1 my-app -Template x -Guid my-app-v1
     .\create-volt-app.ps1 my-app -Template 'x+' -NoGit
     .\create-volt-app.ps1 my-app -OutputDir C:\Projects\my-app -NoGit
+    .\create-volt-app.ps1 my-app -Template 'x+' -EmsdkPath 'C:\path\to\emsdk'
 ```
+
+`-EmsdkPath` only records the folder; it does not install or download anything.
+An invalid folder stops creation before any files are written.
 
 For `x+`, the creator produces a solution, Client/Server projects, isolated Debug
 and Release outputs, and local framework/server dependencies. Its detailed
@@ -135,6 +152,7 @@ For the existing `x` and `raw` layout, it:
 - Copies `volt.js` to `output/`
 - (X template) Copies the Windows-patched `preprocesor.py`
 - Generates a `build.ps1` for the app
+- With `-EmsdkPath`, writes `emsdk-path.txt` (listed in the app's `.gitignore`)
 - Optionally runs `git init` with an initial commit
 
 ### `build.ps1`
@@ -156,10 +174,11 @@ PARAMETERS
 
 What it does:
 
-1. Runs the Python preprocessor on all `*.x.*` source files → `_generated/src/`
-2. Writes a Clang response file (`_build_flags.rsp`) for GUID quoting
-3. Invokes `emcc` with all the right flags
-4. Copies `index.html` and `global.css` to `output/`
+1. Finds and, if needed, activates the Emscripten SDK (see [Finding the Emscripten SDK](#finding-the-emscripten-sdk))
+2. Runs the Python preprocessor on all `*.x.*` source files → `_generated/src/`
+3. Writes a Clang response file (`_build_flags.rsp`) for GUID quoting
+4. Invokes `emcc` with all the right flags
+5. Copies `index.html` and `global.css` to `output/`
 
 ---
 
@@ -172,6 +191,28 @@ You must source it again if you open a new terminal:
 
 ```powershell
 . C:\path\to\emsdk\emsdk_env.ps1
+```
+
+Visual Studio is no different: it only sees the environment it was started with.
+To avoid depending on the shell at all, save the SDK folder in the app (below).
+
+### Finding the Emscripten SDK
+
+`build.ps1`, `build.sh` and X+'s `tools\build-client.cmd` look for the SDK in this
+order and use the first match:
+
+1. `emsdk-path.txt` in the app folder, written by `-EmsdkPath` / `--emsdk-path`
+2. The `EMSDK` environment variable
+3. `emcc` / `em++` already on PATH
+4. `.tools\emsdk` in the app or its parent folder, or an `emsdk` folder beside the app
+
+The chosen SDK is activated for that build only. `emsdk-path.txt` holds one line,
+the emsdk folder (for example `C:\emsdk`); a relative path is resolved from the app
+folder. It is machine-specific and excluded by the app's `.gitignore`. To add it to
+an existing app:
+
+```powershell
+Set-Content -LiteralPath .\emsdk-path.txt -Value 'C:\path\to\emsdk'
 ```
 
 ### ExecutionPolicy
@@ -217,11 +258,18 @@ Again, handled automatically — `build.ps1` passes the output path to the prepr
 
 ## Troubleshooting
 
-### `emcc not found`
-You need to activate Emscripten first:
+### `emcc not found` / `em++ not found` / `Emscripten SDK not found`
+Save the SDK folder in the app so every build finds it, including Visual Studio:
+```powershell
+Set-Content -LiteralPath .\emsdk-path.txt -Value 'C:\path\to\emsdk'
+```
+For a new app, pass `-EmsdkPath 'C:\path\to\emsdk'` (Git Bash: `--emsdk-path`)
+instead. Or activate Emscripten in the shell first:
 ```powershell
 . C:\path\to\emsdk\emsdk_env.ps1
 ```
+For Visual Studio, activation must happen before Visual Studio starts; restart it
+after changing its environment. See [Finding the Emscripten SDK](#finding-the-emscripten-sdk).
 
 ### `Preprocessor failed`
 Make sure `$env:EMSDK_PYTHON` is set (it is after activating emsdk). The build script uses the emsdk-bundled Python, which has all required modules.

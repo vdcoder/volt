@@ -5,8 +5,9 @@
 
 .DESCRIPTION
     Mirrors build.sh but runs natively on Windows PowerShell.
-    Requires Emscripten (emcc) in PATH.
-    Tip: run   . <path-to-emsdk>\emsdk_env.ps1   first.
+    Finds the Emscripten SDK in this order: emsdk-path.txt next to this script
+    (written by create-volt-app.ps1 -EmsdkPath), EMSDK, emcc on PATH, then
+    .tools\emsdk in this app or its parent, or an emsdk folder beside the app.
 
 .PARAMETER Guid
     VOLT_GUID for this app (default: APP_GUID_PLACEHOLDER)
@@ -27,9 +28,70 @@ Write-Host "  Volt Build  -  APP_NAME_PLACEHOLDER" -ForegroundColor Cyan
 Write-Host "=================================================================" -ForegroundColor Cyan
 Write-Host ""
 
-# --- prereqs ----------------------------------------------------------------
-if (-not (Get-Command emcc -ErrorAction SilentlyContinue)) {
-    Fail "emcc not found. Source emsdk first:`n  . <emsdk_dir>\emsdk_env.ps1"
+# --- Emscripten SDK ---------------------------------------------------------
+# First match wins:
+#   1. emsdk-path.txt next to this script (create-volt-app.ps1 -EmsdkPath writes it)
+#   2. the EMSDK environment variable
+#   3. emcc already on PATH
+#   4. .tools\emsdk in this app or its parent, or an emsdk folder beside the app
+# The chosen SDK is activated for this build unless this shell already has it active.
+function Test-EmsdkDir([string]$dir) {
+    return [bool]$dir -and (Test-Path -LiteralPath (Join-Path $dir 'emsdk_env.ps1') -PathType Leaf)
+}
+function Get-NormalDir([string]$dir) {
+    if ($dir) { return [IO.Path]::GetFullPath($dir).TrimEnd('\', '/') }
+}
+
+$emcc = Get-Command emcc -ErrorAction SilentlyContinue
+$emsdkDir = $null
+$emsdkFrom = $null
+$emsdkFile = Join-Path $PSScriptRoot 'emsdk-path.txt'
+if (Test-Path -LiteralPath $emsdkFile -PathType Leaf) {
+    $saved = Get-Content -LiteralPath $emsdkFile -Encoding UTF8 |
+        ForEach-Object { $_.Trim() } | Where-Object { $_ } | Select-Object -First 1
+    if ($saved) {
+        # Relative paths are resolved from the app folder.
+        $emsdkDir = [IO.Path]::GetFullPath([IO.Path]::Combine($PSScriptRoot, $saved))
+    }
+    if (-not (Test-EmsdkDir $emsdkDir)) {
+        Fail ("emsdk-path.txt must name the emsdk folder (the one containing emsdk_env.ps1).`n" +
+              "  It names: $saved`n" +
+              "  Fix the path in that file, or delete it to use EMSDK, PATH or a local SDK folder.")
+    }
+    $emsdkFrom = 'emsdk-path.txt'
+} elseif ($env:EMSDK) {
+    $emsdkDir = $env:EMSDK
+    $emsdkFrom = 'EMSDK'
+    if (-not $emcc -and -not (Test-EmsdkDir $emsdkDir)) {
+        Fail "EMSDK is $emsdkDir, which has no emsdk_env.ps1."
+    }
+} elseif (-not $emcc) {
+    foreach ($candidate in @('.tools\emsdk', '..\.tools\emsdk', '..\emsdk')) {
+        $candidate = Join-Path $PSScriptRoot $candidate
+        if (Test-EmsdkDir $candidate) {
+            $emsdkDir = [IO.Path]::GetFullPath($candidate)
+            $emsdkFrom = 'local folder'
+            break
+        }
+    }
+}
+
+$alreadyActive = $emcc -and $env:EMSDK -and ((Get-NormalDir $env:EMSDK) -eq (Get-NormalDir $emsdkDir))
+if ($emsdkDir -and -not $alreadyActive) {
+    Info "Activating Emscripten SDK ($emsdkFrom): $emsdkDir"
+    $env:EMSDK_QUIET = '1'
+    & (Join-Path $emsdkDir 'emsdk_env.ps1') | Out-Null
+    $emcc = Get-Command emcc -ErrorAction SilentlyContinue
+    if (-not $emcc) {
+        Fail "The Emscripten SDK in $emsdkDir has no active version.`n  Run once: & '$emsdkDir\emsdk.ps1' activate latest"
+    }
+}
+
+if (-not $emcc) {
+    Fail ("emcc not found. Checked emsdk-path.txt, EMSDK, PATH, and .tools\emsdk or ..\emsdk near this app.`n" +
+          "  Fix one of:`n" +
+          "    - Save the SDK folder for this app:  Set-Content emsdk-path.txt 'C:\path\to\emsdk'`n" +
+          "    - Activate it in this shell:         . C:\path\to\emsdk\emsdk_env.ps1")
 }
 
 $python = if ($env:EMSDK_PYTHON) { $env:EMSDK_PYTHON } else { "python" }
