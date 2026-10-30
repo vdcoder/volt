@@ -131,7 +131,8 @@ New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
 
 Info "Compiling to WebAssembly..."
 
-# GUID quoting: PowerShell -> emcc.ps1 (Python) strips shell quotes.
+# GUID quoting: passed from PowerShell, -DVOLT_GUID="..." loses its inner
+# quotes before reaching the compiler.
 # Solution: write a clang response file with backslash-escaped quotes.
 # Clang reads response files directly, bypassing all shell quoting layers.
 $responseFile = Join-Path $PSScriptRoot "_build_flags.rsp"
@@ -151,13 +152,16 @@ $emccArgs = @(
     "-s", "MODULARIZE=1",
     "-s", "EXPORT_NAME=VoltApp",
     "-s", 'EXPORTED_RUNTIME_METHODS=["ccall","cwrap"]',
+    "-m64",             # MEMORY64, like every Volt template
     "--bind",
     "-O0",
     "-g"
 )
 
-& emcc @emccArgs
-if ($LASTEXITCODE -ne 0) { Fail "emcc failed (exit $LASTEXITCODE)" }
+# em++ links the C++ standard library (std::string etc.) on every Emscripten
+# version; plain emcc stopped doing so in 6.0.6.
+& em++ @emccArgs
+if ($LASTEXITCODE -ne 0) { Fail "em++ failed (exit $LASTEXITCODE)" }
 
 # --- copy HTML / CSS --------------------------------------------------------
 Copy-Item (Join-Path $PSScriptRoot "index.html") $outputDir -Force

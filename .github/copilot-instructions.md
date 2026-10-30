@@ -59,7 +59,7 @@ public:
 - **Single TU compilation**: Include `VoltRuntime.cpp` in `main.cpp`
 - **Include paths**: Use `-I./dependencies/volt/include` flag, then `#include <Volt.hpp>`
 - **Emscripten binding pattern**: Export runtime functions for JS callbacks
-- **Command**: `emcc src/main.cpp -DVOLT_GUID="..." -I./dependencies/volt/include -lembind -std=c++17 -O3`
+- **Command**: `em++ src/main.cpp -DVOLT_GUID="..." -I./dependencies/volt/include -lembind -std=c++20 -m64 -O3` (use `em++`, not `emcc`: since Emscripten 6.0.6 only `em++` links the C++ standard library; `-m64` selects 64-bit memory and needs Emscripten 6.0.0+)
 
 ## Critical Patterns
 

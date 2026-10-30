@@ -11,6 +11,15 @@ https://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+### Changed
+
+- `build.sh` uses `-m64` instead of the deprecated `-s MEMORY64=1`, and drops the
+  deprecated `-s WASM_BIGINT=1`. The compiled output is byte-identical; only the
+  deprecation warnings go away.
+- The Windows `build.ps1` for `raw` and `x` now builds with 64-bit memory (`-m64`)
+  like every other template. Volt is 64-bit only.
+- Minimum Emscripten version is 6.0.0, the first release that honors `-m64`.
+
 ### Added
 
 - App creators accept the Emscripten SDK folder: `-EmsdkPath` (PowerShell) and
@@ -71,6 +80,10 @@ https://semver.org/spec/v2.0.0.html
 
 ### Fixed
 
+- `raw` and `x` builds failed to link with Emscripten 6.0.6 and newer (undefined
+  `std::string` symbols), because plain `emcc` no longer links the C++ standard
+  library. `build.sh` and the Windows `build.ps1` now compile with `em++`, which
+  links it on every Emscripten version. X+ already used `em++`.
 - Use an explicit 64-bit Embind wire type for Volt event pointers under MEMORY64,
   preserving the existing wasm32 pointer representation.
 - Keep X+ generated client files separate from Visual Studio's active build logs.

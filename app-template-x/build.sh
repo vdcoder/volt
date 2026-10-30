@@ -149,7 +149,9 @@ echo "   GUID: $GUID"
 echo "   Namespace: volt_$GUID_DISPLAY"
 echo "   Using sources from: $GENERATED_DIR/src"
 
-emcc "$MAIN_SRC" \
+# em++ links the C++ standard library (std::string etc.) on every Emscripten
+# version; plain emcc stopped doing so in 6.0.6. -m64 selects MEMORY64.
+em++ "$MAIN_SRC" \
     -DVOLT_GUID=\"$GUID\" \
     -DDEBUG \
     -DVOLT_ENABLE_LOG \
@@ -162,8 +164,7 @@ emcc "$MAIN_SRC" \
     -s MODULARIZE=1 \
     -s EXPORT_NAME="VoltApp" \
     -s EXPORTED_RUNTIME_METHODS='["ccall","cwrap"]' \
-    -s MEMORY64=1 \
-    -s WASM_BIGINT=1 \
+    -m64 \
     --bind \
     -O0 \
     -g

@@ -40,6 +40,25 @@ and through a Visual Studio build for x+):
 
 The Bash creator and `build.sh` lookup order were checked on Linux with a stub SDK.
 
+## Build flags: em++ and -m64 — verified October 30, 2026
+
+Linux, Emscripten 6.0.13, Chromium 153 (Playwright). Before the change, the `x`
+template failed to link (undefined `std::string` symbols, because `emcc` no longer
+links libc++ from 6.0.6) and warned that `MEMORY64` and `WASM_BIGINT` are deprecated.
+
+- `x` `build.sh` (`em++`, `-m64`) builds with no warnings. Its output is
+  byte-identical to `em++` with the old `-s MEMORY64=1 -s WASM_BIGINT=1`, and to
+  `emcc -sDEFAULT_TO_CXX`. The wasm uses 64-bit memory (`memory i64`).
+- In the browser: counter, panel toggle, add and keyed remove, with no page or
+  console errors.
+- The Windows `build.ps1` argument list (response-file GUID, `em++`, `-m64`) was
+  replayed on Linux in both forms PowerShell 5.1 and 7 pass `EXPORTED_RUNTIME_METHODS`:
+  identical 64-bit output, same browser checks pass. Running it through PowerShell
+  on Windows is still pending.
+- X+ client Debug and Release (unchanged; already `em++ -m64`) build with no warnings.
+- `raw` still stops at its existing source errors (see below); the error list is
+  unchanged by the new flags.
+
 ## Verified September 16, 2026
 
 - Visual Studio 2026 18.10.1, MSVC v145, Emscripten 6.0.9, Node 24.19.0.
