@@ -13,6 +13,17 @@ https://semver.org/spec/v2.0.0.html
 
 ### Added
 
+- App creators accept the Emscripten SDK folder: `-EmsdkPath` (PowerShell) and
+  `--emsdk-path` (Bash), for `raw`, `x` and `x+`. The path is checked before anything
+  is created (`emsdk_env.bat` for Windows flows, `emsdk_env.sh` for Bash `raw`/`x`)
+  and saved in the app's git-ignored `emsdk-path.txt`. X+ `tools/build-client.cmd`,
+  `build.ps1` and `build.sh` read it first, so Visual Studio builds no longer depend
+  on the environment Visual Studio was started with.
+- One SDK lookup order for every build script: `emsdk-path.txt`, `EMSDK`, compiler on
+  PATH, then `.tools/emsdk` in the app or its parent or an `emsdk` folder beside the app.
+  `build.ps1` and `build.sh` now activate a found SDK themselves. Failures name what
+  was checked and how to fix it, as a Visual Studio Error List entry for X+.
+
 - Windows 11 x64 X+ Desktop project: a WebView2 window, hidden owned Server,
   OS-assigned loopback port reported through a pipe, and shutdown/crash cleanup.
   Includes Debug/Release configuration, pinned WebView2 SDK restore, app-generator

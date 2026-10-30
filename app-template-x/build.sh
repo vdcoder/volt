@@ -20,11 +20,75 @@ set -e
 
 echo "⚡ Building Volt App (X template)..."
 
+# Find the Emscripten SDK. First match wins:
+#   1. emsdk-path.txt next to this script (create-volt-app --emsdk-path writes it)
+#   2. the EMSDK environment variable
+#   3. emcc already on PATH
+#   4. .tools/emsdk in this app or its parent, or an emsdk folder beside the app
+# The chosen SDK is activated for this build unless it is already active.
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+to_unix_path() {
+    # Git Bash: emsdk-path.txt and EMSDK may hold Windows paths.
+    if command -v cygpath &> /dev/null; then cygpath -u "$1"; else printf '%s\n' "$1"; fi
+}
+same_dir() {
+    [ -d "$1" ] && [ -d "$2" ] && [ "$(cd "$1" && pwd -P)" = "$(cd "$2" && pwd -P)" ]
+}
+EMSDK_DIR=""
+EMSDK_FROM=""
+if [ -f "$APP_DIR/emsdk-path.txt" ]; then
+    EMSDK_DIR="$(awk '{ sub(/\r$/, ""); gsub(/^[ \t]+|[ \t]+$/, "") } $0 != "" { print; exit }' "$APP_DIR/emsdk-path.txt")"
+    if [ -n "$EMSDK_DIR" ]; then
+        EMSDK_DIR="$(to_unix_path "$EMSDK_DIR")"
+        case "$EMSDK_DIR" in /*) ;; *) EMSDK_DIR="$APP_DIR/$EMSDK_DIR" ;; esac
+    fi
+    if [ -z "$EMSDK_DIR" ] || [ ! -f "$EMSDK_DIR/emsdk_env.sh" ]; then
+        echo "❌ Error: emsdk-path.txt must name the emsdk folder (the one containing emsdk_env.sh)."
+        echo "   It names: ${EMSDK_DIR:-(nothing)}"
+        echo "   Fix the path in that file, or delete it to use EMSDK, PATH or a local SDK folder."
+        exit 1
+    fi
+    EMSDK_FROM="emsdk-path.txt"
+elif [ -n "${EMSDK:-}" ]; then
+    EMSDK_DIR="$(to_unix_path "$EMSDK")"
+    EMSDK_FROM="EMSDK"
+    if ! command -v emcc &> /dev/null && [ ! -f "$EMSDK_DIR/emsdk_env.sh" ]; then
+        echo "❌ Error: EMSDK is $EMSDK, which has no emsdk_env.sh."
+        exit 1
+    fi
+elif ! command -v emcc &> /dev/null; then
+    for CANDIDATE in "$APP_DIR/.tools/emsdk" "$APP_DIR/../.tools/emsdk" "$APP_DIR/../emsdk"; do
+        if [ -f "$CANDIDATE/emsdk_env.sh" ]; then
+            EMSDK_DIR="$(cd "$CANDIDATE" && pwd)"
+            EMSDK_FROM="local folder"
+            break
+        fi
+    done
+fi
+if [ -n "$EMSDK_DIR" ] && command -v emcc &> /dev/null && [ -n "${EMSDK:-}" ] &&
+   { [ "$EMSDK_FROM" = "EMSDK" ] || same_dir "$EMSDK_DIR" "$(to_unix_path "$EMSDK")"; }; then
+    EMSDK_DIR=""   # this shell already has the chosen SDK active
+fi
+if [ -n "$EMSDK_DIR" ]; then
+    echo "🔧 Activating Emscripten SDK ($EMSDK_FROM): $EMSDK_DIR"
+    export EMSDK_QUIET=1
+    set +e
+    source "$EMSDK_DIR/emsdk_env.sh" > /dev/null
+    set -e
+    if ! command -v emcc &> /dev/null; then
+        echo "❌ Error: the Emscripten SDK in $EMSDK_DIR has no active version."
+        echo "   Run once: \"$EMSDK_DIR/emsdk\" activate latest"
+        exit 1
+    fi
+fi
+
 # Check if emcc is available
 if ! command -v emcc &> /dev/null; then
     echo "❌ Error: Emscripten not found!"
-    echo "   Please source the Emscripten environment:"
-    echo "   source ~/emsdk/emsdk_env.sh"
+    echo "   Checked emsdk-path.txt, EMSDK, emcc on PATH, and .tools/emsdk or ../emsdk near this app."
+    echo "   Fix one of:"
+    echo "   - Save the SDK folder for this app:  echo ~/emsdk > emsdk-path.txt"
+    echo "   - Activate it in this shell:         source ~/emsdk/emsdk_env.sh"
     exit 1
 fi
 

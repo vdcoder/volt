@@ -170,6 +170,11 @@ git clone https://github.com/vdcoder/volt.git
 .\volt\framework\user-scripts\create-volt-app.ps1 my-app -Template 'x+' -OutputDir .\my-app
 ```
 
+If EMSDK is not on PATH or in the default local layout, add `-EmsdkPath 'C:\path\to\emsdk'`
+(Git Bash: `--emsdk-path '/c/path/to/emsdk'`). The path is saved in the generated app and
+used by the build scripts of every template (`raw`, `x`, `x+`), so Visual Studio
+builds no longer depend on the shell it was started from.
+
 Open `my-app/my-app.sln` in Visual Studio with the SDK environment available.
 Select Debug or Release, build with **Ctrl+Shift+B**, and run **Server** with **F5**.
 Or set **Desktop** as the startup project for a Windows 11 window with its own hidden server;
@@ -257,6 +262,9 @@ cd my-app
 cd output
 python -m http.server 8001
 ```
+
+To skip activation, create the app with `-EmsdkPath <path-to-emsdk>`: `build.ps1`
+then activates that SDK itself. See [Finding the Emscripten SDK](WINDOWS.md#finding-the-emscripten-sdk).
 
 Open → **http://localhost:8001**
 

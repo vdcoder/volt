@@ -22,6 +22,19 @@ python3 -m http.server 8001
 # Open http://localhost:8001
 ```
 
+### Emscripten SDK
+
+`build.sh` uses the first SDK it finds: the folder named in `emsdk-path.txt`
+(written when the app was created with `--emsdk-path`), then `EMSDK`, then `emcc`
+on PATH, then `.tools/emsdk` in this app or its parent, or an `emsdk` folder beside
+the app. To pin an SDK for this app:
+
+```bash
+echo ~/emsdk > emsdk-path.txt
+```
+
+The file is machine-specific and listed in `.gitignore`.
+
 ---
 
 ## 📁 Project Structure

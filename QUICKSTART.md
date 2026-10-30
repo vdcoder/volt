@@ -30,7 +30,9 @@ PowerShell uses `-Template` with one dash. The Git Bash equivalent is:
 
 For exact SDK installation and launch commands, follow the
 [Volt X+ guide](app-template-x-plus/README.md). Starting VS from an activated
-Developer PowerShell avoids the common missing-SDK environment issue.
+Developer PowerShell avoids the common missing-SDK environment issue. So does
+passing the SDK folder during creation, which saves it in the app for every build:
+`-EmsdkPath 'C:\path\to\emsdk'` (PowerShell) or `--emsdk-path '/c/path/to/emsdk'` (Git Bash).
 
 The app ships with a Volt X counter/panel/list demo, native Seasocks static
 server, `/ws` echo endpoint, build tools, and local dependency sources. SDKs

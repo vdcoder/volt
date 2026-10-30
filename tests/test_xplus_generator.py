@@ -1,4 +1,5 @@
 import importlib.util
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -98,6 +99,45 @@ class XPlusGeneratorTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 generator.create_app('valid', 'bad"guid', path / 'unused', True)
             self.assertFalse((path / 'unused').exists())
+
+    def test_emsdk_path_is_validated_and_saved(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary)
+            emsdk = path / 'sdk with spaces' / 'emsdk'
+            emsdk.mkdir(parents=True)
+            (emsdk / 'emsdk_env.bat').write_text('@rem stub')
+            app = generator.create_app('sdk-app', 'sdk_app', path / 'app', True, emsdk_path=str(emsdk))
+            saved = (app / 'emsdk-path.txt').read_text(encoding='utf-8').splitlines()
+            self.assertEqual(saved, [str(emsdk)])
+            self.assertIn('emsdk-path.txt', (app / '.gitignore').read_text().splitlines())
+            # Relative paths resolve from the current directory and are saved absolute.
+            previous = os.getcwd()
+            os.chdir(emsdk.parent)
+            try:
+                relative = generator.create_app('rel-app', 'rel_app', path / 'rel', True, emsdk_path='emsdk')
+            finally:
+                os.chdir(previous)
+            self.assertEqual((relative / 'emsdk-path.txt').read_text(encoding='utf-8').strip(), str(emsdk))
+            # Refreshing without the option keeps the saved path; passing it replaces it.
+            generator.create_app('sdk-app', 'sdk_app', app, True, overwrite=True)
+            self.assertEqual((app / 'emsdk-path.txt').read_text(encoding='utf-8').strip(), str(emsdk))
+            other = path / 'other-emsdk'
+            other.mkdir()
+            (other / 'emsdk_env.bat').write_text('@rem stub')
+            generator.create_app('sdk-app', 'sdk_app', app, True, overwrite=True, emsdk_path=str(other))
+            self.assertEqual((app / 'emsdk-path.txt').read_text(encoding='utf-8').strip(), str(other))
+
+    def test_emsdk_path_omitted_or_invalid(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary)
+            app = generator.create_app('plain', 'plain', path / 'plain', True)
+            self.assertFalse((app / 'emsdk-path.txt').exists())
+            not_sdk = path / 'not-sdk'
+            not_sdk.mkdir()
+            for value in (str(not_sdk), str(path / 'missing')):
+                with self.assertRaisesRegex(ValueError, 'emsdk_env.bat'):
+                    generator.create_app('bad', 'bad', path / 'bad', True, emsdk_path=value)
+            self.assertFalse((path / 'bad').exists())
 
 
 if __name__ == '__main__':

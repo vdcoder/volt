@@ -15,3 +15,6 @@ Thumbs.db
 
 # Emscripten cache
 .emscripten_cache/
+
+# Machine-specific Emscripten SDK folder (create-volt-app --emsdk-path)
+emsdk-path.txt

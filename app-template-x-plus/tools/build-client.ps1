@@ -22,7 +22,7 @@ try {
         if ($Action -eq 'clean') { exit 0 }
     }
     $compiler = Get-Command em++ -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
-    if (-not $compiler) { throw 'em++ not found. Set EMSDK, initialize PATH, or install .tools/emsdk in the app or its parent. Invoke tools\build-client.cmd to initialize the SDK.' }
+    if (-not $compiler) { throw 'em++ not found. Build through tools\build-client.cmd, which activates the SDK named in emsdk-path.txt, EMSDK, or a local SDK folder.' }
     $python = if ($env:EMSDK_PYTHON) { $env:EMSDK_PYTHON } else { 'python' }
     $settings = Get-Content -LiteralPath (Join-Path $appRoot 'app.json') -Raw | ConvertFrom-Json
     if ($settings.guid -notmatch '^[A-Za-z0-9_-]+$') { throw 'app.json guid must use letters, digits, _ or -' }

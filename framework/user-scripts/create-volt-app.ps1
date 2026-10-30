@@ -23,9 +23,16 @@
 .PARAMETER NoGit
     Skip git init.
 
+.PARAMETER EmsdkPath
+    Emscripten SDK folder (the one containing emsdk_env.bat), absolute or
+    relative to the current directory. Saved in the app's emsdk-path.txt so
+    builds, including Visual Studio builds, find the SDK without an activated
+    shell. Applies to every template.
+
 .EXAMPLE
     .\create-volt-app.ps1 x2
-    .\create-volt-app.ps1 my-app --Template x --Guid my-app-v1
+    .\create-volt-app.ps1 my-app -Template x -Guid my-app-v1
+    .\create-volt-app.ps1 my-app -Template 'x+' -EmsdkPath 'C:\path\to\emsdk'
 #>
 
 param(
@@ -37,6 +44,7 @@ param(
     [ValidateSet("x","raw","x+")]
     [string]$Template    = "x",
     [switch]$NoGit,
+    [string]$EmsdkPath   = "",
     [Alias('-overwrite')]
     [switch]$Overwrite
 )
@@ -57,6 +65,16 @@ function Err     { param($m) Write-Host "[ERR ]  $m" -ForegroundColor Red; exit 
 $ScriptDir   = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot    = (Resolve-Path (Join-Path $ScriptDir "..\..")).Path
 
+# Check -EmsdkPath before creating anything. Only the path is saved; nothing is installed.
+if ($EmsdkPath) {
+    $EmsdkPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($EmsdkPath)
+    # No trailing separator: "C:\a b\" would end in \" when passed to Python.
+    if ($EmsdkPath.Length -gt 3) { $EmsdkPath = $EmsdkPath.TrimEnd('\', '/') }
+    if (-not (Test-Path -LiteralPath (Join-Path $EmsdkPath 'emsdk_env.bat') -PathType Leaf)) {
+        Err "-EmsdkPath must name the emsdk folder that contains emsdk_env.bat: $EmsdkPath"
+    }
+}
+
 if ($Template -eq 'x+') {
     $python = if ($env:EMSDK_PYTHON) { $env:EMSDK_PYTHON } else { 'python' }
     $createArgs = @((Join-Path $ScriptDir 'create-xplus-app.py'), $AppName)
@@ -64,6 +82,7 @@ if ($Template -eq 'x+') {
     if ($OutputDir) { $createArgs += @('--output', $OutputDir) }
     if ($NoGit) { $createArgs += '--no-git' }
     if ($Overwrite) { $createArgs += '--overwrite' }
+    if ($EmsdkPath) { $createArgs += @('--emsdk-path', $EmsdkPath) }
     & $python @createArgs
     if ($LASTEXITCODE -ne 0) { throw 'Volt X+ creation failed' }
     return
@@ -111,6 +130,7 @@ Info "Template   : $Template  ($TemplateDir)"
 Info "Output dir : $OutputDir"
 Info "Class name : $AppNameCamel"
 Info "Namespace  : $AppNameUnderscore"
+if ($EmsdkPath) { Info "EMSDK      : $EmsdkPath" }
 Write-Host ""
 
 # ---------------------------------------------------------------------------
@@ -120,6 +140,13 @@ Info "Copying template..."
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
 Get-ChildItem -LiteralPath $TemplateDir -Force | Copy-Item -Destination $OutputDir -Recurse -Force
 Ok "Template copied"
+
+if ($EmsdkPath) {
+    # build.ps1 and build.sh read this file; it is listed in the app's .gitignore.
+    $emsdkFile = Join-Path $OutputDir "emsdk-path.txt"
+    [System.IO.File]::WriteAllText($emsdkFile, "$EmsdkPath`r`n", [System.Text.UTF8Encoding]::new($false))
+    Ok "Emscripten SDK path saved -> emsdk-path.txt"
+}
 
 # ---------------------------------------------------------------------------
 #  2. Copy framework headers
@@ -259,8 +286,12 @@ Ok "Location : $OutputDir"
 Write-Host ""
 Write-Host "  Next steps:" -ForegroundColor White
 Write-Host "    cd `"$OutputDir`""
-Write-Host "    . <emsdk_dir>\emsdk_env.ps1   # activate Emscripten"
-Write-Host "    .\build.ps1                   # build"
+if ($EmsdkPath) {
+    Write-Host "    .\build.ps1                   # build (uses the SDK in emsdk-path.txt)"
+} else {
+    Write-Host "    . <emsdk_dir>\emsdk_env.ps1   # activate Emscripten"
+    Write-Host "    .\build.ps1                   # build"
+}
 Write-Host "    cd output"
 Write-Host "    python -m http.server 8001    # serve"
 Write-Host "    # open http://localhost:8001"
