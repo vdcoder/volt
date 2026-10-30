@@ -35,6 +35,9 @@ echo ~/emsdk > emsdk-path.txt
 
 The file is machine-specific and listed in `.gitignore`.
 
+`build.sh` compiles with `em++` (which links the C++ standard library) and `-m64`
+(64-bit memory), so it needs Emscripten 6.0.0 or newer.
+
 ---
 
 ## 📁 Project Structure

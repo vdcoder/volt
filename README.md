@@ -204,6 +204,8 @@ The following script-based quick starts use the default `x` template.
 
 ### 1. Install Emscripten
 
+Volt needs Emscripten 6.0.0 or newer (it builds 64-bit WebAssembly with `-m64`).
+
 ```bash
 git clone https://github.com/emscripten-core/emsdk.git
 cd emsdk
@@ -237,6 +239,8 @@ Your first C++ web app is live.
 ## 🪟 Windows
 
 ### 1. Install Emscripten
+
+Volt needs Emscripten 6.0.0 or newer (it builds 64-bit WebAssembly with `-m64`).
 
 ```powershell
 git clone https://github.com/emscripten-core/emsdk.git

@@ -99,7 +99,9 @@ echo "📦 Compiling to WebAssembly..."
 echo "   GUID: $GUID"
 echo "   Namespace: volt_$GUID_DISPLAY"
 
-emcc src/main.cpp \
+# em++ links the C++ standard library (std::string etc.) on every Emscripten
+# version; plain emcc stopped doing so in 6.0.6. -m64 selects MEMORY64.
+em++ src/main.cpp \
     -DVOLT_GUID=\"$GUID\" \
     -DDEBUG \
     -DVOLT_ENABLE_LOG \
@@ -112,8 +114,7 @@ emcc src/main.cpp \
     -s MODULARIZE=1 \
     -s EXPORT_NAME="VoltApp" \
     -s EXPORTED_RUNTIME_METHODS='["ccall","cwrap"]' \
-    -s MEMORY64=1 \
-    -s WASM_BIGINT=1 \
+    -m64 \
     --bind \
     -O0 \
     -g
